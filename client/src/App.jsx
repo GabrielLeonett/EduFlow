@@ -52,6 +52,8 @@ import RegistrarAula from "./pages/infraestructura/RegistrarAula";
 
 // Administración del Sistema
 import PanelAdministracion from "./pages/administracion/PanelAdministracion";
+import PanelRespaldos from "./pages/administracion/PanelRespaldos.jsx";
+import ReportesEstadisticas from "./pages/administracion/ReportesEstadisticas.jsx";
 
 // Desarrollo y Pruebas
 import PaginaPruebas from "./pages/desarrollo/PaginaPruebas";
@@ -322,6 +324,22 @@ export default function App() {
                 }
               />
               <Route path="/aulas/editar/:id" element={<EditarAula />} />
+              <Route
+                path="/administracion/respaldos"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <PanelRespaldos />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/administracion/reportes-estadisticas"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <ReportesEstadisticas />
+                  </ProtectedViews>
+                }
+              />
               <Route
                 path="/administradores"
                 element={

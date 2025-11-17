@@ -25,7 +25,7 @@ export default function FiltroAcordeonHorario({
     const fetchPnfs = async () => {
       try {
         const res = await axios.get("/pnf");
-        setPnfs(res.pnf || []);
+        setPnfs(res.pnfs || []);
       } catch (error) {
         console.error("Error cargando PNFs:", error);
       }

@@ -10,12 +10,13 @@ import express from "express";
 import { securityMiddleware } from "./middlewares/security.js";
 import { jsonSyntaxErrorHandler } from "./middlewares/process.js";
 import languageMiddleware from "./middlewares/language.js";
-import {i18nMiddleware} from "./locales/index.js";
+import { i18nMiddleware } from "./locales/index.js";
 import helmet from "helmet";
 import { createServer } from "node:http";
 
 import SocketServices from "./services/socket.service.js";
 import SystemMonitor from "./services/systemMonitor.service.js";
+import SystemServices from "./services/system.service.js";
 import NotificationService from "./services/notification.service.js";
 
 // Importaciones de Rutas
@@ -28,6 +29,7 @@ import { SedesRouter } from "./routes/sedes.routes.js";
 import { AulaRouter } from "./routes/aula.routes.js";
 import { coordinadorRouter } from "./routes/coordinador.routes.js";
 import { NotificationRouter } from "./routes/notification.routes.js";
+import { SystemRouter } from "./routes/system.routes.js";
 
 // ✅ CREAR app y server SIN inicializar sockets inmediatamente
 const app = express();
@@ -52,6 +54,7 @@ app.use("", AulaRouter);
 app.use("", SedesRouter);
 app.use("", coordinadorRouter);
 app.use("", NotificationRouter);
+app.use("", SystemRouter);
 
 // ✅ MOVER la inicialización de sockets a una función
 export function initializeSocketServices() {
@@ -113,6 +116,17 @@ export function initializeSocketServices() {
 // ✅ SOLO ejecutar si es el archivo principal (para ES6 modules)
 export function startServer(port = process.env.SERVER_PORT) {
   console.log(`🚀 Iniciando servidor en puerto ${port}...`);
+  // Inicializar servicios de socket
+  const system = new SystemServices();
+
+  setTimeout(() => {
+    console.log("🔧 Creando respaldo del sistema...");
+    system.crearRespaldo().then((res) => {
+      console.log("🔧 Respaldo creado:", res);
+    }).catch((err) => {
+      console.error("❌ Error creando respaldo:", err);
+    });
+  }, 86400000); //24 horas en milisegundos
 
   // Inicializar sockets
   initializeSocketServices();

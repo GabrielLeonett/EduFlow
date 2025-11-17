@@ -48,6 +48,7 @@ export default function FormRegister() {
   } = useForm({
     resolver: zodResolver(profesorSchema),
     defaultValues: {
+      telefono_local: undefined,
       genero: "masculino",
       dedicacion: "Convencional",
       categoria: "Agregado",
