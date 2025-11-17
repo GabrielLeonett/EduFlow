@@ -318,18 +318,75 @@ export default class CurricularModel {
    * @static
    * @async
    * @method mostrarPNF
-   * @description Obtiene todos los PNFs registrados
+   * @description Obtiene todos los PNFs registrados con filtros opcionales
+   * @param {Object} filters - Filtros opcionales
+   * @param {number} filters.id_sede - Filtrar por sede
+   * @param {boolean} filters.activo - Filtrar por estado activo/inactivo
+   * @param {boolean} filters.tiene_coordinador - Filtrar por PNFs con coordinador
+   * @param {string} filters.search - Búsqueda por nombre o código
    * @returns {Promise<Object>} Resultado de la consulta
    */
-  static async mostrarPNF() {
+  static async mostrarPNF(filters = {}) {
     try {
-      const { rows } = await pg.query(`SELECT * FROM public.vista_pnfs`);
+      let whereConditions = [];
+      let queryParams = [];
+      let paramCount = 0;
+
+      // Construir condiciones WHERE dinámicamente
+      if (filters.id_sede) {
+        paramCount++;
+        whereConditions.push(`id_sede = $${paramCount}`);
+        queryParams.push(filters.id_sede);
+      }
+
+      if (filters.activo !== undefined) {
+        paramCount++;
+        whereConditions.push(`activo = $${paramCount}`);
+        queryParams.push(filters.activo);
+      }
+
+      if (filters.tiene_coordinador !== undefined) {
+        paramCount++;
+        whereConditions.push(
+          `(EXISTS (SELECT 1 FROM coordinadores WHERE id_pnf = id_pnf)) = $${paramCount}`
+        );
+        queryParams.push(filters.tiene_coordinador);
+      }
+
+      if (filters.search) {
+        paramCount++;
+        whereConditions.push(
+          `(nombre_pnf ILIKE $${paramCount} OR codigo_pnf ILIKE $${paramCount})`
+        );
+        queryParams.push(`%${filters.search}%`);
+      }
+
+      // Construir la consulta final
+      const whereClause =
+        whereConditions.length > 0
+          ? `WHERE ${whereConditions.join(" AND ")}`
+          : "";
+
+      const query = `
+        SELECT * FROM public.vista_pnfs
+        ${whereClause}
+        ORDER BY nombre_pnf ASC
+      `;
+
+      console.log("🔍 Query ejecutada:", query);
+      console.log("📊 Parámetros:", queryParams);
+
+      const { rows } = await pg.query(query, queryParams);
+
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Listado de PNFs obtenidos."
+        "Listado de PNFs obtenidos exitosamente."
       );
     } catch (error) {
-      error.details = { path: "CurricularModel.mostrarPNF" };
+      error.details = {
+        path: "CurricularModel.mostrarPNF",
+        filters: filters,
+      };
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener los PNFs"

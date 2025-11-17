@@ -20,10 +20,17 @@ export default class AulaModel {
    */
   static async crear(datos, id_usuario) {
     try {
-      const { id_sede, codigo, tipo, capacidad } = datos;
-      const query = `CALL registrar_aula_completo($1, $2, $3, $4, $5, NULL)`;
+      const { id_sede, codigo, tipo, capacidad, id_pnf } = datos;
+      const query = `CALL registrar_aula_completo($1, $2, $3, $4, $5, $6, NULL)`;
 
-      const params = [id_usuario, id_sede, codigo, tipo, capacidad];
+      const params = [
+        id_usuario,
+        id_sede,
+        codigo,
+        tipo,
+        capacidad,
+        id_pnf || null,
+      ];
       console.log(query, params);
       const { rows } = await pg.query(query, params);
 
@@ -339,30 +346,106 @@ export default class AulaModel {
    * @static
    * @async
    * @method filtrarPorSede
-   * @description Filtrar aulas por sede específica
-   * @param {string} sede - Nombre de la sede a filtrar
-   * @returns {Promise<Object>} Lista de aulas de la sede especificada
+   * @description Filtrar aulas por sede específica con paginación, ordenamiento y búsqueda
+   * @param {string} sede - ID de la sede a filtrar
+   * @param {Object} queryParams - Parámetros de consulta
+   * @param {string} queryParams.page - Página actual
+   * @param {string} queryParams.limit - Límite por página
+   * @param {string} queryParams.sort_order - Campo para ordenar
+   * @param {string} queryParams.search - Término de búsqueda
+   * @returns {Promise<Object>} Lista de aulas de la sede especificada con paginación
    */
-  static async filtrarPorSede(sede) {
+  static async filtrarPorSede(sede, queryParams = {}) {
     try {
-      const query = `
-        SELECT 
-          a.id_aula,
-          a.tipo_aula,
-          a.capacidad_aula,
-          a.codigo_aula,
-          s.id_sede,
-          s.nombre_sede
-        FROM public.aulas a
-        INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        WHERE s.id_sede = $1 
-      `;
-      const params = [sede];
+      const page = parseInt(queryParams.page) || 1;
+      const limit = parseInt(queryParams.limit) || 10;
+      const offset = (page - 1) * limit;
+      const search = queryParams.search || "";
+      const sortOrder = queryParams.sort_order || "codigo_aula";
 
-      const { rows } = await pg.query(query, params);
+      // Validar y mapear campos de ordenamiento
+      const sortMapping = {
+        codigo: "a.codigo_aula",
+        tipo: "a.tipo_aula",
+        capacidad: "a.capacidad_aula",
+        fecha_creacion: "a.created_at",
+        sede: "s.nombre_sede",
+      };
+
+      const orderBy = sortMapping[sortOrder] || "a.codigo_aula";
+
+      let whereConditions = ["a.id_sede = $1"];
+      let params = [sede];
+      let paramCount = 1;
+
+      // Agregar condiciones de búsqueda si existe el parámetro
+      if (search) {
+        paramCount++;
+        whereConditions.push(`(
+        a.codigo_aula ILIKE $${paramCount} OR 
+        a.tipo_aula ILIKE $${paramCount} OR 
+        s.nombre_sede ILIKE $${paramCount}
+      )`);
+        params.push(`%${search}%`);
+      }
+
+      const whereClause =
+        whereConditions.length > 0
+          ? `WHERE ${whereConditions.join(" AND ")}`
+          : "";
+
+      // Query para contar el total
+      const countQuery = `
+      SELECT COUNT(*) as total
+      FROM public.aulas a
+      INNER JOIN public.sedes s ON a.id_sede = s.id_sede
+      ${whereClause}
+    `;
+
+      // Query principal con paginación y ordenamiento
+      const dataQuery = `
+      SELECT 
+        a.id_aula,
+        a.tipo_aula,
+        a.capacidad_aula,
+        a.codigo_aula,
+        a.created_at as fecha_creacion,
+        s.id_sede,
+        s.nombre_sede
+      FROM public.aulas a
+      INNER JOIN public.sedes s ON a.id_sede = s.id_sede
+      ${whereClause}
+      ORDER BY ${orderBy} ASC
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
+    `;
+
+      // Ejecutar query de conteo
+      const countResult = await pg.query(countQuery, params);
+      const total = parseInt(countResult.rows[0].total);
+
+      // Ejecutar query principal
+      const dataParams = [...params, limit, offset];
+      const { rows } = await pg.query(dataQuery, dataParams);
+
+      // Calcular información de paginación
+      const totalPages = Math.ceil(total / limit);
+      const hasNext = page < totalPages;
+      const hasPrev = page > 1;
+
+      const data = {
+        aulas: rows,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext,
+          hasPrev,
+        },
+      };
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        data,
         `Aulas de la sede ${sede} obtenidas exitosamente`
       );
     } catch (error) {
@@ -402,5 +485,4 @@ export default class AulaModel {
       );
     }
   }
-
 }

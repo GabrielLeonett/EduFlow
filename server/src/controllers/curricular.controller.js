@@ -171,7 +171,7 @@ export default class CurricularController {
   static async mostrarPNF(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      CurricularService.mostrarPNF()
+      CurricularService.mostrarPNF(req.query)
     );
   }
 

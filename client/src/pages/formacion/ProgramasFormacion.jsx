@@ -22,7 +22,7 @@ export default function ProgramasFormacion() {
     };
 
     fetchPNFS();
-  }, []);
+  }, [axios]);
 
   return (
     <>

@@ -29,10 +29,7 @@ export default function CardAula({ aula }) {
     return colors[idSede] || "default";
   };
 
-  // Función para formatear el código del aula
-  const formatCodigoAula = (codigo) => {
-    return `Aula ${codigo}`;
-  };
+
 
   // Función para obtener iniciales del código del aula
   const getInitials = (codigo) => {
@@ -61,7 +58,7 @@ export default function CardAula({ aula }) {
         <Box display="flex" alignItems="center" gap={2} mb={2}>
           <Box flex={1}>
             <Typography variant="h6" fontWeight={600} noWrap>
-              {formatCodigoAula(aula.codigo_aula)}
+              {aula.codigo_aula}
             </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>
               <LocationOn sx={{ fontSize: 16, mr: 0.5 }} />

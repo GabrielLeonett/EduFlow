@@ -275,26 +275,68 @@ export default class CurricularService {
    * @static
    * @async
    * @method mostrarPNF
-   * @description Obtener todos los Programas Nacionales de Formación registrados
+   * @description Obtener todos los Programas Nacionales de Formación registrados con filtros
+   * @param {Object} queryParams - Parámetros de consulta
+   * @param {string} queryParams.id_sede - Filtrar por ID de sede
+   * @param {string} queryParams.activo - Filtrar por estado activo (true/false)
+   * @param {string} queryParams.tiene_coordinador - Filtrar por coordinador asignado (true/false)
+   * @param {string} queryParams.search - Búsqueda por nombre o código
    * @returns {Object} Resultado de la operación
    */
-  static async mostrarPNF() {
+  static async mostrarPNF(queryParams = {}) {
     try {
-      console.log("🔍 [mostrarPNF] Obteniendo listado de PNF...");
+      console.log(
+        "🔍 [mostrarPNF] Obteniendo listado de PNF con filtros:",
+        queryParams
+      );
 
-      const respuestaModel = await CurricularModel.mostrarPNF();
+      // Preparar filtros para el modelo
+      const filters = {};
+
+      // Filtrar por sede
+      if (queryParams.id_sede) {
+        filters.id_sede = parseInt(queryParams.id_sede);
+        if (isNaN(filters.id_sede)) {
+          return FormatterResponseService.error(
+            "El ID de sede debe ser un número válido",
+            "Parámetro inválido",
+            { status: 400, title: "Error de validación" }
+          );
+        }
+      }
+
+      // Filtrar por estado activo
+      if (queryParams.activo !== undefined) {
+        filters.activo = queryParams.activo === "true";
+      }
+
+      // Filtrar por coordinador asignado
+      if (queryParams.tiene_coordinador !== undefined) {
+        filters.tiene_coordinador = queryParams.tiene_coordinador === "true";
+      }
+
+      // Filtrar por búsqueda de texto
+      if (queryParams.search && queryParams.search.trim() !== "") {
+        filters.search = queryParams.search.trim();
+      }
+
+      const respuestaModel = await CurricularModel.mostrarPNF(filters);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         console.error("❌ Error en modelo obtener PNF:", respuestaModel);
         return respuestaModel;
       }
 
-      console.log(`✅ Se obtuvieron ${respuestaModel.data?.length || 0} PNF`);
+      const pnfs = respuestaModel.data || [];
+      console.log(
+        `✅ Se obtuvieron ${pnfs.length} PNF con los filtros aplicados`
+      );
 
       return FormatterResponseService.success(
         {
-          pnf: respuestaModel.data,
-          total: respuestaModel.data?.length || 0,
+          pnfs: pnfs,
+          total: pnfs.length,
+          filters: filters, // Opcional: devolver los filtros aplicados
         },
         "PNF obtenidos exitosamente",
         {
