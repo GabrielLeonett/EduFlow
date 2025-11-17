@@ -55,7 +55,6 @@ i18next
     ns: ['admins', 'messages', 'formatter'],
     defaultNS: 'formatter', // O el namespace que uses más
     
-    debug: process.env.NODE_ENV === 'development',
     
     // Configuración adicional importante
     interpolation: {

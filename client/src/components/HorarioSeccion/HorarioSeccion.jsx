@@ -69,7 +69,8 @@ const HorarioSeccion = ({
     componentProps,
     state,
     stateSetters,
-    isCustom
+    isCustom,
+    alert
   );
 
   // 3. Movimiento de clases

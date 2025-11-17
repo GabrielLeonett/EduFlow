@@ -37,9 +37,9 @@ export default function GestionTrayecto() {
   // Funciones para obtener datos
   const fetchUnidadesCurriculares = async () => {
     const res = await axios.get(
-      `/unidades-curriculares/${codigoPNF}/${valorTrayecto}`
+      `/trayectos/${idTrayecto}/unidades-curriculares`
     );
-    setUnidades(res.unidades || []);
+    setUnidades(res.unidades_curriculares || []);
   };
 
   const fetchSecciones = async () => {
@@ -218,8 +218,10 @@ export default function GestionTrayecto() {
           </Typography>
         ) : unidades.length > 0 ? (
           <Grid container spacing={3} justifyContent="center">
-            {unidades.map((unidad) => (
-              <CardUnidadCurricular unidadCurricular={unidad} />
+            {unidades.map((unidad, index) => (
+              <Grid key={unidad.id_unidad_curricular || index}>
+                <CardUnidadCurricular uc={unidad} />
+              </Grid>
             ))}
           </Grid>
         ) : (

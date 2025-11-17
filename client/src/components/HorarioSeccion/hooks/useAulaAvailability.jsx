@@ -13,7 +13,16 @@ export const useAulaAvailability = () => {
       aulas_horarios,
       claseActual = null
     ) => {
-      const horarioAula = aulas_horarios.find(
+      // 1. Verificar si el objeto existe y si tiene la propiedad 'horario'
+      if (!aulas_horarios || !aulas_horarios.horario) {
+        return true; // O manejar el error
+      }
+
+      // 2. Si el array existe, verificar si está vacío
+      if (aulas_horarios.horario.length === 0) {
+        return true; // No hay horarios que buscar
+      }
+      const horarioAula = aulas_horarios.horario.find(
         (aula) => aula.idAula === id_aula || aula.id_aula === id_aula
       );
       if (!horarioAula || !horarioAula.dias) return true;
@@ -32,7 +41,10 @@ export const useAulaAvailability = () => {
           if (claseActual && clase.id_horario === claseActual.id_horario) {
             return false;
           }
-          if (state.horariosEliminados && state.horariosEliminados.includes(clase.id_horario)) {
+          if (
+            state.horariosEliminados &&
+            state.horariosEliminados.includes(clase.id_horario)
+          ) {
             return false;
           }
 

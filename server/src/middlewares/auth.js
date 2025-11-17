@@ -1,4 +1,4 @@
-//Importa funcion para poder obtener la cookie de un string
+// Importa funcion para poder obtener la cookie de un string
 import { getCookie } from "../utils/utilis.js";
 // Importa la librería jsonwebtoken para trabajar con JWT (JSON Web Tokens)
 import jwt from "jsonwebtoken";
@@ -29,7 +29,8 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
 
   return (req, res, next) => {
     // 1. Verificación de token presente
-    const token = req.cookies?.autorization; // Nota: 'autorization' parece typo, debería ser 'authorization'
+    // Nota: 'autorization' parece typo, debería ser 'authorization'
+    const token = req.cookies?.autorization; 
 
     // Si no es requerido y no hay token, continuar sin autenticación
     if (!required && !token) {
@@ -38,9 +39,10 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
 
     // Si es requerido y no hay token, denegar acceso
     if (!token) {
-      return res
-        .status(401)
-        .json({ error: "Acceso denegado: Se requiere autenticación" });
+      return res.status(401).json({
+        title: "Acceso Denegado",
+        message: "Se requiere autenticación para acceder a este recurso.",
+      });
     }
 
     // 2. Verificación de validez del token
@@ -51,13 +53,18 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
           return next();
         }
 
-        // Manejo específico de errores de token
-        return res.status(403).json({
-          error:
-            error.name === "TokenExpiredError"
-              ? "Token expirado, por favor inicie sesión nuevamente"
-              : "Token inválido",
-        });
+        // Manejo específico de errores de token con formato {title, message}
+        if (error.name === "TokenExpiredError") {
+          return res.status(403).json({
+            title: "Sesión Expirada",
+            message: "Su sesión ha expirado, por favor inicie sesión nuevamente.",
+          });
+        } else {
+          return res.status(403).json({
+            title: "Token Inválido",
+            message: "El token de autenticación es inválido o corrupto.",
+          });
+        }
       }
 
       // Adjunta la información del usuario decodificada a la solicitud
@@ -68,7 +75,8 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
         // Verificar que el usuario tenga roles
         if (!req.user.roles || !Array.isArray(req.user.roles)) {
           return res.status(403).json({
-            error: "Acceso denegado: Información de roles incompleta",
+            title: "Acceso Denegado",
+            message: "Información de roles incompleta en el token.",
           });
         }
 
@@ -79,7 +87,8 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
 
         if (!hasPermission) {
           return res.status(403).json({
-            error: "Acceso denegado: Privilegios insuficientes",
+            title: "Acceso Denegado",
+            message: "Privilegios insuficientes para acceder a este recurso.",
           });
         }
       }
@@ -134,7 +143,7 @@ export const socketAuth = (requiredRoles = []) => {
         process.env.AUTH_SECRET_KEY,
         (error, decoded) => {
           if (error) {
-            return next(); // Continuar como anónimo
+            return next(); // Continuar como anónimo en caso de error
           }
 
           // Adjuntar información del usuario
@@ -155,12 +164,30 @@ export const socketAuth = (requiredRoles = []) => {
 function validateRoles(socket, requiredRoles, next) {
   // Solo validar si se especificaron roles requeridos
   if (requiredRoles && requiredRoles.length > 0 && socket.user) {
+    if (!socket.user.roles || !Array.isArray(socket.user.roles)) {
+        return next(
+            new Error(
+                JSON.stringify({
+                    title: "Acceso Denegado (Socket)",
+                    message: "Información de roles incompleta para la conexión.",
+                })
+            )
+        );
+    }
+
     const hasRequiredRole = socket.user.roles.some(
       (role) => role === "SuperAdmin" || requiredRoles.includes(role)
     );
 
     if (!hasRequiredRole) {
-      return next(new Error("Acceso denegado: Privilegios insuficientes"));
+      return next(
+        new Error(
+          JSON.stringify({
+            title: "Acceso Denegado (Socket)",
+            message: "Privilegios insuficientes para establecer la conexión.",
+          })
+        )
+      );
     }
   }
 

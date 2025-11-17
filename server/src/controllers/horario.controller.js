@@ -78,7 +78,8 @@ export default class HorarioController {
       res,
       HorarioService.mostrarProfesoresParaHorario(
         parseInt(req.params.id_seccion),
-        parseInt(req.body.horas_necesarias)
+        parseInt(req.body.horas_necesarias),
+        req.body.id_unidad_curricular ? parseInt(req.body.id_unidad_curricular) : null
       )
     );
   }

@@ -1,4 +1,5 @@
 import z from "zod";
+import { areaConocimientoSchema } from "./profesor.schema.js";
 
 const unidadcurricularSchema = z.object({
   id_trayecto: z
@@ -36,8 +37,8 @@ const unidadcurricularSchema = z.object({
       required_error:
         "La carga de horas de la unidad curricular es obligatoria",
     })
-    .min(2, "Lo minimo son 2 horas de 45min.")
-    .max(4, "Lo maximo son 5 horas de 45min.")
+    .min(1, "Lo minimo son 1 horas de 45min.")
+    .max(5, "Lo maximo son 5 horas de 45min.")
     .positive(
       "La carga de horas de la unidad curricular debe ser un número positivo"
     ),
@@ -52,6 +53,22 @@ const unidadcurricularSchema = z.object({
     .regex(/^[A-Z0-9-]{3,7}$/, "Formato inválido. Use AAA-AAA o AAA-913")
     .trim()
     .toUpperCase(),
+
+  areas_conocimiento: z
+    .array(areaConocimientoSchema, {
+      // 1. invalid_type_error: Se usa si el valor recibido NO es un array.
+      invalid_type_error:
+        "Las áreas de conocimiento deben ser proporcionadas como una lista (array).",
+      // 2. description: Se usa para documentación o generación de esquemas (ej. OpenAPI/Swagger).
+      description: "Lista de IDs o datos de Áreas de Conocimiento asociadas.",
+      required_error:
+        "Las Áreas de Conocimiento son obligatorias. Debe incluir al menos una.",
+    })
+    .min(1, "Debe seleccionar al menos una Área de Conocimiento.")
+    .nonempty({
+      message:
+        "Las Áreas de Conocimiento son obligatorias. Debe incluir al menos una.",
+    }),
 });
 
 export default unidadcurricularSchema;

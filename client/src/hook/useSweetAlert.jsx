@@ -139,7 +139,6 @@ const useSweetAlert = () => {
       return result.isConfirmed; // 🔥 devuelve true/false
     },
 
-
     /**
      * Función para mostrar una alerta con campo de entrada
      * @param {string} title - Título de la alerta
@@ -166,9 +165,8 @@ const useSweetAlert = () => {
      * @returns {Promise} Promesa que se resuelve cuando el toast se cierra
      */
     toast: ({ title, message, config = {} }) => {
-      // Crear una instancia única para cada toast
       Swal.fire({
-        title,
+        title: title,
         text: message,
         toast: true,
         position: "bottom-end",

@@ -5,7 +5,7 @@
  * @returns { Promise<void> }
  */
 export async function up(knex){
-  await knex.schema.createTable('notification_recipients', (table) => {
+  await knex.schema.createTable('notification_recipient', (table) => {
     table.bigInteger('notification_id').notNullable().comment('ID de la notificación');
     table.bigInteger('user_id').notNullable().comment('ID del usuario destinatario');
     table.boolean('is_read').defaultTo(false).comment('Indica si el usuario leyó esta notificación masiva');

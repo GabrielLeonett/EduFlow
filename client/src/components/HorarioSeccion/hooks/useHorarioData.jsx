@@ -69,7 +69,7 @@ const validarUnidadesCurricularesInicializadas = (unidades) => {
 };
 
 // Hook principal de datos
-const useHorarioData = (axios, props, state, stateSetters, Custom) => {
+const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   const dispatch = useDispatch();
 
   // Selector para acceder al cache
@@ -193,13 +193,36 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
           `/profesores/to/seccion/${seccion.id_seccion}`,
           {
             horas_necesarias: unidadCurricular.horas_clase,
+            id_unidad_curricular: unidadCurricular.id_unidad_curricular,
           }
         );
-        if (profesores && Array.isArray(profesores)) {
+        console.log(profesores);
+        if (profesores && Array.isArray(profesores) && profesores.length > 0) {
           setProfesores(profesores);
         } else {
-          console.error("Respuesta de profesores inválida:", profesores);
-          setProfesores([]);
+          const confirm = alert.confirm(
+            "¿Seguir Buscando?",
+            "No se encontraron profesores con las areas de conocimiento de la unidad curricular, ¿Desea seguir buscando?"
+          );
+          if (confirm) {
+            const profesores = await axios.post(
+              `/profesores/to/seccion/${seccion.id_seccion}`,
+              {
+                horas_necesarias: unidadCurricular.horas_clase,
+              }
+            );
+            if (
+              profesores &&
+              Array.isArray(profesores) &&
+              profesores.length > 0
+            ) {
+              setProfesores(profesores);
+            } else {
+              alert.warning(
+                "No se encontraron profesores disponibles para asignar este horario"
+              );
+            }
+          }
         }
       } catch (error) {
         console.error("Error cargando profesores:", error);

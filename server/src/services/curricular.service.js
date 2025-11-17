@@ -1015,7 +1015,7 @@ export default class CurricularService {
           "ID de usuario inválido"
         );
       }
-      console.log(datos)
+      console.log(datos);
       // 3. Validar descripción
       if (
         !datos.descripcion_trayecto ||
@@ -1148,14 +1148,16 @@ export default class CurricularService {
       }
 
       // 1. Validar ID de la unidad curricular
-      const unidadValidation = ValidationService.validateId(
-        idUnidadCurricular,
-        "unidad_curricular"
-      );
+      const unidadValidation =
+        ValidationService.validatePartialUnidadCurricular(
+          datos,
+          "unidad_curricular"
+        );
+
       if (!unidadValidation.isValid) {
         return FormatterResponseService.validationError(
           unidadValidation.errors,
-          "ID de unidad curricular inválido"
+          "Unidad curricular inválida"
         );
       }
 
@@ -1168,109 +1170,6 @@ export default class CurricularService {
         return FormatterResponseService.validationError(
           usuarioValidation.errors,
           "ID de usuario inválido"
-        );
-      }
-
-      // 3. Validar que al menos un campo sea proporcionado
-      const camposPermitidos = [
-        "codigo_unidad",
-        "nombre_unidad_curricular",
-        "descripcion_unidad_curricular",
-        "horas_clase",
-        "id_trayecto",
-      ];
-
-      const camposProporcionados = Object.keys(datos).filter(
-        (key) =>
-          camposPermitidos.includes(key) &&
-          datos[key] !== undefined &&
-          datos[key] !== null
-      );
-
-      if (camposProporcionados.length === 0) {
-        return FormatterResponseService.error(
-          "Sin campos para actualizar",
-          "Debe proporcionar al menos un campo para actualizar: codigo_unidad, nombre_unidad_curricular, descripcion_unidad_curricular, horas_clase o id_trayecto",
-          400,
-          "SIN_CAMPOS_ACTUALIZAR"
-        );
-      }
-
-      // 4. Validaciones específicas por campo
-      const erroresValidacion = [];
-
-      // Validar código_unidad si se proporciona
-      if (datos.codigo_unidad !== undefined) {
-        const codigoLimpio = datos.codigo_unidad?.toString().trim();
-        if (!codigoLimpio || codigoLimpio.length === 0) {
-          erroresValidacion.push("El código de la unidad no puede estar vacío");
-        } else if (codigoLimpio.length < 2 || codigoLimpio.length > 20) {
-          erroresValidacion.push(
-            "El código de la unidad debe tener entre 2 y 20 caracteres"
-          );
-        }
-        datos.codigo_unidad = codigoLimpio;
-      }
-
-      // Validar nombre_unidad_curricular si se proporciona
-      if (datos.nombre_unidad_curricular !== undefined) {
-        const nombreLimpio = datos.nombre_unidad_curricular?.toString().trim();
-        if (!nombreLimpio || nombreLimpio.length === 0) {
-          erroresValidacion.push(
-            "El nombre de la unidad curricular no puede estar vacío"
-          );
-        } else if (nombreLimpio.length < 3 || nombreLimpio.length > 100) {
-          erroresValidacion.push(
-            "El nombre de la unidad curricular debe tener entre 3 y 100 caracteres"
-          );
-        }
-        datos.nombre_unidad_curricular = nombreLimpio;
-      }
-
-      // Validar descripcion_unidad_curricular si se proporciona
-      if (datos.descripcion_unidad_curricular !== undefined) {
-        const descripcionLimpia = datos.descripcion_unidad_curricular
-          ?.toString()
-          .trim();
-        if (!descripcionLimpia || descripcionLimpia.length === 0) {
-          erroresValidacion.push(
-            "La descripción de la unidad curricular no puede estar vacía"
-          );
-        } else if (descripcionLimpia.length < 10) {
-          erroresValidacion.push(
-            "La descripción de la unidad curricular debe tener al menos 10 caracteres"
-          );
-        }
-        datos.descripcion_unidad_curricular = descripcionLimpia;
-      }
-
-      // Validar horas_clase si se proporciona
-      if (datos.horas_clase !== undefined) {
-        const horas = parseInt(datos.horas_clase);
-        if (isNaN(horas) || horas <= 0 || horas > 100) {
-          erroresValidacion.push(
-            "Las horas de clase deben ser un número entre 1 y 100"
-          );
-        }
-        datos.horas_clase = horas;
-      }
-
-      // Validar id_trayecto si se proporciona
-      if (datos.id_trayecto !== undefined) {
-        const trayectoId = parseInt(datos.id_trayecto);
-        if (isNaN(trayectoId) || trayectoId <= 0) {
-          erroresValidacion.push(
-            "El ID del trayecto debe ser un número válido"
-          );
-        }
-        datos.id_trayecto = trayectoId;
-      }
-
-      // Retornar errores de validación si existen
-      if (erroresValidacion.length > 0) {
-        return FormatterResponseService.validationError(
-          erroresValidacion,
-          "Errores de validación en los datos proporcionados"
         );
       }
 
@@ -1321,7 +1220,7 @@ export default class CurricularService {
 
       return FormatterResponseService.success(
         {
-          message: "Unidad curricular actualizada exitosamente",
+          message: respuestaModel.message,
           unidad_curricular: respuestaModel.data?.unidad_curricular,
           campos_actualizados:
             respuestaModel.data?.unidad_curricular?.campos_actualizados,
@@ -1337,6 +1236,165 @@ export default class CurricularService {
         "💥 Error en servicio actualizar unidad curricular:",
         error
       );
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method eliminarUnidadCurricular
+   * @description Eliminar una Unidad Curricular físicamente del sistema
+   * @param {number} idUnidadCurricular - ID de la unidad curricular a eliminar
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async eliminarUnidadCurricular(idUnidadCurricular, user_action) {
+    try {
+      console.log(
+        "🔍 [eliminarUnidadCurricular] Iniciando eliminación de unidad curricular..."
+      );
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos recibidos:", {
+          idUnidadCurricular: idUnidadCurricular,
+          user_action: user_action,
+        });
+      }
+
+      // 1. Validar ID de usuario
+      const idUsuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+
+      if (!idUsuarioValidation.isValid) {
+        console.error(
+          "❌ Validación de ID de usuario fallida:",
+          idUsuarioValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          idUsuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 2. Validar ID de unidad curricular
+      const idUnidadValidation = ValidationService.validateId(
+        idUnidadCurricular,
+        "unidad curricular"
+      );
+
+      if (!idUnidadValidation.isValid) {
+        console.error(
+          "❌ Validación de ID de unidad curricular fallida:",
+          idUnidadValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          idUnidadValidation.errors,
+          "ID de unidad curricular inválido"
+        );
+      }
+
+      // 3. Obtener información de la unidad curricular antes de eliminar (para notificaciones)
+      console.log("📚 Obteniendo información de la unidad curricular...");
+      const infoUnidadCurricular =
+        await CurricularModel.obtenerUnidadCurricularPorId(idUnidadCurricular);
+
+      if (FormatterResponseService.isError(infoUnidadCurricular)) {
+        console.error(
+          "❌ Error al obtener información de unidad curricular:",
+          infoUnidadCurricular
+        );
+        return infoUnidadCurricular;
+      }
+
+      // 4. Eliminar unidad curricular en el modelo
+      console.log("🗑️ Eliminando unidad curricular en base de datos...");
+      const respuestaModel = await CurricularModel.eliminarUnidadCurricular(
+        user_action.id,
+        idUnidadCurricular
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error(
+          "❌ Error en modelo eliminar unidad curricular:",
+          respuestaModel
+        );
+        return respuestaModel;
+      }
+
+      // 5. Enviar notificación específica para coordinación académica
+      console.log("🔔 Enviando notificaciones de eliminación...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Unidad Curricular Eliminada",
+        tipo: "unidad_curricular_eliminada",
+        contenido: `Se ha eliminado la unidad curricular "${
+          infoUnidadCurricular.data?.nombre_unidad_curricular ||
+          "Unidad Desconocida"
+        }" (Código: ${
+          infoUnidadCurricular.data?.codigo_unidad || "N/A"
+        }) del sistema`,
+        metadatos: {
+          unidad_curricular_nombre:
+            infoUnidadCurricular.data?.nombre_unidad_curricular,
+          unidad_curricular_codigo: infoUnidadCurricular.data?.codigo_unidad,
+          unidad_curricular_id: idUnidadCurricular,
+          trayecto_id: infoUnidadCurricular.data?.id_trayecto,
+          horas_clase: infoUnidadCurricular.data?.horas_clase,
+          usuario_eliminador: user_action.id,
+          fecha_eliminacion: new Date().toISOString(),
+          url_action: `/academico/unidades-curriculares`,
+        },
+        roles_ids: [2, 7, 8, 20], // Solo Coordinador, Directores y SuperAdmin
+        users_ids: [user_action.id], // Usuario que eliminó la unidad curricular
+      });
+
+      console.log("✅ Unidad curricular eliminada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Unidad curricular eliminada exitosamente",
+          unidad_curricular_eliminada: {
+            id: idUnidadCurricular,
+            nombre: infoUnidadCurricular.data?.nombre_unidad_curricular,
+            codigo: infoUnidadCurricular.data?.codigo_unidad,
+            trayecto_id: infoUnidadCurricular.data?.id_trayecto,
+            horas_clase: infoUnidadCurricular.data?.horas_clase,
+          },
+          registros_afectados: respuestaModel.data?.registros_eliminados || {
+            horarios: 0,
+            areas_conocimiento: 0,
+          },
+        },
+        "Unidad curricular eliminada permanentemente del sistema",
+        {
+          status: 200,
+          title: "Unidad Curricular Eliminada",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio eliminar unidad curricular:", error);
+
+      // Manejo específico de errores de integridad referencial
+      if (
+        error.message?.includes("foreign_key_violation") ||
+        error.message?.includes("integrity constraint")
+      ) {
+        return FormatterResponseService.error(
+          "No se puede eliminar la unidad curricular porque tiene registros asociados en uso",
+          "Error de integridad referencial",
+          {
+            status: 400,
+            details: {
+              suggestion:
+                "Revise los horarios, secciones u otros registros asociados antes de eliminar",
+            },
+          }
+        );
+      }
+
       throw error;
     }
   }
