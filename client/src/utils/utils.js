@@ -93,10 +93,9 @@ export const UTILS = {
   },
 
   // Función para expandir un rango de horas en bloques individuales de 45 minutos
-  RangoHorasSeguidasDisponibilidad(inicio_hora, fin_hora, ) {
+  RangoHorasSeguidasDisponibilidad(inicio_hora, fin_hora) {
     const bloques = [];
 
-    console.log("Expandiendo rango de horas desde", inicio_hora, "hasta", fin_hora);
     Object.keys(UTILS.initialHours).forEach((hora) => {
       if (hora >= inicio_hora && hora < fin_hora) {
         console.log("Añadiendo bloque:", hora);
@@ -106,6 +105,27 @@ export const UTILS = {
 
     return bloques;
   },
+  horariosAcademicos: [
+    "07:00",
+    "07:45",
+    "08:30",
+    "09:15",
+    "10:00",
+    "10:45",
+    "11:30",
+    "12:15",
+    "13:00",
+    "13:45",
+    "14:30",
+    "15:15",
+    "16:00",
+    "16:45",
+    "17:30",
+    "18:15",
+    "19:00",
+    "19:45",
+  ],
+  diasSemana: ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"],
 
   initialHours: {
     700: null,

@@ -20,15 +20,11 @@ export default class SystemController {
       console.log("🔧 Solicitando creación de respaldo del sistema...");
       const resultado = await SystemServices.crearRespaldo();
 
+      // El servicio ya devuelve FormatterResponseService
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.success ? {
-          path: resultado.path,
-          size: resultado.size,
-          timestamp: resultado.timestamp,
-          sizeMB: (resultado.size / 1024 / 1024).toFixed(2)
-        } : null,
+        data: resultado.data,
         timestamp: resultado.timestamp
       });
     } catch (error) {
@@ -52,23 +48,13 @@ export default class SystemController {
   static async listarRespaldos(req, res) {
     try {
       console.log("📋 Solicitando listado de respaldos...");
-      const backups = await SystemServices.listarRespaldos();
+      const resultado = await SystemServices.listarRespaldos();
 
       return FormatterResponseController.respuestaServicio(res, {
-        success: true,
-        message: "Listado de respaldos obtenido exitosamente",
-        data: {
-          total: backups.length,
-          backups: backups.map(backup => ({
-            nombre: backup.nombre,
-            ruta: backup.ruta,
-            tamaño: backup.tamaño,
-            tamañoMB: (backup.tamaño / 1024 / 1024).toFixed(2),
-            fechaModificacion: backup.fechaModificacion.toISOString(),
-            fechaCreacion: backup.fechaCreacion.toISOString()
-          }))
-        },
-        timestamp: new Date().toISOString()
+        success: resultado.success,
+        message: resultado.message,
+        data: resultado.data,
+        timestamp: resultado.timestamp
       });
     } catch (error) {
       console.error("❌ Error en listarRespaldos controller:", error);
@@ -107,10 +93,7 @@ export default class SystemController {
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.success ? {
-          backup: resultado.backup,
-          timestamp: new Date().toISOString()
-        } : null
+        data: resultado.data
       });
     } catch (error) {
       console.error("❌ Error en restaurarRespaldo controller:", error);
@@ -132,21 +115,15 @@ export default class SystemController {
    */
   static async limpiarRespaldosAntiguos(req, res) {
     try {
-      const { dias } = req.body;
-      const diasMantenimiento = dias || 30;
+      const { dias } = req.query; // Cambiado de body a query para consistencia
 
-      console.log(`🧹 Solicitando limpieza de respaldos antiguos (más de ${diasMantenimiento} días)...`);
-      const resultado = await SystemServices.limpiarRespaldosAntiguos(diasMantenimiento);
+      console.log(`🧹 Solicitando limpieza de respaldos antiguos...`);
+      const resultado = await SystemServices.limpiarRespaldosAntiguos({ dias });
 
       return FormatterResponseController.respuestaServicio(res, {
-        success: true,
-        message: `Limpieza de respaldos completada`,
-        data: {
-          eliminados: resultado.eliminados,
-          total: resultado.total,
-          diasMantenimiento: diasMantenimiento,
-          timestamp: new Date().toISOString()
-        }
+        success: resultado.success,
+        message: resultado.message,
+        data: resultado.data
       });
     } catch (error) {
       console.error("❌ Error en limpiarRespaldosAntiguos controller:", error);
@@ -176,10 +153,7 @@ export default class SystemController {
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.success ? {
-          backup: resultado.backup,
-          timestamp: resultado.timestamp
-        } : null
+        data: resultado.data
       });
     } catch (error) {
       console.error("❌ Error en eliminarRespaldo controller:", error);
@@ -246,6 +220,8 @@ export default class SystemController {
     }
   }
 
+  // 📊 MÉTODOS DE REPORTES Y ESTADÍSTICAS ACTUALIZADOS
+
   /**
    * @name obtenerReportesEstadisticas
    * @description Obtener reportes estadísticos completos del sistema
@@ -261,7 +237,7 @@ export default class SystemController {
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.success ? resultado.data : null,
+        data: resultado.data,
         timestamp: resultado.timestamp
       });
     } catch (error) {
@@ -276,58 +252,58 @@ export default class SystemController {
   }
 
   /**
-   * @name obtenerEstadisticasRapidas
-   * @description Obtener estadísticas rápidas del sistema
+   * @name obtenerMetricasSistema
+   * @description Obtener métricas generales del sistema
    * @param {Object} req - Objeto de solicitud Express
    * @param {Object} res - Objeto de respuesta Express
    * @returns {void}
    */
-  static async obtenerEstadisticasRapidas(req, res) {
+  static async obtenerMetricasSistema(req, res) {
     try {
-      console.log("⚡ Solicitando estadísticas rápidas del sistema...");
-      const resultado = await SystemServices.obtenerEstadisticasRapidas();
+      console.log("⚡ Solicitando métricas del sistema...");
+      const resultado = await SystemServices.obtenerMetricasSistema();
 
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.success ? resultado.data : null,
+        data: resultado.data,
         timestamp: resultado.timestamp
       });
     } catch (error) {
-      console.error("❌ Error en obtenerEstadisticasRapidas controller:", error);
+      console.error("❌ Error en obtenerMetricasSistema controller:", error);
       return FormatterResponseController.respuestaError(res, {
         status: 500,
         title: "Error del Controlador",
-        message: "Error al obtener estadísticas rápidas",
+        message: "Error al obtener métricas del sistema",
         error: error.message,
       });
     }
   }
 
   /**
-   * @name obtenerMetricasRendimiento
-   * @description Obtener métricas de rendimiento del sistema
+   * @name obtenerMetricasAcademicas
+   * @description Obtener métricas académicas
    * @param {Object} req - Objeto de solicitud Express
    * @param {Object} res - Objeto de respuesta Express
    * @returns {void}
    */
-  static async obtenerMetricasRendimiento(req, res) {
+  static async obtenerMetricasAcademicas(req, res) {
     try {
-      console.log("📈 Solicitando métricas de rendimiento del sistema...");
-      const resultado = await SystemServices.obtenerMetricasRendimiento();
+      console.log("📚 Solicitando métricas académicas...");
+      const resultado = await SystemServices.obtenerMetricasAcademicas();
 
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.success ? resultado.data : null,
+        data: resultado.data,
         timestamp: resultado.timestamp
       });
     } catch (error) {
-      console.error("❌ Error en obtenerMetricasRendimiento controller:", error);
+      console.error("❌ Error en obtenerMetricasAcademicas controller:", error);
       return FormatterResponseController.respuestaError(res, {
         status: 500,
         title: "Error del Controlador",
-        message: "Error al obtener métricas de rendimiento",
+        message: "Error al obtener métricas académicas",
         error: error.message,
       });
     }
@@ -346,9 +322,10 @@ export default class SystemController {
       const resultado = await SystemServices.obtenerMapaCalorHorarios();
 
       return FormatterResponseController.respuestaServicio(res, {
-        success: true,
+        success: resultado.success,
         message: resultado.message,
         data: resultado.data,
+        timestamp: resultado.timestamp
       });
     } catch (error) {
       console.error("❌ Error en obtenerMapaCalorHorarios controller:", error);
@@ -376,7 +353,7 @@ export default class SystemController {
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.success ? resultado.data : null,
+        data: resultado.data,
         timestamp: resultado.timestamp
       });
     } catch (error) {
@@ -405,7 +382,7 @@ export default class SystemController {
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.success ? resultado.data : null,
+        data: resultado.data,
         timestamp: resultado.timestamp
       });
     } catch (error) {
@@ -419,54 +396,45 @@ export default class SystemController {
     }
   }
 
+  // ❌ MÉTODOS ELIMINADOS (ya no existen en el servicio):
+  // - obtenerEstadisticasRapidas()
+  // - obtenerMetricasRendimiento() 
+  // - obtenerLogsSistema() (con consulta personalizada)
+
   /**
    * @name obtenerLogsSistema
-   * @description Obtener logs del sistema con filtros opcionales
+   * @description Obtener logs del sistema (versión simplificada)
    * @param {Object} req - Objeto de solicitud Express
    * @param {Object} res - Objeto de respuesta Express
    * @returns {void}
    */
   static async obtenerLogsSistema(req, res) {
     try {
-      const { fechaInicio, fechaFin, tipoEvento, limite = 100 } = req.query;
-
       console.log("📝 Solicitando logs del sistema...");
       
-      let query = 'SELECT * FROM public.vista_logs_relevantes WHERE 1=1';
-      const params = [];
-      let paramCount = 0;
+      // Usar las métricas del sistema que ya incluyen información de logs
+      const resultado = await SystemServices.obtenerMetricasSistema();
 
-      if (fechaInicio) {
-        paramCount++;
-        query += ` AND fecha_creacion >= $${paramCount}`;
-        params.push(fechaInicio);
+      if (!resultado.success) {
+        return FormatterResponseController.respuestaServicio(res, {
+          success: false,
+          message: "No se pudieron obtener los logs del sistema",
+          data: null,
+          timestamp: new Date().toISOString()
+        });
       }
 
-      if (fechaFin) {
-        paramCount++;
-        query += ` AND fecha_creacion <= $${paramCount}`;
-        params.push(fechaFin);
-      }
-
-      if (tipoEvento) {
-        paramCount++;
-        query += ` AND tipo_evento = $${paramCount}`;
-        params.push(tipoEvento);
-      }
-
-      query += ` ORDER BY fecha_creacion DESC LIMIT $${paramCount + 1}`;
-      params.push(parseInt(limite));
-
-      const resultado = await SystemServices.ejecutarConsultaPersonalizada(query, params);
+      // Extraer información de logs de las métricas del sistema
+      const logsInfo = resultado.data?.cambiosSistema || {};
 
       return FormatterResponseController.respuestaServicio(res, {
-        success: resultado.success,
-        message: resultado.message,
-        data: resultado.success ? {
-          logs: resultado.data,
-          total: resultado.data.length,
-          filtros: { fechaInicio, fechaFin, tipoEvento, limite }
-        } : null,
+        success: true,
+        message: "Información de logs obtenida exitosamente",
+        data: {
+          eventos: logsInfo.eventos || [],
+          totalEventos: logsInfo.totalEventos || 0,
+          totalTiposEventos: logsInfo.totalTiposEventos || 0
+        },
         timestamp: new Date().toISOString()
       });
     } catch (error) {

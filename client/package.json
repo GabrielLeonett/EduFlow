@@ -18,6 +18,7 @@
     "@hookform/resolvers": "^5.0.1",
     "@mui/icons-material": "^7.1.1",
     "@mui/material": "^7.1.1",
+    "@mui/x-charts": "^8.18.0",
     "@mui/x-date-pickers": "^8.3.0",
     "@reduxjs/toolkit": "^2.10.1",
     "@tailwindcss/vite": "^4.1.6",

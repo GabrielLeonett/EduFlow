@@ -11,8 +11,8 @@ const {
     descargarRespaldo,
     eliminarRespaldo,
     obtenerReportesEstadisticas,
-    obtenerEstadisticasRapidas,
-    obtenerMetricasRendimiento,
+    obtenerMetricasSistema,
+    obtenerMetricasAcademicas,
     obtenerMapaCalorHorarios,
     obtenerEstadoSistema,
     obtenerInformacionSistema,
@@ -100,19 +100,14 @@ SystemRouter.post(
 /**
  * @name DELETE /system/backups/cleanup
  * @description Eliminar respaldos antiguos del sistema
- * @body {Object} datosLimpieza - Datos para la limpieza
- * @body {number} [datosLimpieza.dias=30] - Número de días a mantener (default: 30)
+ * @query {number} [dias=30] - Número de días a mantener (default: 30)
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
  *   - Vicerrector
  *   - Director General de Gestión Curricular
  * @returns {Object} Resultado de la operación de limpieza
  * @example
- * curl -X DELETE 'system/backups/cleanup' \
- *   -H 'Content-Type: application/json' \
- *   -d '{
- *     "dias": 30
- *   }'
+ * curl -X DELETE 'system/backups/cleanup?dias=30'
  */
 SystemRouter.delete(
     "/system/backups/cleanup",
@@ -173,7 +168,7 @@ SystemRouter.get(
 
 /**
  * =============================================
- * RUTAS DE REPORTES Y ESTADÍSTICAS
+ * RUTAS DE REPORTES Y ESTADÍSTICAS ACTUALIZADAS
  * =============================================
  */
 
@@ -201,20 +196,20 @@ SystemRouter.get(
 );
 
 /**
- * @name GET /system/estadisticas/rapidas
- * @description Obtener estadísticas rápidas del sistema
+ * @name GET /system/metricas/sistema
+ * @description Obtener métricas generales del sistema
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
  *   - Vicerrector
  *   - Director General de Gestión Curricular
  *   - Coordinador
  *   - Profesor
- * @returns {Object} Estadísticas rápidas del sistema
+ * @returns {Object} Métricas generales del sistema
  * @example
- * curl -X GET 'system/estadisticas/rapidas'
+ * curl -X GET 'system/metricas/sistema'
  */
 SystemRouter.get(
-    "/system/estadisticas/rapidas",
+    "/system/metricas/sistema",
     middlewareAuth([
         "SuperAdmin",
         "Vicerrector",
@@ -222,30 +217,32 @@ SystemRouter.get(
         "Coordinador",
         "Profesor",
     ]),
-    obtenerEstadisticasRapidas
+    obtenerMetricasSistema
 );
 
 /**
- * @name GET /system/metricas/rendimiento
- * @description Obtener métricas de rendimiento del sistema
+ * @name GET /system/metricas/academicas
+ * @description Obtener métricas académicas
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
  *   - Vicerrector
  *   - Director General de Gestión Curricular
  *   - Coordinador
- * @returns {Object} Métricas de rendimiento del sistema
+ *   - Profesor
+ * @returns {Object} Métricas académicas del sistema
  * @example
- * curl -X GET 'system/metricas/rendimiento'
+ * curl -X GET 'system/metricas/academicas'
  */
 SystemRouter.get(
-    "/system/metricas/rendimiento",
+    "/system/metricas/academicas",
     middlewareAuth([
         "SuperAdmin",
         "Vicerrector",
         "Director General de Gestión Curricular",
         "Coordinador",
+        "Profesor",
     ]),
-    obtenerMetricasRendimiento
+    obtenerMetricasAcademicas
 );
 
 /**
@@ -321,18 +318,14 @@ SystemRouter.get(
 
 /**
  * @name GET /system/logs
- * @description Obtener logs del sistema con filtros opcionales
- * @query {string} [fechaInicio] - Fecha de inicio para filtrar logs (YYYY-MM-DD)
- * @query {string} [fechaFin] - Fecha de fin para filtrar logs (YYYY-MM-DD)
- * @query {string} [tipoEvento] - Tipo de evento para filtrar
- * @query {number} [limite=100] - Límite de registros a retornar
+ * @description Obtener logs del sistema
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
  *   - Vicerrector
  *   - Director General de Gestión Curricular
- * @returns {Object} Logs del sistema filtrados
+ * @returns {Object} Logs del sistema
  * @example
- * curl -X GET 'system/logs?fechaInicio=2024-01-01&fechaFin=2024-01-31&limite=50'
+ * curl -X GET 'system/logs'
  */
 SystemRouter.get(
     "/system/logs",
@@ -343,8 +336,6 @@ SystemRouter.get(
     ]),
     obtenerLogsSistema
 );
-
-
 
 /**
  * =============================================
@@ -402,7 +393,7 @@ SystemRouter.get(
 
 /**
  * @name GET /api/system/estadisticas
- * @description Obtiene estadísticas en formato API (compatibilidad)
+ * @description Obtiene estadísticas en formato API (compatibilidad) - Redirige a métricas del sistema
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
  *   - Vicerrector
@@ -420,7 +411,7 @@ SystemRouter.get(
         "Director General de Gestión Curricular",
         "Coordinador",
     ]),
-    obtenerEstadisticasRapidas
+    obtenerMetricasSistema
 );
 
 /**
@@ -444,4 +435,27 @@ SystemRouter.get(
         "Coordinador",
     ]),
     obtenerEstadoSistema
+);
+
+/**
+ * @name GET /api/system/metricas
+ * @description Obtiene métricas del sistema en formato API (compatibilidad)
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador
+ * @returns {Object} Métricas del sistema en formato API
+ * @example
+ * curl -X GET 'api/system/metricas'
+ */
+SystemRouter.get(
+    "/api/system/metricas",
+    middlewareAuth([
+        "SuperAdmin",
+        "Vicerrector",
+        "Director General de Gestión Curricular",
+        "Coordinador",
+    ]),
+    obtenerMetricasSistema
 );

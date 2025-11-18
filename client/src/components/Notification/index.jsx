@@ -402,7 +402,7 @@ export default function Notification({ userRoles, userID }) {
             }}
           >
             <Box>
-              <Typography variant="h6" fontWeight="bold">
+              <Typography variant="h6" fontWeight="bold" color="text.primary">
                 Notificaciones
               </Typography>
               <Typography variant="body2" color="text.secondary">

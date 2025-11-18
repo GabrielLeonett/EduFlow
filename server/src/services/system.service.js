@@ -1,440 +1,592 @@
 import { loadEnv } from "../utils/utilis.js";
-import fs from 'fs-extra';
-import { execFile } from 'child_process';
-import path from 'path';
-import SystemModel from '../models/system.model.js';
+import fs from "fs-extra";
+import { execFile } from "child_process";
+import path from "path";
+import FormatterResponseService from "../utils/FormatterResponseService.js";
+import SystemModel from "../models/system.model.js";
 
 loadEnv();
 
 class SystemServices {
-    constructor() {
-        this.system = process.env.SYSTEM_NAME || 'sistema_universitario';
-    }
+  constructor() {
+    this.system = process.env.SYSTEM_NAME || "sistema_universitario";
+  }
 
-    static async crearRespaldo() {
-        console.log("🔧 Creando respaldo del sistema...");
+  /**
+   * @static
+   * @async
+   * @method crearRespaldo
+   * @description Crear respaldo de la base de datos
+   * @returns {Object} Resultado de la operación
+   */
+  static async crearRespaldo() {
+    try {
+      console.log("🔧 Creando respaldo del sistema...");
 
-        try {
-            const backupsDir = path.join(process.cwd(), 'src', 'database', 'backups');
-            await fs.ensureDir(backupsDir);
+      const backupsDir = path.join(process.cwd(), "src", "database", "backups");
+      await fs.ensureDir(backupsDir);
 
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const systemName = process.env.SYSTEM_NAME || 'sistema_universitario';
-            const backupFileName = `${systemName}_backup_${timestamp}.sql`;
-            const backupPath = path.join(backupsDir, backupFileName);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const systemName = process.env.SYSTEM_NAME || "sistema_universitario";
+      const backupFileName = `${systemName}_backup_${timestamp}.sql`;
+      const backupPath = path.join(backupsDir, backupFileName);
 
-            console.log(`📁 Ruta de backup: ${backupPath}`);
+      console.log(`📁 Ruta de backup: ${backupPath}`);
 
-            // ✅ SOLUCIÓN PARA WINDOWS: usar execFile con variables de entorno
-            const args = [
-                '-U', process.env.DB_USER,
-                '-h', process.env.DB_HOST,
-                '-p', process.env.DB_PORT,
-                '-d', process.env.DB_NAME,
-                '-F', 'c',
-                '-b',
-                '-v',
-                '-f', backupPath
-            ];
+      const args = [
+        "-U",
+        process.env.DB_USER,
+        "-h",
+        process.env.DB_HOST,
+        "-p",
+        process.env.DB_PORT,
+        "-d",
+        process.env.DB_NAME,
+        "-F",
+        "c",
+        "-b",
+        "-v",
+        "-f",
+        backupPath,
+      ];
 
-            // Configurar entorno con la contraseña
-            const env = {
-                ...process.env,
-                PGPASSWORD: process.env.DB_PASSWORD
-            };
+      const env = {
+        ...process.env,
+        PGPASSWORD: process.env.DB_PASSWORD,
+      };
 
-            await new Promise((resolve, reject) => {
-                execFile('pg_dump', args, { env }, (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`❌ Error al crear respaldo: ${error.message}`);
-                        reject(error);
-                        return;
-                    }
+      await new Promise((resolve, reject) => {
+        execFile("pg_dump", args, { env }, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`❌ Error al crear respaldo: ${error.message}`);
+            reject(error);
+            return;
+          }
 
-                    if (stderr && !stderr.includes('WARNING')) {
-                        console.log(`⚠️  Advertencias: ${stderr}`);
-                    }
+          if (stderr && !stderr.includes("WARNING")) {
+            console.log(`⚠️  Advertencias: ${stderr}`);
+          }
 
-                    console.log(`✅ Respaldo creado exitosamente: ${backupPath}`);
-                    resolve(stdout);
-                });
-            });
+          console.log(`✅ Respaldo creado exitosamente: ${backupPath}`);
+          resolve(stdout);
+        });
+      });
 
-            const stats = await fs.stat(backupPath);
-            console.log(`📊 Tamaño del backup: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
+      const stats = await fs.stat(backupPath);
+      console.log(
+        `📊 Tamaño del backup: ${(stats.size / 1024 / 1024).toFixed(2)} MB`
+      );
 
-            return {
-                success: true,
-                message: 'Respaldo creado exitosamente',
-                path: backupPath,
-                size: stats.size,
-                timestamp: new Date().toISOString()
-            };
-
-        } catch (error) {
-            console.error("❌ Error al crear respaldo:", error);
-            return {
-                success: false,
-                message: `Error al crear respaldo: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      return FormatterResponseService.success(
+        {
+          path: backupPath,
+          size: stats.size,
+          sizeMB: (stats.size / 1024 / 1024).toFixed(2),
+          timestamp: new Date().toISOString(),
+        },
+        "Respaldo creado exitosamente",
+        {
+          status: 201,
+          title: "Respaldo de Base de Datos",
         }
-    }
-
-    // Método adicional para listar backups existentes
-    static async listarRespaldos() {
-        try {
-            const backupsDir = path.join(process.cwd(), 'src', 'database', 'backups');
-
-            // Verificar si el directorio existe
-            if (!await fs.pathExists(backupsDir)) {
-                return [];
-            }
-
-            const files = await fs.readdir(backupsDir);
-            const backups = [];
-
-            for (const file of files) {
-                if (file.endsWith('.sql')) {
-                    const filePath = path.join(backupsDir, file);
-                    const stats = await fs.stat(filePath);
-
-                    backups.push({
-                        nombre: file,
-                        ruta: filePath,
-                        tamaño: stats.size,
-                        fechaModificacion: stats.mtime,
-                        fechaCreacion: stats.birthtime || stats.ctime
-                    });
-                }
-            }
-
-            // Ordenar por fecha de modificación (más reciente primero)
-            backups.sort((a, b) => new Date(b.fechaModificacion) - new Date(a.fechaModificacion));
-
-            return backups;
-
-        } catch (error) {
-            console.error("Error al listar respaldos:", error);
-            return [];
+      );
+    } catch (error) {
+      console.error("❌ Error en crearRespaldo:", error);
+      return FormatterResponseService.error(
+        `Error al crear respaldo: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Respaldo",
         }
+      );
     }
+  }
 
-    // Método para eliminar backups antiguos
-    static async limpiarRespaldosAntiguos(dias = 30) {
-        try {
-            const backups = await this.listarRespaldos();
-            const fechaLimite = new Date();
-            fechaLimite.setDate(fechaLimite.getDate() - dias);
+  /**
+   * @static
+   * @async
+   * @method listarRespaldos
+   * @description Listar todos los respaldos disponibles
+   * @returns {Object} Resultado de la operación
+   */
+  static async listarRespaldos() {
+    try {
+      console.log("📂 Listando respaldos disponibles...");
 
-            const backupsAEliminar = backups.filter(backup =>
-                new Date(backup.fechaCreacion) < fechaLimite
-            );
+      const backupsDir = path.join(process.cwd(), "src", "database", "backups");
 
-            for (const backup of backupsAEliminar) {
-                await fs.remove(backup.ruta);
-                console.log(`🗑️  Backup eliminado: ${backup.nombre}`);
-            }
+      if (!(await fs.pathExists(backupsDir))) {
+        return FormatterResponseService.success(
+          {
+            backups: [],
+            total: 0,
+          },
+          "No hay respaldos disponibles",
+          {
+            status: 200,
+            title: "Lista de Respaldos",
+          }
+        );
+      }
 
-            return {
-                eliminados: backupsAEliminar.length,
-                total: backups.length
-            };
+      const files = await fs.readdir(backupsDir);
+      const backups = [];
 
-        } catch (error) {
-            console.error("Error al limpiar respaldos antiguos:", error);
-            return { eliminados: 0, total: 0, error: error.message };
+      for (const file of files) {
+        if (file.endsWith(".sql")) {
+          const filePath = path.join(backupsDir, file);
+          const stats = await fs.stat(filePath);
+
+          backups.push({
+            nombre: file,
+            ruta: filePath,
+            tamaño: stats.size,
+            tamañoMB: (stats.size / 1024 / 1024).toFixed(2),
+            fechaModificacion: stats.mtime,
+            fechaCreacion: stats.birthtime || stats.ctime,
+          });
         }
-    }
+      }
 
-    // Método para restaurar desde backup
-    static async restaurarRespaldo(backupFileName) {
-        try {
-            const backupsDir = path.join(process.cwd(), 'src', 'database', 'backups');
-            const backupPath = path.join(backupsDir, backupFileName);
+      backups.sort(
+        (a, b) => new Date(b.fechaModificacion) - new Date(a.fechaModificacion)
+      );
 
-            // Verificar que el archivo existe
-            if (!await fs.pathExists(backupPath)) {
-                throw new Error(`El archivo de backup ${backupFileName} no existe`);
-            }
-
-            console.log(`🔄 Restaurando desde: ${backupPath}`);
-
-            // ✅ SOLUCIÓN PARA WINDOWS: Usar execFile con variables de entorno
-            const args = [
-                '-U', process.env.DB_USER,
-                '-h', process.env.DB_HOST,
-                '-p', process.env.DB_PORT,
-                '-d', process.env.DB_NAME,
-                '-c', // Clean (drop) database objects before recreating
-                '-v', // Verbose
-                backupPath
-            ];
-
-            // Configurar entorno con la contraseña
-            const env = {
-                ...process.env,
-                PGPASSWORD: process.env.DB_PASSWORD
-            };
-
-            await new Promise((resolve, reject) => {
-                execFile('pg_restore', args, { env }, (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`❌ Error al restaurar: ${error.message}`);
-                        console.error(`🔍 Comando: pg_restore ${args.join(' ')}`);
-                        reject(error);
-                        return;
-                    }
-
-                    if (stderr && !stderr.includes('WARNING')) {
-                        console.log(`⚠️  Advertencias durante restauración: ${stderr}`);
-                    }
-
-                    if (stdout) {
-                        console.log(`📋 Salida de pg_restore: ${stdout}`);
-                    }
-
-                    console.log(`✅ Restauración completada exitosamente`);
-                    resolve(stdout);
-                });
-            });
-
-            return {
-                success: true,
-                message: 'Base de datos restaurada exitosamente',
-                backup: backupFileName,
-                timestamp: new Date().toISOString()
-            };
-
-        } catch (error) {
-            console.error("❌ Error al restaurar respaldo:", error);
-            return {
-                success: false,
-                message: `Error al restaurar: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      return FormatterResponseService.success(
+        {
+          backups: backups,
+          total: backups.length,
+        },
+        "Respaldos listados exitosamente",
+        {
+          status: 200,
+          title: "Lista de Respaldos",
         }
-    }
-
-    // Método para eliminar backup específico
-    static async eliminarRespaldo(backupFileName) {
-        try {
-            const backupsDir = path.join(process.cwd(), 'src', 'database', 'backups');
-            const backupPath = path.join(backupsDir, backupFileName);
-
-            // Verificar que el archivo existe
-            if (!await fs.pathExists(backupPath)) {
-                throw new Error(`El archivo de backup ${backupFileName} no existe`);
-            }
-
-            console.log(`🧹 Eliminando respaldo: ${backupPath}`);
-            await fs.remove(backupPath);
-            console.log(`✅ Respaldo eliminado exitosamente`);
-            return {
-                success: true,
-                message: 'Respaldo eliminado exitosamente',
-                backup: backupFileName,
-                timestamp: new Date().toISOString()
-            };
-
-        } catch (error) {
-            console.error("❌ Error al eliminar respaldo:", error);
-            return {
-                success: false,
-                message: `Error al eliminar respaldo: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      );
+    } catch (error) {
+      console.error("❌ Error en listarRespaldos:", error);
+      return FormatterResponseService.error(
+        `Error al listar respaldos: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Listado de Respaldos",
         }
+      );
     }
+  }
 
-    // 📊 MÉTODOS DE REPORTES Y ESTADÍSTICAS
+  /**
+   * @static
+   * @async
+   * @method limpiarRespaldosAntiguos
+   * @description Eliminar respaldos más antiguos que X días
+   * @param {Object} queryParams - Parámetros de consulta (dias)
+   * @returns {Object} Resultado de la operación
+   */
+  static async limpiarRespaldosAntiguos(queryParams = {}) {
+    try {
+      console.log("🧹 Limpiando respaldos antiguos...");
 
-    /**
-     * @name obtenerReportesEstadisticas
-     * @description Obtiene reportes estadísticos completos del sistema
-     * @returns {Object} Reportes estadísticos
-     */
-    static async obtenerReportesEstadisticas() {
-        try {
-            console.log("📊 Generando reportes estadísticos del sistema...");
-            const resultado = await SystemModel.reportesEstadisticas();
+      const dias = parseInt(queryParams.dias) || 30;
+      
+      const respuestaRespaldos = await this.listarRespaldos();
+      
+      if (FormatterResponseService.isError(respuestaRespaldos)) {
+        return respuestaRespaldos;
+      }
 
-            if (resultado.success) {
-                console.log("✅ Reportes estadísticos generados exitosamente");
-                return resultado;
-            } else {
-                throw new Error(resultado.message || "Error al generar reportes estadísticos");
-            }
-        } catch (error) {
-            console.error("❌ Error en obtenerReportesEstadisticas:", error);
-            return {
-                success: false,
-                message: `Error al obtener reportes estadísticos: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      const backups = respuestaRespaldos.data.backups;
+      const fechaLimite = new Date();
+      fechaLimite.setDate(fechaLimite.getDate() - dias);
+
+      const backupsAEliminar = backups.filter(
+        (backup) => new Date(backup.fechaCreacion) < fechaLimite
+      );
+
+      for (const backup of backupsAEliminar) {
+        await fs.remove(backup.ruta);
+        console.log(`🗑️  Backup eliminado: ${backup.nombre}`);
+      }
+
+      return FormatterResponseService.success(
+        {
+          eliminados: backupsAEliminar.length,
+          total: backups.length,
+          dias: dias,
+          fechaLimite: fechaLimite.toISOString(),
+        },
+        `Respaldos antiguos limpiados exitosamente (${backupsAEliminar.length} eliminados)`,
+        {
+          status: 200,
+          title: "Limpieza de Respaldos",
         }
-    }
-
-    /**
-     * @name obtenerEstadisticasRapidas
-     * @description Obtiene estadísticas rápidas del sistema
-     * @returns {Object} Estadísticas rápidas
-     */
-    static async obtenerEstadisticasRapidas() {
-        try {
-            console.log("⚡ Obteniendo estadísticas rápidas del sistema...");
-            const resultado = await SystemModel.obtenerEstadisticasRapidas();
-
-            if (resultado.success) {
-                console.log("✅ Estadísticas rápidas obtenidas exitosamente");
-                return resultado;
-            } else {
-                throw new Error(resultado.message || "Error al obtener estadísticas rápidas");
-            }
-        } catch (error) {
-            console.error("❌ Error en obtenerEstadisticasRapidas:", error);
-            return {
-                success: false,
-                message: `Error al obtener estadísticas rápidas: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      );
+    } catch (error) {
+      console.error("❌ Error en limpiarRespaldosAntiguos:", error);
+      return FormatterResponseService.error(
+        `Error al limpiar respaldos antiguos: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Limpieza de Respaldos",
         }
+      );
     }
+  }
 
-    /**
-     * @name obtenerMetricasRendimiento
-     * @description Obtiene métricas de rendimiento del sistema
-     * @returns {Object} Métricas de rendimiento
-     */
-    static async obtenerMetricasRendimiento() {
-        try {
-            console.log("📈 Obteniendo métricas de rendimiento del sistema...");
-            const resultado = await SystemModel.obtenerMetricasRendimiento();
+  /**
+   * @static
+   * @async
+   * @method restaurarRespaldo
+   * @description Restaurar base de datos desde un respaldo
+   * @param {string} backupFileName - Nombre del archivo de respaldo
+   * @returns {Object} Resultado de la operación
+   */
+  static async restaurarRespaldo(backupFileName) {
+    try {
+      console.log(`🔄 Restaurando desde: ${backupFileName}`);
 
-            if (resultado.success) {
-                console.log("✅ Métricas de rendimiento obtenidas exitosamente");
-                return resultado;
-            } else {
-                throw new Error(resultado.message || "Error al obtener métricas de rendimiento");
-            }
-        } catch (error) {
-            console.error("❌ Error en obtenerMetricasRendimiento:", error);
-            return {
-                success: false,
-                message: `Error al obtener métricas de rendimiento: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      const backupsDir = path.join(process.cwd(), "src", "database", "backups");
+      const backupPath = path.join(backupsDir, backupFileName);
+
+      if (!(await fs.pathExists(backupPath))) {
+        return FormatterResponseService.validationError(
+          [`El archivo de backup ${backupFileName} no existe`],
+          "Archivo de respaldo no encontrado",
+          {
+            status: 404,
+            title: "Respaldo No Encontrado",
+          }
+        );
+      }
+
+      const args = [
+        "-U",
+        process.env.DB_USER,
+        "-h",
+        process.env.DB_HOST,
+        "-p",
+        process.env.DB_PORT,
+        "-d",
+        process.env.DB_NAME,
+        "-c",
+        "-v",
+        backupPath,
+      ];
+
+      const env = {
+        ...process.env,
+        PGPASSWORD: process.env.DB_PASSWORD,
+      };
+
+      await new Promise((resolve, reject) => {
+        execFile("pg_restore", args, { env }, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`❌ Error al restaurar: ${error.message}`);
+            reject(error);
+            return;
+          }
+
+          if (stderr && !stderr.includes("WARNING")) {
+            console.log(`⚠️  Advertencias durante restauración: ${stderr}`);
+          }
+
+          console.log(`✅ Restauración completada exitosamente`);
+          resolve(stdout);
+        });
+      });
+
+      return FormatterResponseService.success(
+        {
+          backup: backupFileName,
+          timestamp: new Date().toISOString(),
+        },
+        "Base de datos restaurada exitosamente",
+        {
+          status: 200,
+          title: "Restauración Completada",
         }
-    }
-
-    /**
-     * @name obtenerMapaCalorHorarios
-     * @description Obtiene el mapa de calor de ocupación de horarios
-     * @returns {Object} Datos del mapa de calor
-     */
-    static async obtenerMapaCalorHorarios() {
-        try {
-            console.log("🔥 Generando mapa de calor de horarios...");
-
-            // Usar la vista del mapa de calor si existe, o calcular en tiempo real
-            const query = `
-                SELECT * FROM vista_mapa_calor_academico 
-                ORDER BY 
-                    CASE dia
-                        WHEN 'Lunes' THEN 1
-                        WHEN 'Martes' THEN 2
-                        WHEN 'Miercoles' THEN 3
-                        WHEN 'Jueves' THEN 4
-                        WHEN 'Viernes' THEN 5
-                        WHEN 'Sabado' THEN 6
-                    END,
-                    bloque
-            `;
-
-            const resultado = await SystemModel.reportesEstadisticas();
-            return {
-                message: 'Mapa de calor generado exitosamente',
-                data: resultado,
-            };
-        } catch (error) {
-            console.error("❌ Error en obtenerMapaCalorHorarios:", error);
-            return {
-                success: false,
-                message: `Error al obtener mapa de calor: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      );
+    } catch (error) {
+      console.error("❌ Error en restaurarRespaldo:", error);
+      return FormatterResponseService.error(
+        `Error al restaurar respaldo: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Restauración",
         }
+      );
     }
+  }
 
-    /**
-     * @name obtenerEstadoSistema
-     * @description Obtiene el estado general del sistema
-     * @returns {Object} Estado del sistema
-     */
-    static async obtenerEstadoSistema() {
-        try {
-            console.log("🔄 Obteniendo estado del sistema...");
+  /**
+   * @static
+   * @async
+   * @method eliminarRespaldo
+   * @description Eliminar un respaldo específico
+   * @param {string} backupFileName - Nombre del archivo de respaldo
+   * @returns {Object} Resultado de la operación
+   */
+  static async eliminarRespaldo(backupFileName) {
+    try {
+      console.log(`🧹 Eliminando respaldo: ${backupFileName}`);
 
-            // Combinar estadísticas rápidas y métricas de rendimiento
-            const [estadisticasRapidas, metricasRendimiento] = await Promise.all([
-                this.obtenerEstadisticasRapidas(),
-                this.obtenerMetricasRendimiento()
-            ]);
+      const backupsDir = path.join(process.cwd(), "src", "database", "backups");
+      const backupPath = path.join(backupsDir, backupFileName);
 
-            if (estadisticasRapidas.success && metricasRendimiento.success) {
-                const estadoSistema = {
-                    estadisticas: estadisticasRapidas.data,
-                    metricas: metricasRendimiento.data,
-                    backups: await this.listarRespaldos(),
-                    sistema: {
-                        nombre: process.env.SYSTEM_NAME || 'sistema_universitario',
-                        baseDatos: process.env.DB_NAME,
-                        entorno: process.env.NODE_ENV || 'development',
-                        timestamp: new Date().toISOString()
-                    }
-                };
+      if (!(await fs.pathExists(backupPath))) {
+        return FormatterResponseService.validationError(
+          [`El archivo de backup ${backupFileName} no existe`],
+          "Archivo de respaldo no encontrado",
+          {
+            status: 404,
+            title: "Respaldo No Encontrado",
+          }
+        );
+      }
 
-                console.log("✅ Estado del sistema obtenido exitosamente");
-                return {
-                    success: true,
-                    message: 'Estado del sistema obtenido exitosamente',
-                    data: estadoSistema,
-                    timestamp: new Date().toISOString()
-                };
-            } else {
-                throw new Error("Error al obtener componentes del estado del sistema");
-            }
-        } catch (error) {
-            console.error("❌ Error en obtenerEstadoSistema:", error);
-            return {
-                success: false,
-                message: `Error al obtener estado del sistema: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      await fs.remove(backupPath);
+      console.log(`✅ Respaldo eliminado exitosamente`);
+
+      return FormatterResponseService.success(
+        {
+          backup: backupFileName,
+          timestamp: new Date().toISOString(),
+        },
+        "Respaldo eliminado exitosamente",
+        {
+          status: 200,
+          title: "Respaldo Eliminado",
         }
-    }
-
-    /**
-     * @name ejecutarConsultaPersonalizada
-     * @description Ejecuta una consulta SQL personalizada (para uso interno)
-     * @param {string} query - Consulta SQL a ejecutar
-     * @returns {Object} Resultado de la consulta
-     */
-    static async ejecutarConsultaPersonalizada(query) {
-        try {
-            console.log("🔍 Ejecutando consulta personalizada...");
-            const resultado = await SystemModel.ejecutarConsultaPersonalizada(query);
-
-            return resultado;
-        } catch (error) {
-            console.error("❌ Error en ejecutarConsultaPersonalizada:", error);
-            return {
-                success: false,
-                message: `Error al ejecutar consulta personalizada: ${error.message}`,
-                timestamp: new Date().toISOString()
-            };
+      );
+    } catch (error) {
+      console.error("❌ Error en eliminarRespaldo:", error);
+      return FormatterResponseService.error(
+        `Error al eliminar respaldo: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Eliminación",
         }
+      );
     }
+  }
+
+  // 📊 MÉTODOS DE REPORTES Y ESTADÍSTICAS
+
+  /**
+   * @static
+   * @async
+   * @method obtenerReportesEstadisticas
+   * @description Obtener reportes estadísticos completos del sistema
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerReportesEstadisticas() {
+    try {
+      console.log("📊 Generando reportes estadísticos del sistema...");
+      
+      const respuestaModel = await SystemModel.reportesEstadisticas();
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // Extraer datos del modelo (que ahora viene envuelto en FormatterResponseModel)
+      const datosModelo = respuestaModel.data?.[0] || respuestaModel;
+
+      return FormatterResponseService.success(
+        datosModelo,
+        "Reportes estadísticos generados exitosamente",
+        {
+          status: 200,
+          title: "Reportes Estadísticos",
+        }
+      );
+    } catch (error) {
+      console.error("❌ Error en obtenerReportesEstadisticas:", error);
+      return FormatterResponseService.error(
+        `Error al obtener reportes estadísticos: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Reportes",
+        }
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerMetricasSistema
+   * @description Obtener métricas generales del sistema
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerMetricasSistema() {
+    try {
+      console.log("⚡ Obteniendo métricas del sistema...");
+      
+      const respuestaModel = await SystemModel.obtenerMetricasSistema();
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // Extraer datos del modelo
+      const datosModelo = respuestaModel.data?.[0] || respuestaModel;
+
+      return FormatterResponseService.success(
+        datosModelo,
+        "Métricas del sistema obtenidas exitosamente",
+        {
+          status: 200,
+          title: "Métricas del Sistema",
+        }
+      );
+    } catch (error) {
+      console.error("❌ Error en obtenerMetricasSistema:", error);
+      return FormatterResponseService.error(
+        `Error al obtener métricas del sistema: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Métricas",
+        }
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerMetricasAcademicas
+   * @description Obtener métricas académicas
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerMetricasAcademicas() {
+    try {
+      console.log("📚 Obteniendo métricas académicas...");
+      
+      const respuestaModel = await SystemModel.obtenerMetricasAcademicas();
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // Extraer datos del modelo
+      const datosModelo = respuestaModel.data?.[0] || respuestaModel;
+
+      return FormatterResponseService.success(
+        datosModelo,
+        "Métricas académicas obtenidas exitosamente",
+        {
+          status: 200,
+          title: "Métricas Académicas",
+        }
+      );
+    } catch (error) {
+      console.error("❌ Error en obtenerMetricasAcademicas:", error);
+      return FormatterResponseService.error(
+        `Error al obtener métricas académicas: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Métricas Académicas",
+        }
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerMapaCalorHorarios
+   * @description Obtener mapa de calor de ocupación de horarios
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerMapaCalorHorarios() {
+    try {
+      console.log("🔥 Generando mapa de calor de horarios...");
+      
+      const respuestaModel = await SystemModel.obtenerMapaCalorOcupacion();
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // Extraer datos del modelo
+      const datosModelo = respuestaModel.data?.[0] || respuestaModel;
+
+      return FormatterResponseService.success(
+        datosModelo,
+        "Mapa de calor generado exitosamente",
+        {
+          status: 200,
+          title: "Mapa de Calor",
+        }
+      );
+    } catch (error) {
+      console.error("❌ Error en obtenerMapaCalorHorarios:", error);
+      return FormatterResponseService.error(
+        `Error al obtener mapa de calor: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Mapa de Calor",
+        }
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerEstadoSistema
+   * @description Obtener estado general del sistema
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerEstadoSistema() {
+    try {
+      console.log("🔄 Obteniendo estado del sistema...");
+
+      const [metricasSistema, respaldos] = await Promise.all([
+        this.obtenerMetricasSistema(),
+        this.listarRespaldos(),
+      ]);
+
+      if (FormatterResponseService.isError(metricasSistema)) {
+        return metricasSistema;
+      }
+
+      if (FormatterResponseService.isError(respaldos)) {
+        return respaldos;
+      }
+
+      // Extraer datos de métricas del sistema
+      const datosMetricas = metricasSistema.data || {};
+
+      return FormatterResponseService.success(
+        {
+          sistema: {
+            nombre: process.env.SYSTEM_NAME || "sistema_universitario",
+            baseDatos: process.env.DB_NAME,
+            entorno: process.env.NODE_ENV || "development",
+            timestamp: new Date().toISOString(),
+          },
+          metricas: datosMetricas,
+          respaldos: respaldos.data,
+        },
+        "Estado del sistema obtenido exitosamente",
+        {
+          status: 200,
+          title: "Estado del Sistema",
+        }
+      );
+    } catch (error) {
+      console.error("❌ Error en obtenerEstadoSistema:", error);
+      return FormatterResponseService.error(
+        `Error al obtener estado del sistema: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Estado del Sistema",
+        }
+      );
+    }
+  }
 }
 
 export default SystemServices;
