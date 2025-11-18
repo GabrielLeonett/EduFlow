@@ -553,20 +553,20 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
           for (const id_horario of horariosEliminados) {
             try {
               const respuesta = await axios.delete(`/horarios/${id_horario}`);
-              if (respuesta.data && respuesta.data.success) {
+              if (respuesta.data && respuesta.success) {
                 resultados.push({
                   tipo: "eliminacion",
                   success: true,
                   data: respuesta.data,
                 });
-                alert.success(respuesta.data.title, respuesta.data.message);
+                alert.success(respuesta.title, respuesta.message);
               } else {
                 resultados.push({
                   tipo: "eliminacion",
                   success: false,
                   error: respuesta.data,
                 });
-                alert.error(respuesta.data.title, respuesta.data.message);
+                alert.error(respuesta.title, respuesta.message);
               }
             } catch (error) {
               resultados.push({
@@ -618,25 +618,25 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     // Manejar conflictos - CORREGIDO AQUÍ
                     if (
                       respuesta.data &&
-                      respuesta.data.data &&
-                      respuesta.data.data.conflictos
+                      respuesta.data &&
+                      respuesta.data.conflictos
                     ) {
                       console.log(
                         "🔄 Conflictos detectados:",
-                        respuesta.data.data.conflictos
+                        respuesta.data.conflictos
                       );
-                      datos_clase.conflictos = respuesta.data.data.conflictos;
+                      datos_clase.conflictos = respuesta.data.conflictos;
                       hayConflictos = true;
                       resultados.push({
                         tipo: "actualizacion",
                         success: false,
-                        conflictos: respuesta.data.data.conflictos,
+                        conflictos: respuesta.data.conflictos,
                       });
 
                       // Mostrar alerta específica de conflictos
                       alert.warning(
                         "Conflictos detectados",
-                        `Se encontraron ${respuesta.data.data.conflictos.length} conflictos al mover la clase`
+                        `Se encontraron ${respuesta.data.conflictos.length} conflictos al mover la clase`
                       );
                     } else {
                       resultados.push({
@@ -644,7 +644,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                         success: false,
                         error: respuesta.data,
                       });
-                      alert.error(respuesta.data.title, respuesta.data.message);
+                      alert.error(respuesta.title, respuesta.message);
                     }
                   }
                 } else if (datos_clase.nueva_clase) {
@@ -666,14 +666,14 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
 
                   console.log(respuesta);
 
-                  if (respuesta.data && respuesta.data.success) {
+                  if (respuesta.data && respuesta.success) {
                     // Limpiar flags y actualizar con ID del servidor
                     datos_clase.nueva_clase = false;
                     datos_clase.clase_move = false;
 
-                    if (respuesta.data.data && respuesta.data.data.id) {
-                      datos_clase.id = respuesta.data.data.id;
-                      datos_clase.id_horario = respuesta.data.data.id;
+                    if (respuesta.data && respuesta.data.id) {
+                      datos_clase.id = respuesta.data.id;
+                      datos_clase.id_horario = respuesta.data.id;
                     }
 
                     resultados.push({
@@ -681,14 +681,14 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                       success: true,
                       data: respuesta.data,
                     });
-                    alert.success(respuesta.data.title, respuesta.data.message);
+                    alert.success(respuesta.title, respuesta.message);
                   } else {
                     resultados.push({
                       tipo: "creacion",
                       success: false,
                       error: respuesta.data,
                     });
-                    alert.error(respuesta.data.title, respuesta.data.message);
+                    alert.error(respuesta.title, respuesta.message);
                   }
                 }
               } catch (error) {
