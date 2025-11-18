@@ -1,6 +1,7 @@
 import ValidationService from "./validation.service.js";
 import EmailService from "./email.service.js";
 import UserModel from "../models/user.model.js";
+import SocketServices from "./socket.service.js";
 import {
   comparePassword,
   generarPassword,
@@ -666,6 +667,154 @@ export default class UserService {
     } catch (error) {
       console.error("💥 Error en servicio cerrar sesión:", error);
       // Re-lanza el error para que el controlador lo maneje
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method desactivarUsuario
+   * @description Desactivar un usuario del sistema
+   * @param {number} usuario_accion - ID del usuario que realiza la acción
+   * @param {number} id_usuario - ID del usuario a desactivar
+   * @returns {Object} Resultado de la operación
+   */
+  static async desactivarUsuario(usuario_accion, id_usuario) {
+    try {
+      console.log("🔍 [desactivarUsuario] Desactivando usuario...");
+
+      // Validar ID del usuario que realiza la acción
+      const validateIdUser = ValidationService.validateId(
+        usuario_accion,
+        "id usuario accion"
+      );
+
+      if (!validateIdUser.isValid) {
+        console.error("❌ Validación de ID fallida:", validateIdUser.errors);
+        return FormatterResponseService.validationError(
+          validateIdUser.errors,
+          "ID de usuario accion inválido"
+        );
+      }
+
+      // Validar ID del usuario a desactivar
+      const validateId = ValidationService.validateId(
+        id_usuario,
+        "id usuario a desactivar"
+      );
+
+      if (!validateId.isValid) {
+        console.error("❌ Validación de ID fallida:", validateId.errors);
+        return FormatterResponseService.validationError(
+          validateId.errors,
+          "ID de usuario a desactivar inválido"
+        );
+      }
+
+      // Verificar que no sea auto-desactivación
+      if (usuario_accion === id_usuario) {
+        console.error("❌ Intento de auto-desactivación");
+        return FormatterResponseService.error(
+          "No puedes desactivar tu propio usuario",
+          400,
+          "Auto-desactivación no permitida"
+        );
+      }
+
+      // Llamar al modelo para desactivar el usuario
+      const resultado = await UserModel.desactivarUsuario(
+        usuario_accion,
+        id_usuario
+      );
+
+      // ✅ CORREGIDO: Emitir evento de cierre de sesión
+      console.log(`📡 Emitiendo close_sesion para usuario: ${id_usuario}`);
+
+      const socket = new SocketServices("websocket");
+      const io = socket.initializeService();
+
+      io.to(`user_${id_usuario}`).emit("close_sesion", {
+        userId: id_usuario,
+        actionBy: usuario_accion,
+        timestamp: new Date().toISOString(),
+        reason: "usuario_desactivado",
+        message: "Tu cuenta ha sido desactivada por un administrador",
+      });
+
+      console.log(`✅ Usuario ${id_usuario} desactivado y notificado`);
+
+      return FormatterResponseService.success(
+        resultado,
+        "Usuario desactivado exitosamente",
+        {
+          status: 200,
+          title: "Usuario Desactivado",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio desactivar usuario:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method activarUsuario
+   * @description Activar un usuario previamente desactivado
+   * @param {number} usuario_accion - ID del usuario que realiza la acción
+   * @param {number} id_usuario - ID del usuario a activar
+   * @returns {Object} Resultado de la operación
+   */
+  static async activarUsuario(usuario_accion, id_usuario) {
+    try {
+      console.log("🔍 [activarUsuario] Activando usuario...");
+
+      // Validar ID del usuario que realiza la acción
+      const validateIdUser = ValidationService.validateId(
+        usuario_accion,
+        "id usuario accion"
+      );
+
+      if (!validateIdUser.isValid) {
+        console.error("❌ Validación de ID fallida:", validateIdUser.errors);
+        return FormatterResponseService.validationError(
+          validateIdUser.errors,
+          "ID de usuario accion inválido"
+        );
+      }
+
+      // Validar ID del usuario a activar
+      const validateId = ValidationService.validateId(
+        id_usuario,
+        "id usuario a activar"
+      );
+
+      if (!validateId.isValid) {
+        console.error("❌ Validación de ID fallida:", validateId.errors);
+        return FormatterResponseService.validationError(
+          validateId.errors,
+          "ID de usuario a activar inválido"
+        );
+      }
+
+      // Llamar al modelo para activar el usuario
+      const resultado = await UserModel.activarUsuario(
+        usuario_accion,
+        id_usuario
+      );
+
+      return FormatterResponseService.success(
+        resultado,
+        "Usuario activado exitosamente",
+        {
+          status: 200,
+          title: "Usuario Activado",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio activar usuario:", error);
       throw error;
     }
   }

@@ -57,7 +57,7 @@ class WebSocketSingleton {
           reconnectionDelay: 1000,
         });
 
-        // --- Event Handlers ---
+        // En tu hook useWebSocket - AGREGAR esto en el evento connect
         newSocket.once("connect", () => {
           this.socket = newSocket;
           this.currentUser = userID;
@@ -65,12 +65,22 @@ class WebSocketSingleton {
           this.connectingUser = null;
           this.componentSubscribers.add("main");
 
-          // Unirse a salas
+          // ✅ UNIRSE A SALAS DE ROLES
           if (userRoles?.length > 0) {
             userRoles.forEach((role) => {
               newSocket.emit("join_role_room", role);
             });
           }
+
+          // ✅ NUEVO: UNIRSE A SALA PERSONAL (IMPORTANTE)
+          newSocket.emit("join_user_room", {
+            userId: userID,
+            roles: userRoles,
+          });
+
+          console.log(
+            `🎯 Usuario ${userID} unido a sala personal: user_${userID}`
+          );
 
           resolve(newSocket);
         });

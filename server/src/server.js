@@ -56,7 +56,7 @@ app.use("", coordinadorRouter);
 app.use("", NotificationRouter);
 app.use("", SystemRouter);
 
-// ✅ MOVER la inicialización de sockets a una función
+// ✅ VERSIÓN CORREGIDA - Socket Services con autenticación
 export function initializeSocketServices() {
   console.log("🔧 Inicializando servicios de Socket...");
 
@@ -68,39 +68,116 @@ export function initializeSocketServices() {
   let monitoringInterval = null;
   let superAdminCount = 0;
 
+  // ✅ MIDDLEWARE DE AUTENTICACIÓN (ESENCIAL)
+  io.use(async (socket, next) => {
+    try {
+      console.log("🔐 Intentando autenticar socket...", socket.handshake.auth);
+
+      const { user_id, roles } = socket.handshake.auth;
+
+      if (!user_id) {
+        console.log("❌ Conexión rechazada: Sin user_id");
+        return next(new Error("Authentication error: No user_id"));
+      }
+
+      // ✅ ASIGNAR USUARIO AL SOCKET (CRÍTICO)
+      socket.user = {
+        id: user_id,
+        roles: roles || [],
+      };
+
+      console.log(
+        `✅ Usuario autenticado: ${socket.user.id}`,
+        socket.user.roles
+      );
+      next();
+    } catch (error) {
+      console.error("❌ Error en autenticación:", error);
+      next(new Error("Authentication error"));
+    }
+  });
+
   io.on("connection", (socket) => {
-    console.log("Nuevo cliente conectado:", socket.user.id);
+    console.log(
+      "🟢 Nuevo cliente conectado:",
+      socket.user.id,
+      "Socket:",
+      socket.id
+    );
 
-    if (socket.user && socket.user.roles.includes("SuperAdmin")) {
+    // ✅ UNIRSE AUTOMÁTICAMENTE A SALA PERSONAL (IMPORTANTE)
+    const userRoom = `user_${socket.user.id}`;
+    socket.join(userRoom);
+    console.log(
+      `🎯 Usuario ${socket.user.id} unido a sala personal: ${userRoom}`
+    );
+
+    // ✅ UNIRSE A SALAS DE ROLES
+    if (socket.user.roles && socket.user.roles.length > 0) {
+      socket.user.roles.forEach((role) => {
+        const roleRoom = `role_${role}`;
+        socket.join(roleRoom);
+        console.log(
+          `👥 Usuario ${socket.user.id} unido a sala de rol: ${roleRoom}`
+        );
+      });
+    }
+
+    // ✅ MANEJAR SUPERADMIN
+    if (socket.user.roles.includes("SuperAdmin")) {
       superAdminCount++;
-      console.log(`SuperAdmin conectado. Total: ${superAdminCount}`);
+      console.log(`👑 SuperAdmin conectado. Total: ${superAdminCount}`);
 
-      // 🔥 Iniciar monitoreo SOLO si es el primer SuperAdmin
       if (superAdminCount === 1 && !monitoringInterval) {
         console.log("🚀 Iniciando monitoreo del sistema...");
         monitoringInterval = SystemMonitor.iniciarMonitoreoTiempoReal(5000);
       }
 
-      // Unir al socket a la sala de SuperAdmin
       socket.join("role_SuperAdmin");
     }
 
+    // ✅ EVENTO PARA CONFIRMAR UNIÓN A SALAS (del frontend)
+    socket.on("join_user_room", (data) => {
+      console.log(
+        `🎯 Usuario ${socket.user.id} confirmando unión a salas:`,
+        data
+      );
+      // Ya está unido automáticamente, pero podemos verificar/re-unir
+      socket.join(`user_${socket.user.id}`);
+    });
+
+    // ✅ EVENTO PARA UNIRSE A SALAS DE ROL ADICIONALES
+    socket.on("join_role_room", (role) => {
+      const roleRoom = `role_${role}`;
+      socket.join(roleRoom);
+      console.log(
+        `👥 Usuario ${socket.user.id} unido a sala adicional: ${roleRoom}`
+      );
+    });
+
+    // ✅ EVENTO PARA NOTIFICACIONES
     socket.on("mark_notification_read", (noti) => {
-      console.log("Evento recibido: mark_notification_read", noti);
+      console.log("📖 Evento recibido: mark_notification_read", noti);
       console.log(
         `Marcando notificación ${noti.notificationId} como leída por usuario ${socket.user.id}`
       );
       notificationService.markAsRead(noti.notificationId, socket.user.id);
     });
 
+    // ✅ DEBUG: Evento para verificar salas
+    socket.on("debug_rooms", () => {
+      const rooms = Array.from(socket.rooms);
+      console.log(`🔍 Usuario ${socket.user.id} está en salas:`, rooms);
+    });
+
+    // ✅ MANEJAR DESCONEXIÓN
     socket.on("disconnect", (reason) => {
-      console.log("Cliente desconectado:", socket.id, "Razón:", reason);
+      console.log("🔌 Cliente desconectado:", socket.user.id, "Razón:", reason);
 
-      if (socket.user && socket.user.roles.includes("SuperAdmin")) {
+      if (socket.user.roles.includes("SuperAdmin")) {
         superAdminCount--;
-        console.log(`SuperAdmin desconectado. Total: ${superAdminCount}`);
+        console.log(`👑 SuperAdmin desconectado. Total: ${superAdminCount}`);
 
-        // 🔥 Detener monitoreo si no hay más SuperAdmins conectados
         if (superAdminCount === 0 && monitoringInterval) {
           console.log("⏹️ Deteniendo monitoreo del sistema...");
           clearInterval(monitoringInterval);
@@ -108,8 +185,14 @@ export function initializeSocketServices() {
         }
       }
     });
+
+    // ✅ MANEJAR ERRORES
+    socket.on("error", (error) => {
+      console.error("💥 Error en socket:", socket.user.id, error);
+    });
   });
 
+  console.log("✅ Servicios de Socket inicializados correctamente");
   return { io, servicioSocket };
 }
 
@@ -121,11 +204,14 @@ export function startServer(port = process.env.SERVER_PORT) {
 
   setTimeout(() => {
     console.log("🔧 Creando respaldo del sistema...");
-    system.crearRespaldo().then((res) => {
-      console.log("🔧 Respaldo creado:", res);
-    }).catch((err) => {
-      console.error("❌ Error creando respaldo:", err);
-    });
+    system
+      .crearRespaldo()
+      .then((res) => {
+        console.log("🔧 Respaldo creado:", res);
+      })
+      .catch((err) => {
+        console.error("❌ Error creando respaldo:", err);
+      });
   }, 86400000); //24 horas en milisegundos
 
   // Inicializar sockets
