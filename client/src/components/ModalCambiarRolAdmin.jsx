@@ -30,31 +30,15 @@ export default function ModalEditarRolesAdmin({
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
-  // Opciones de roles con iconos
+  // ✅ SOLO roles administrativos (excluyendo Profesor y Coordinador)
   const opcionesRoles = [
-    {
-      id_rol: 1,
-      nombre_rol: "Profesor",
-      icon: <School sx={{ fontSize: 40 }} />,
-      descripcion: "Gestiona planes de estudio",
-      removible: false, // ❌ NO se puede quitar
-      siempreActivo: true, // ✅ Siempre está presente
-    },
-    {
-      id_rol: 2,
-      nombre_rol: "Coordinador",
-      icon: <School sx={{ fontSize: 40 }} />,
-      descripcion: "Gestiona planes de estudio",
-      removible: false, // ❌ NO se puede quitar
-      siempreActivo: true, // ✅ Siempre está presente
-    },
     {
       id_rol: 7,
       nombre_rol: "Director/a de gestión Curricular",
       icon: <School sx={{ fontSize: 40 }} />,
       descripcion: "Gestiona planes de estudio",
       removible: true,
-      tipo: "admin", // Roles administrativos mutuamente excluyentes
+      tipo: "admin",
     },
     {
       id_rol: 8,
@@ -62,7 +46,7 @@ export default function ModalEditarRolesAdmin({
       icon: <Groups sx={{ fontSize: 40 }} />,
       descripcion: "Administra cuerpo docente",
       removible: true,
-      tipo: "admin", // Roles administrativos mutuamente excluyentes
+      tipo: "admin",
     },
     {
       id_rol: 9,
@@ -70,34 +54,20 @@ export default function ModalEditarRolesAdmin({
       icon: <AssignmentInd sx={{ fontSize: 40 }} />,
       descripcion: "Apoyo administrativo",
       removible: true,
-      tipo: "admin", // Roles administrativos mutuamente excluyentes
+      tipo: "admin",
     },
   ];
 
   // Inicializar roles cuando el usuario cambia
   useEffect(() => {
     if (usuario && usuario.roles) {
-      setRolesActuales([...usuario.roles]);
-
-      // Asegurar que Profesor y Coordinador siempre estén presentes
-      const rolesBase = usuario.roles.filter(rol =>
-        rol.id_rol === 1 || rol.id_rol === 2
+      // ✅ Filtrar solo roles administrativos (excluir Profesor=1 y Coordinador=2)
+      const rolesAdminActuales = usuario.roles.filter(
+        (rol) => rol.id_rol !== 1 && rol.id_rol !== 2
       );
-
-      // Si no tiene Profesor o Coordinador, agregarlos
-      const tieneProfesor = usuario.roles.some(rol => rol.id_rol === 1);
-      const tieneCoordinador = usuario.roles.some(rol => rol.id_rol === 2);
-
-      const rolesIniciales = [...usuario.roles];
-
-      if (!tieneProfesor) {
-        rolesIniciales.push(opcionesRoles.find(rol => rol.id_rol === 1));
-      }
-      if (!tieneCoordinador) {
-        rolesIniciales.push(opcionesRoles.find(rol => rol.id_rol === 2));
-      }
-
-      setRolesSeleccionados(rolesIniciales);
+      
+      setRolesActuales([...rolesAdminActuales]);
+      setRolesSeleccionados([...rolesAdminActuales]);
     }
   }, [usuario]);
 
@@ -105,110 +75,91 @@ export default function ModalEditarRolesAdmin({
     setError("");
 
     // Verificar si el rol ya está seleccionado
-    const yaSeleccionado = rolesSeleccionados.some(r => r.id_rol === rol.id_rol);
+    const yaSeleccionado = rolesSeleccionados.some(
+      (r) => r.id_rol === rol.id_rol
+    );
 
     if (yaSeleccionado) {
-      // Solo permitir remover si el rol es removible y no es siempre activo
-      if (rol.removible && !rol.siempreActivo) {
-        setRolesSeleccionados(prev =>
-          prev.filter(r => r.id_rol !== rol.id_rol)
-        );
-      }
+      // Permitir remover cualquier rol administrativo
+      setRolesSeleccionados((prev) =>
+        prev.filter((r) => r.id_rol !== rol.id_rol)
+      );
     } else {
-      // Para roles administrativos (tipo "admin"), reemplazar el admin actual
-      if (rol.tipo === "admin") {
-        // Mantener Profesor y Coordinador, quitar otros admins, agregar el nuevo
-        const rolesBase = rolesSeleccionados.filter(r =>
-          r.siempreActivo || r.tipo !== "admin"
-        );
-        setRolesSeleccionados([...rolesBase, rol]);
-      } else {
-        // Para otros roles (aunque en este caso solo Profesor/Coordinador que son siempre activos)
-        setRolesSeleccionados(prev => [...prev, rol]);
-      }
+      // Para roles administrativos, reemplazar el admin actual
+      // Mantener solo el nuevo rol administrativo (son mutuamente excluyentes)
+      const otrosRoles = rolesSeleccionados.filter((r) => r.tipo !== "admin");
+      setRolesSeleccionados([...otrosRoles, rol]);
     }
   };
 
   const isRoleSelected = (rol) => {
-    return rolesSeleccionados.some(r => r.id_rol === rol.id_rol);
+    return rolesSeleccionados.some((r) => r.id_rol === rol.id_rol);
   };
 
   const isRoleActual = (rol) => {
-    return rolesActuales.some(r => r.id_rol === rol.id_rol);
+    return rolesActuales.some((r) => r.id_rol === rol.id_rol);
   };
 
-  // Verificar si un rol está forzado a estar seleccionado
-  const isRoleForced = (rol) => {
-    return rol.siempreActivo;
-  };
+  const handleGuardar = async () => {
+    setCargando(true);
+    setError("");
 
-const handleGuardar = async () => {
-  setCargando(true);
-  setError("");
+    try {
+      // ✅ Confirmar acción antes de enviar
+      const confirm = await alert.confirm(
+        "¿Desea actualizar los roles administrativos?",
+        "Esta acción modificará los permisos administrativos asignados al usuario."
+      );
+      if (!confirm) {
+        setCargando(false);
+        return;
+      }
 
-  try {
-    // ✅ Confirmar acción antes de enviar
-    const confirm = await alert.confirm(
-      "¿Desea actualizar los roles del administrador?",
-      "Esta acción modificará los permisos asignados al usuario."
-    );
-    if (!confirm) {
-      setCargando(false);
-      return; // 👈 Cancela si el usuario no confirma
-    }
+      // ✅ Preparar datos para enviar - SOLO roles administrativos
+      const datosActualizar = {
+        roles: rolesSeleccionados.map((rol) => ({
+          id_rol: rol.id_rol,
+          nombre_rol: rol.nombre_rol,
+        })),
+      };
 
-    // ✅ Preparar datos para enviar
-    const datosActualizar = {
-      roles: rolesSeleccionados.map((rol) => ({
-        id_rol: rol.id_rol,
-        nombre_rol: rol.nombre_rol,
-      })),
-    };
-
-    // ✅ Enviar PATCH request
-    const response = await axios.patch(`/admins/${usuario.id}/rol`, datosActualizar);
-
-    if (response.status === 200) {
-      // 🔽 Aquí debes poner el toast de éxito
+      // ✅ Enviar PATCH request
+      await axios.patch(`/admins/${usuario.id}/rol`, datosActualizar);
+      
       alert.toast({
         title: "Roles actualizados con éxito",
-        message: "Los roles del administrador se actualizaron correctamente.",
+        message: "Los roles administrativos se actualizaron correctamente.",
         config: { icon: "success" },
       });
 
       onGuardar(rolesSeleccionados);
       onClose();
-    }
-  } catch (error) {
-    console.error("Error al actualizar roles:", error);
+    } catch (error) {
+      console.error("Error al actualizar roles:", error);
 
-    // ⚠️ Manejo estandarizado de errores del backend
-    if (error?.error?.totalErrors > 0) {
-      error.error.validationErrors.forEach((error_validacion) => {
-        // 🔽 Aquí el toast de advertencia por cada validación
-        alert.toast({
-          title: error_validacion.field,
-          message: error_validacion.message,
-          config: { icon: "warning" },
+      if (error?.error?.totalErrors > 0) {
+        error.error.validationErrors.forEach((error_validacion) => {
+          alert.toast({
+            title: error_validacion.field,
+            message: error_validacion.message,
+            config: { icon: "warning" },
+          });
         });
-      });
-    } else {
-      // 🔽 Aquí el toast de error general
-      alert.toast({
-        title: error.title || "Error al actualizar los roles",
-        message:
-          error.message ||
-          "No se pudieron actualizar los roles del administrador.",
-        config: { icon: "error" },
-      });
+      } else {
+        alert.toast({
+          title: error.title || "Error al actualizar los roles",
+          message:
+            error.message ||
+            "No se pudieron actualizar los roles administrativos.",
+          config: { icon: "error" },
+        });
+      }
+
+      setError("Error al actualizar los roles. Intente nuevamente.");
+    } finally {
+      setCargando(false);
     }
-
-    setError("Error al actualizar los roles. Intente nuevamente.");
-  } finally {
-    setCargando(false);
-  }
-};
-
+  };
 
   const handleCancelar = () => {
     // Restaurar roles originales al cancelar
@@ -217,33 +168,61 @@ const handleGuardar = async () => {
     onClose();
   };
 
+  // ✅ Función para obtener roles base del usuario (Profesor/Coordinador)
+  const getRolesBaseUsuario = () => {
+    if (!usuario?.roles) return [];
+    
+    return usuario.roles.filter(
+      (rol) => rol.id_rol === 1 || rol.id_rol === 2
+    );
+  };
+
+  const rolesBase = getRolesBaseUsuario();
+
   return (
-    <Dialog
-      open={open}
-      onClose={handleCancelar}
-      maxWidth="md"
-      fullWidth
-    >
+    <Dialog open={open} onClose={handleCancelar} maxWidth="md" fullWidth>
       <DialogContent>
         <Typography component="h3" variant="h4" fontWeight="bold" gutterBottom>
-          Roles de Administrador
+          Roles Administrativos
         </Typography>
         <Typography variant="body1" color="text.secondary" mb={2}>
-          Selecciona los roles administrativos para {usuario?.nombre || "el usuario"}
+          Gestiona los roles administrativos para{" "}
+          {usuario?.nombre || "el usuario"}
         </Typography>
 
-        {/* Mostrar roles actuales */}
-        {rolesActuales.length > 0 && (
-          <Box mb={3}>
+        {/* Mostrar roles base (Profesor/Coordinador) que no se pueden modificar */}
+        {rolesBase.length > 0 && (
+          <Box mb={2}>
             <Typography variant="subtitle2" gutterBottom>
-              Roles actuales del usuario:
+              Roles base del usuario (no modificables):
             </Typography>
             <Box display="flex" gap={1} flexWrap="wrap">
-              {rolesActuales.map(rol => (
+              {rolesBase.map((rol) => (
                 <Chip
                   key={rol.id_rol}
                   label={rol.nombre_rol}
                   color="primary"
+                  variant="filled"
+                  size="small"
+                  sx={{ opacity: 0.8 }}
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* Mostrar roles administrativos actuales */}
+        {rolesActuales.length > 0 && (
+          <Box mb={3}>
+            <Typography variant="subtitle2" gutterBottom>
+              Roles administrativos actuales:
+            </Typography>
+            <Box display="flex" gap={1} flexWrap="wrap">
+              {rolesActuales.map((rol) => (
+                <Chip
+                  key={rol.id_rol}
+                  label={rol.nombre_rol}
+                  color="secondary"
                   variant="filled"
                   size="small"
                 />
@@ -268,14 +247,12 @@ const handleGuardar = async () => {
           {opcionesRoles.map((rol) => {
             const seleccionado = isRoleSelected(rol);
             const esActual = isRoleActual(rol);
-            const esForzado = isRoleForced(rol);
 
             return (
               <Grid item lg={6} md={6} xs={12} sm={6} key={rol.id_rol}>
                 <CustomButton
                   tipo={seleccionado ? "primary" : "outlined"}
                   onClick={() => handleRoleSelect(rol)}
-                  disabled={esForzado} // Deshabilitar si es forzado (siempre seleccionado)
                   sx={{
                     width: "100%",
                     height: { xs: 120, sm: 150 },
@@ -285,27 +262,13 @@ const handleGuardar = async () => {
                     justifyContent: "center",
                     gap: 1,
                     p: 3,
-                    opacity: esForzado ? 0.7 : 1,
                     position: "relative",
-                    cursor: esForzado ? "default" : "pointer",
                   }}
                 >
                   {rol.icon}
                   <Box textAlign="center">
                     <Typography variant="subtitle1" fontWeight="medium">
                       {rol.nombre_rol}
-                      {esForzado && (
-                        <Box
-                          component="span"
-                          sx={{
-                            fontSize: '0.7em',
-                            ml: 1,
-                            color: seleccionado ? 'primary.contrastText' : 'primary.main'
-                          }}
-                        >
-                          (Siempre)
-                        </Box>
-                      )}
                     </Typography>
                     <Typography
                       variant="caption"
@@ -319,17 +282,17 @@ const handleGuardar = async () => {
                     </Typography>
                   </Box>
 
-                  {/* Indicador visual para roles forzados */}
-                  {esForzado && (
+                  {/* Indicador visual si es el rol actual */}
+                  {esActual && (
                     <Box
                       sx={{
-                        position: 'absolute',
+                        position: "absolute",
                         top: 8,
                         right: 8,
                         width: 8,
                         height: 8,
-                        borderRadius: '50%',
-                        bgcolor: 'primary.main',
+                        borderRadius: "50%",
+                        bgcolor: "success.main",
                       }}
                     />
                   )}
@@ -342,8 +305,9 @@ const handleGuardar = async () => {
         {/* Información adicional */}
         <Box mt={3} p={2} bgcolor="grey.50" borderRadius={1}>
           <Typography variant="caption" color="text.secondary">
-            💡 <strong>Nota:</strong> Los roles de <strong>Profesor</strong> y <strong>Coordinador</strong> son permanentes.
-            Los roles administrativos (<strong>Director</strong> y <strong>Secretario</strong>) son mutuamente excluyentes.
+            💡 <strong>Nota:</strong> Este módulo gestiona únicamente roles administrativos. 
+            Los roles de <strong>Profesor</strong> y <strong>Coordinador</strong> son permanentes 
+            y se muestran solo como referencia. Los roles administrativos son mutuamente excluyentes.
           </Typography>
         </Box>
       </DialogContent>

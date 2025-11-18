@@ -7,13 +7,33 @@ import {
   Divider,
   Avatar,
   Chip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
-import CustomButton from "./customButton";
+import {
+  Settings as SettingsIcon,
+  ManageAccounts as ManageAccountsIcon,
+  PersonOff as PersonOffIcon,
+  Person as PersonIcon,
+} from "@mui/icons-material";
 import CustomChip from "./CustomChip";
-import ModalCambiarRolAdmin from "./ModalCambiarRolAdmin"; // Asegúrate de que la ruta sea correcta
+import ModalCambiarRolAdmin from "./ModalCambiarRolAdmin";
+import useApi from "../hook/useApi"; // Importar useApi
+import useSweetAlert from "../hook/useSweetAlert"; // Importar useSweetAlert
 
-export default function CardAdmin({ usuario, onRolActualizado }) {
+export default function CardAdmin({ usuario, onActualizado }) {
+  const axios = useApi();
+  const alert = useSweetAlert();
+
+  // Estados internos
+  const [usuarioLocal, setUsuarioLocal] = useState(usuario);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [cargando, setCargando] = useState(false);
+
+  const menuAbierto = Boolean(anchorEl);
 
   // Función para obtener iniciales del nombre
   const getInitials = (nombres, apellidos) => {
@@ -33,26 +53,66 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
     return activo ? "success" : "error";
   };
 
-  // Función para determinar el texto del botón basado en roles
-  const getButtonAction = (roles) => {
-    // Si tiene roles administrativos (excluyendo profesor), mostrar "Gestionar Roles"
-    const hasAdminRoles = roles?.some(
-      (rol) => rol.id_rol !== 1 && rol.nombre_rol !== "Profesor"
-    );
-    return hasAdminRoles ? "Gestionar Roles" : "Asignar Roles";
+  // Manejar apertura del menú
+  const handleAbrirMenu = (event) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
   };
 
-  // Función para determinar el color del botón
-  const getButtonColor = (roles) => {
-    const hasAdminRoles = roles?.some(
-      (rol) => rol.id_rol !== 1 && rol.nombre_rol !== "Profesor"
-    );
-    return hasAdminRoles ? "primary" : "primary";
+  // Manejar cierre del menú
+  const handleCerrarMenu = () => {
+    setAnchorEl(null);
   };
 
-  // Manejar apertura del modal
-  const handleAbrirModal = () => {
+  // Manejar apertura del modal de roles
+  const handleAbrirModalRoles = () => {
+    handleCerrarMenu();
     setModalAbierto(true);
+  };
+
+  // Manejar cambio de estado del usuario
+  const handleCambiarEstado = async () => {
+    handleCerrarMenu();
+    setCargando(true);
+
+    try {
+      const nuevoEstado = !usuarioLocal.activo;
+
+      if (nuevoEstado) {
+        await axios.put(`/user/${usuarioLocal.cedula}/activar`);
+      } else {
+        await axios.delete(`/user/${usuarioLocal.cedula}/desactivar`);
+      }
+
+      // ✅ Actualizar estado local
+      setUsuarioLocal((prev) => ({ ...prev, activo: nuevoEstado }));
+
+      alert.success(
+        nuevoEstado ? "Usuario activado" : "Usuario desactivado",
+        nuevoEstado
+          ? "El usuario se ha activado satisfactoriamente"
+          : "El usuario se ha desactivado satisfactoriamente"
+      );
+
+      // ✅ Notificar al componente padre si es necesario
+      if (onActualizado) {
+        onActualizado(usuarioLocal.cedula, { activo: nuevoEstado });
+      }
+    } catch (error) {
+      console.log("❌ Error completo:", error);
+
+      if (error.error?.totalErrors > 0) {
+        error.error.validationErrors.forEach((error_validacion) => {
+          alert.toast(error_validacion.field, error_validacion.message);
+        });
+      } else if (error.error) {
+        alert.error(error.title, error.message);
+      } else {
+        alert.error("Error", "Ha ocurrido un error inesperado");
+      }
+    } finally {
+      setCargando(false);
+    }
   };
 
   // Manejar cierre del modal
@@ -61,23 +121,19 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
   };
 
   // Manejar guardado de roles
-  const handleGuardarRoles = (nuevosRoles) => {
-    console.log("Roles actualizados:", nuevosRoles);
-    
-    // Si hay una función callback del componente padre, ejecutarla
-    if (onRolActualizado) {
-      onRolActualizado(usuario.cedula, nuevosRoles);
-    }
-    
-    // Cerrar modal
-    setModalAbierto(false);
+  const handleGuardarRoles = async (nuevosRoles) => {
+    setUsuarioLocal((prev) => ({
+      ...prev,
+      roles: nuevosRoles,
+      nombre_roles: nuevosRoles.map((rol) => rol.nombre_rol || rol.nombre),
+    }));
   };
 
   // Preparar datos del usuario para el modal
   const usuarioParaModal = {
-    id: usuario.cedula, // Usar cédula como identificador
-    nombre: `${usuario.nombres} ${usuario.apellidos}`,
-    roles: usuario.roles || []
+    id: usuarioLocal.cedula,
+    nombre: `${usuarioLocal.nombres} ${usuarioLocal.apellidos}`,
+    roles: usuarioLocal.roles || [],
   };
 
   return (
@@ -94,35 +150,58 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
           },
           height: "100%",
           cursor: "pointer",
+          opacity: cargando ? 0.7 : 1,
         }}
-        onClick={handleAbrirModal}
       >
         <CardContent>
           {/* Header con avatar e información básica */}
           <Box display="flex" alignItems="center" gap={2} mb={2}>
-            <Avatar
-              src={usuario.imagen ? `/uploads/${usuario.imagen}` : undefined}
-              sx={{
-                width: 60,
-                height: 60,
-                bgcolor: usuario.imagen ? "transparent" : "primary.main",
-                fontSize: "1.2rem",
-                fontWeight: "bold",
-              }}
-            >
-              {!usuario.imagen && getInitials(usuario.nombres, usuario.apellidos)}
-            </Avatar>
+            <Box display="flex" alignItems="center" gap={2} flex={1}>
+              <Avatar
+                src={
+                  usuarioLocal.imagen
+                    ? `/uploads/${usuarioLocal.imagen}`
+                    : undefined
+                }
+                sx={{
+                  width: 60,
+                  height: 60,
+                  bgcolor: usuarioLocal.imagen ? "transparent" : "primary.main",
+                  fontSize: "1.2rem",
+                  fontWeight: "bold",
+                }}
+              >
+                {!usuarioLocal.imagen &&
+                  getInitials(usuarioLocal.nombres, usuarioLocal.apellidos)}
+              </Avatar>
 
-            <Box flex={1}>
-              <Typography variant="h6" fontWeight={600} noWrap>
-                {usuario.nombres} {usuario.apellidos}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {usuario.email}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                C.I: {usuario.cedula}
-              </Typography>
+              <Box flex={1}>
+                <Typography variant="h6" fontWeight={600} noWrap>
+                  {usuarioLocal.nombres} {usuarioLocal.apellidos}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" noWrap>
+                  {usuarioLocal.email}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  C.I: {usuarioLocal.cedula}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Icono de Settings con menú */}
+            <Box
+              sx={{
+                cursor: cargando ? "not-allowed" : "pointer",
+                padding: "8px",
+                borderRadius: "50%",
+                transition: "background-color 0.2s",
+                ":hover": {
+                  backgroundColor: cargando ? "transparent" : "action.hover",
+                },
+              }}
+              onClick={cargando ? undefined : handleAbrirMenu}
+            >
+              <SettingsIcon />
             </Box>
           </Box>
 
@@ -140,8 +219,8 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
                 Estado:
               </Typography>
               <CustomChip
-                label={usuario.activo ? "Activo" : "Inactivo"}
-                color={getStatusColor(usuario.activo)}
+                label={usuarioLocal.activo ? "Activo" : "Inactivo"}
+                color={getStatusColor(usuarioLocal.activo)}
                 size="small"
               />
             </Box>
@@ -156,7 +235,9 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
                 Último acceso:
               </Typography>
               <Typography variant="caption" fontWeight="medium">
-                {usuario.last_login ? formatDate(usuario.last_login) : "Nunca"}
+                {usuarioLocal.last_login
+                  ? formatDate(usuarioLocal.last_login)
+                  : "Nunca"}
               </Typography>
             </Box>
 
@@ -169,8 +250,8 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
                 Primera vez:
               </Typography>
               <CustomChip
-                label={usuario.primera_vez ? "Sí" : "No"}
-                color={usuario.primera_vez ? "warning" : "default"}
+                label={usuarioLocal.primera_vez ? "Sí" : "No"}
+                color={usuarioLocal.primera_vez ? "warning" : "default"}
                 size="small"
               />
             </Box>
@@ -187,7 +268,7 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
               Roles:
             </Typography>
             <Box display="flex" flexWrap="wrap" gap={0.5}>
-              {usuario.nombre_roles?.map((rol, index) => (
+              {usuarioLocal.nombre_roles?.map((rol, index) => (
                 <Chip
                   key={index}
                   label={rol}
@@ -197,7 +278,8 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
                   sx={{ fontSize: "0.7rem" }}
                 />
               ))}
-              {(!usuario.nombre_roles || usuario.nombre_roles.length === 0) && (
+              {(!usuarioLocal.nombre_roles ||
+                usuarioLocal.nombre_roles.length === 0) && (
                 <Typography variant="caption" color="text.disabled">
                   Sin roles asignados
                 </Typography>
@@ -207,31 +289,54 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Acciones */}
-          <Box display="flex" justifyContent="space-between" alignItems="center">
+          {/* Información de registro */}
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Box>
               <Typography
                 variant="caption"
                 color="text.secondary"
                 display="block"
               >
-                Registrado: {formatDate(usuario.created_at)}
+                Registrado: {formatDate(usuarioLocal.created_at)}
               </Typography>
             </Box>
-            <CustomButton
-              tipo={getButtonColor(usuario.roles)}
-              size="small"
-              sx={{ minWidth: 120 }}
-              onClick={(e) => {
-                e.stopPropagation(); // Prevenir que se active el click de la card
-                handleAbrirModal();
-              }}
-            >
-              {getButtonAction(usuario.roles)}
-            </CustomButton>
           </Box>
         </CardContent>
       </Card>
+
+      {/* Menú de opciones */}
+      <Menu
+        anchorEl={anchorEl}
+        open={menuAbierto}
+        onClose={handleCerrarMenu}
+        onClick={handleCerrarMenu}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      >
+        <MenuItem onClick={handleAbrirModalRoles} disabled={cargando}>
+          <ListItemIcon>
+            <ManageAccountsIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Gestionar Roles</ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={handleCambiarEstado} disabled={cargando}>
+          <ListItemIcon>
+            {usuarioLocal.activo ? (
+              <PersonOffIcon fontSize="small" color="error" />
+            ) : (
+              <PersonIcon fontSize="small" color="success" />
+            )}
+          </ListItemIcon>
+          <ListItemText>
+            {usuarioLocal.activo ? "Desactivar Usuario" : "Activar Usuario"}
+          </ListItemText>
+        </MenuItem>
+      </Menu>
 
       {/* Modal para gestionar roles */}
       <ModalCambiarRolAdmin
@@ -239,6 +344,7 @@ export default function CardAdmin({ usuario, onRolActualizado }) {
         onClose={handleCerrarModal}
         usuario={usuarioParaModal}
         onGuardar={handleGuardarRoles}
+        cargando={cargando}
       />
     </>
   );
