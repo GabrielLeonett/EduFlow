@@ -198,13 +198,18 @@ export default class HorarioModel {
    * @description Obtener profesores con horas disponibles
    * @param {number} id_seccion - id de la sección
    * @param {number} horasNecesarias - Horas necesarias en formato intervalo
+   * @param {number} id_unidad_curricular - id de la unidad curricular
    * @returns {Object} Respuesta formateada con profesores disponibles
    */
-  static async obtenerProfesoresDisponibles(id_seccion, horasNecesarias) {
+  static async obtenerProfesoresDisponibles(
+    id_seccion,
+    horasNecesarias,
+    id_unidad_curricular
+  ) {
     try {
       const { rows } = await pg.query(
-        `SELECT * FROM buscar_profesores_disponibles($1, $2) AS p_resultado;`,
-        [id_seccion, horasNecesarias]
+        `SELECT * FROM buscar_profesores_disponibles($1, $2, $3) AS p_resultado;`,
+        [id_seccion, horasNecesarias, id_unidad_curricular || null]
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -350,10 +355,10 @@ export default class HorarioModel {
    */
   static async eliminar(idHorario, usuarioId) {
     try {
-      const { rows } = await pg.query("CALL public.eliminar_horario($1, $2, NULL)", [
-        usuarioId,
-        idHorario,
-      ]);
+      const { rows } = await pg.query(
+        "CALL public.eliminar_horario($1, $2, NULL)",
+        [usuarioId, idHorario]
+      );
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Horario eliminado exitosamente"

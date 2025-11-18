@@ -156,8 +156,9 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
             cancelButtonText: "Cancelar",
           }
         );
+        console.log("Resultado de la alerta:", result);
 
-        if (result.isConfirmed) {
+        if (result) {
           completarMovimiento(slot);
         } else {
           // ALERTA AGREGADA

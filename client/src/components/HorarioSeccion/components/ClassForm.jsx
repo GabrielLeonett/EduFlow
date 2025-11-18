@@ -106,7 +106,7 @@ const ClassForm = ({
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             {unidad.horas_clase} horas •{" "}
-                            {unidad.codigo_unidad_curricular}
+                            {unidad.codigo_unidad}
                           </Typography>
                         </Box>
                       </MenuItem>

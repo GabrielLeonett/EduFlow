@@ -29,6 +29,7 @@ import {
   AssignmentInd, // Secretaria
 } from "@mui/icons-material";
 
+
 export default function RegistraAdministrador() {
   const axios = useApi(false);
   const theme = useTheme();

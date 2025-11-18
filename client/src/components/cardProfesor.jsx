@@ -9,6 +9,8 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  List,
+  ListItem,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
@@ -118,7 +120,7 @@ export default function CardProfesor({ profesor, isSearch }) {
   // Eliminar profesor
   const handleProfesorEliminado = () => {
     setTimeout(() => {
-      navigate("/profesores/eliminados");
+      navigate("/profesores/${profesor.id_profesor}");
     }, 1200);
   };
 
@@ -534,6 +536,25 @@ export default function CardProfesor({ profesor, isSearch }) {
           </AccordionDetails>
         </Accordion>
 
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">
+              Información Disponibilidad
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {profesor.disponibilidad.map((dis) => {
+                return (
+                  <ListItem key={dis.id_disponibilidad || dis.dia_semana}>
+                    {dis.dia_semana}: {dis.hora_inicio} - {dis.hora_fin}
+                  </ListItem>
+                );
+              })}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
         {profesorEditado && (
           <CustomButton
             tipo="success"
@@ -609,7 +630,13 @@ export default function CardProfesor({ profesor, isSearch }) {
           </ListItemIcon>
           Horario Profesor
         </MenuItem>
-        <MenuItem onClick={() => { navigate(`/academico/profesores/disponibilidad/${profesor.id_profesor}`); }}>
+        <MenuItem
+          onClick={() => {
+            navigate(
+              `/academico/profesores/disponibilidad/${profesor.id_profesor}`
+            );
+          }}
+        >
           <ListItemIcon>
             <ScheduleIcon fontSize="small" />
           </ListItemIcon>

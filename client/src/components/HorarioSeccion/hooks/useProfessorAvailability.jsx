@@ -14,7 +14,18 @@ export const useProfessorAvailability = () => {
       profesorHorario,
       claseActual = null
     ) => {
-      const horarioProfesor = profesorHorario.find(
+      // 1. Verificar si el objeto existe y si tiene la propiedad 'horario'
+      if (!profesorHorario || !profesorHorario.horario) {
+        return true; // O manejar el error
+      }
+
+      // 2. Si el array existe, verificar si está vacío
+      if (profesorHorario.horario.length === 0) {
+        return true; // No hay horarios que buscar
+      }
+
+      // 3. Buscar
+      const horarioProfesor = profesorHorario.horario.find(
         (prof) => prof.id_profesor === profesor_id
       );
 

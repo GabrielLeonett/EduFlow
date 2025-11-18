@@ -9,6 +9,8 @@ const {
   cambiarContraseña,
   EnviarTokenEmail,
   VerificarToken,
+  desactivarUsuario,
+  activarUsuario,
 } = UserController;
 
 export const UserRouter = Router();
@@ -86,4 +88,26 @@ UserRouter.put(
   "/auth/cambiar-contrasena",
   middlewareAuth(null, { required: false }),
   cambiarContraseña
+);
+
+/**
+ * @name DELETE /user/:id_usuario/desactivar
+ * @description Desactivar un usuario específico
+ * @middleware Requiere permisos de SuperAdmin o Vicerrector
+ */
+UserRouter.delete(
+  "/user/:id_usuario/desactivar",
+  middlewareAuth(['SuperAdmin','Vicerrector'], { required: true }),
+  desactivarUsuario
+);
+
+/**
+ * @name PUT /user/:id_usuario/activar
+ * @description Activar un usuario previamente desactivado
+ * @middleware Requiere permisos de SuperAdmin o Vicerrector
+ */
+UserRouter.put(
+  "/user/:id_usuario/activar",
+  middlewareAuth(['SuperAdmin','Vicerrector'], { required: true }),
+  activarUsuario
 );

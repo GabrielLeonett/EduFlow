@@ -195,17 +195,6 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Gestión de Horarios Aulas",
-          url: "/horarios/aulas",
-          roles: [
-            "Vicerrector",
-            "Profesor",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
           name: "Gestión de Sedes",
           url: "/infraestructura/sedes",
           roles: [
@@ -225,6 +214,16 @@ function ResponsiveAppBar({ backgroundColor }) {
         {
           name: "Panel de Administración",
           url: "/administracion",
+          roles: ["SuperAdmin"],
+        },
+        {
+          name: "Panel de Respaldos",
+          url: "/administracion/respaldos", // Esta ruta no existe en tus Route, puedes agregarla o removerla
+          roles: ["SuperAdmin"],
+        },
+        {
+          name: "Reportes y Estadísticas",
+          url: "/administracion/reportes-estadisticas", // Esta ruta no existe en tus Route, puedes agregarla o removerla
           roles: ["SuperAdmin"],
         },
         {

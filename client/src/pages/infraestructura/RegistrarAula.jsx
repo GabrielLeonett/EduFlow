@@ -1,21 +1,33 @@
-import { useEffect, useState } from "react";
-import { Box, Typography, MenuItem, CircularProgress, Grid } from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  MenuItem,
+  Paper,
+  Stack,
+  Divider,
+  Alert,
+  Grid,
+  CircularProgress,
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ResponsiveAppBar from "../../components/navbar";
 import CustomLabel from "../../components/customLabel";
 import CustomButton from "../../components/customButton";
-import useApi from "../../hook/useApi"; // Added import for axios
+import useApi from "../../hook/useApi";
 import AulaSchema from "../../schemas/aula.schema";
+import useSweetAlert from "../../hook/useSweetAlert";
 
 export default function RegistrarAula() {
   const theme = useTheme();
   const axios = useApi();
-
+  const alert = useSweetAlert();
   const {
     control,
     register,
+    watch,
     formState: { errors, isValid },
     handleSubmit,
     reset,
@@ -23,38 +35,113 @@ export default function RegistrarAula() {
     resolver: zodResolver(AulaSchema),
     mode: "onChange",
   });
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [sedes, setSedes] = useState([]);
+  const [pnfs, setPnfs] = useState([]);
   const [loadingSedes, setLoadingSedes] = useState(true);
-  const [registering, setRegistering] = useState(false);
+  const [loadingPnfs, setLoadingPnfs] = useState(false);
 
-  // 👉 Cargar sedes para el select
-  useEffect(() => {
-    console.log("🔄 useEffect ejecutándose - cargando sedes");
-    const fetchSedes = async () => {
-      try {
-        const response = await axios.get("/sedes");
-        setSedes(response.sedes || []);
-      } finally {
-        setLoadingSedes(false);
+  // Observar el valor de la sede seleccionada
+  const selectedSede = watch("id_sede");
+
+  const fetchSedes = useCallback(async () => {
+    try {
+      const responseSedes = await axios.get("/sedes");
+      setSedes(responseSedes.sedes || []);
+    } catch (error) {
+      console.error("Error al cargar sedes:", error);
+      alert.error("Error", "No se pudieron cargar las sedes");
+    } finally {
+      setLoadingSedes(false);
+    }
+  }, [alert, axios]);
+
+  const fetchPnfs = useCallback(
+    async (idSede) => {
+      if (!idSede) {
+        setPnfs([]);
+        return;
       }
-    };
+
+      setLoadingPnfs(true);
+      try {
+        const responsePnfs = await axios.get(`/pnf?id_sede=${idSede}`);
+        setPnfs(responsePnfs.pnfs || []);
+      } catch (error) {
+        console.error("Error al cargar PNFs:", error);
+        alert.error("Error", "No se pudieron cargar los PNFs");
+        setPnfs([]);
+      } finally {
+        setLoadingPnfs(false);
+      }
+    },
+    [alert, axios]
+  );
+
+  // 👉 Cargar sedes al inicio
+  useEffect(() => {
+    console.log("🔄 Cargando sedes...");
     fetchSedes();
-  }, [axios]);
+  }, []);
+
+  // 👉 Cargar PNFs cuando cambia la sede seleccionada
+  useEffect(() => {
+    if (selectedSede) {
+      console.log(`🔄 Cargando PNFs para sede: ${selectedSede}`);
+      fetchPnfs(selectedSede);
+    } else {
+      setPnfs([]); // Limpiar PNFs si no hay sede seleccionada
+    }
+  }, [selectedSede]);
 
   const onSubmit = async (data) => {
-    setRegistering(true);
+    setIsSubmitting(true);
 
     try {
-      // Asegurar que capacidad sea número
+      // Confirmación antes de enviar
+      const confirm = await alert.confirm(
+        "¿Desea registrar esta aula?",
+        "Verifique que los datos sean correctos antes de continuar."
+      );
+      if (!confirm) {
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Preparar datos para enviar
       const formData = {
         ...data,
         capacidad: Number(data.capacidad),
       };
 
       await axios.post("/aulas", formData);
+
+      alert.success(
+        "Aula registrada con éxito",
+        "La información del aula se ha guardado correctamente."
+      );
+
+      reset(); // Resetear formulario
+    } catch (error) {
+      console.error("Error al registrar el aula:", error);
+
+      if (error?.error?.totalErrors > 0) {
+        error.error.validationErrors.forEach((error_validacion) => {
+          alert.toast({
+            title: error_validacion.field,
+            message: error_validacion.message,
+            config: { icon: "error" },
+          });
+        });
+      } else {
+        alert.error(
+          error.title || "Error al registrar el aula",
+          error.message ||
+            "No se pudo completar el registro. Intente nuevamente."
+        );
+      }
     } finally {
-      setRegistering(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -64,7 +151,9 @@ export default function RegistrarAula() {
       tipo: "",
       capacidad: "",
       id_sede: "",
+      id_pnf: undefined,
     });
+    setPnfs([]); // Limpiar también los PNFs
   };
 
   return (
@@ -72,248 +161,272 @@ export default function RegistrarAula() {
       <ResponsiveAppBar backgroundColor />
 
       <Box
-        className="flex flex-col w-full min-h-screen bg-gray-100 p-4"
         sx={{
-          mt: 10,
-          backgroundColor: theme.palette.background.default,
           minHeight: "100vh",
+          backgroundColor: theme.palette.background.default,
+          mt: 12,
         }}
       >
-        <Typography
-          variant="h4"
-          gutterBottom
+        {/* Formulario */}
+        <Paper
+          elevation={2}
           sx={{
-            mt: 4,
-            textAlign: "center",
-            fontWeight: "bold",
-            color: theme.palette.primary.main,
-            mb: 4,
+            borderRadius: 3,
+            m: 2,
+            overflow: "hidden",
+            border: `1px solid ${theme.palette.divider}`,
+            maxWidth: "lg",
+            mx: "auto",
           }}
         >
-          Registrar Aula
-        </Typography>
-
-        <Box className="flex justify-center items-start flex-grow">
           <Box
-            component="form"
-            noValidate
-            onSubmit={handleSubmit((data) => {
-              console.log("📝 handleSubmit ejecutado con datos:", data);
-              onSubmit(data);
-            })}
             sx={{
-              backgroundColor: theme.palette.background.paper,
-              width: "90%",
-              maxWidth: "800px",
-              p: 4,
-              borderRadius: "16px",
-              boxShadow: theme.shadows[5],
-              display: "flex",
-              flexDirection: "column",
+              backgroundColor: theme.palette.primary.main,
+              color: "white",
+              px: 4,
+              py: 3,
             }}
           >
-            <Grid container spacing={3}>
-              {/* Código del Aula */}
-              <Grid item xs={12} md={6}>
-                <CustomLabel
-                  id="codigo"
-                  name="codigo"
-                  label="Código del Aula"
-                  type="text"
-                  {...register("codigo", {
-                    onChange: (e) => {
-                      console.log("📝 Campo codigo cambiado:", e.target.value);
-                    },
-                  })}
-                  error={!!errors.codigo}
-                  helperText={
-                    errors.codigo?.message || "Ingrese el código del aula"
-                  }
-                  fullWidth
-                />
-              </Grid>
-
-              {/* Tipo de Aula */}
-              <Grid item xs={12} md={6}>
-                <Controller
-                  name="tipo"
-                  control={control}
-                  render={({ field }) => (
-                    <CustomLabel
-                      select
-                      id="tipo"
-                      label="Tipo de Aula"
-                      {...field}
-                      onChange={(e) => {
-                        console.log("📝 Campo tipo cambiado:", e.target.value);
-                        field.onChange(e);
-                      }}
-                      error={!!errors.tipo}
-                      helperText={
-                        errors.tipo?.message || "Seleccione el tipo de aula"
-                      }
-                      fullWidth
-                    >
-                      <MenuItem value="">
-                        <em>Seleccionar tipo</em>
-                      </MenuItem>
-                      <MenuItem value="Convencional">Convencional</MenuItem>
-                      <MenuItem value="Interactiva">Interactiva</MenuItem>
-                      <MenuItem value="Computación">Computación</MenuItem>
-                      <MenuItem value="Exterior">Exterior</MenuItem>
-                      <MenuItem value="Laboratorio">Laboratorio</MenuItem>
-                    </CustomLabel>
-                  )}
-                />
-              </Grid>
-
-              {/* Capacidad */}
-              <Grid item xs={12} md={6}>
-                <CustomLabel
-                  id="capacidad"
-                  label="Capacidad de Aula"
-                  type="number"
-                  error={!!errors.capacidad}
-                  {...register("capacidad", {
-                    valueAsNumber: true,
-                    setValueAs: (value) => {
-                      const numValue = value === "" ? "" : Number(value);
-                      console.log(
-                        "🔢 Campo capacidad convertido:",
-                        value,
-                        "→",
-                        numValue
-                      );
-                      return numValue;
-                    },
-                    onChange: (e) => {
-                      console.log(
-                        "📝 Campo capacidad cambiado:",
-                        e.target.value
-                      );
-                    },
-                  })}
-                  helperText={
-                    errors.capacidad?.message || "Ingrese la capacidad del aula"
-                  }
-                  inputProps={{ min: 1 }}
-                  fullWidth
-                />
-              </Grid>
-
-              {/* Select de Sedes */}
-              <Grid item xs={12} md={6}>
-                {loadingSedes ? (
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    height="56px"
-                  >
-                    <CircularProgress size={24} />
-                    <Typography variant="body2" sx={{ ml: 2 }}>
-                      Cargando sedes...
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Controller
-                    name="id_sede"
-                    control={control}
-                    render={({ field }) => (
-                      <CustomLabel
-                        select
-                        id="id_sede"
-                        label="Sede"
-                        {...field}
-                        onChange={(e) => {
-                          console.log(
-                            "📝 Campo id_sede cambiado:",
-                            e.target.value
-                          );
-                          field.onChange(e);
-                        }}
-                        error={!!errors.id_sede}
-                        helperText={
-                          errors.id_sede?.message || "Seleccione la sede"
-                        }
-                        fullWidth
-                      >
-                        <MenuItem value="">
-                          <em>Seleccionar sede</em>
-                        </MenuItem>
-                        {sedes.map((sede) => (
-                          <MenuItem
-                            key={sede.id_sede}
-                            value={sede.id_sede}
-                            onClick={() =>
-                              console.log("🎯 Sede seleccionada:", sede)
-                            }
-                          >
-                            {sede.nombre_sede}
-                          </MenuItem>
-                        ))}
-                      </CustomLabel>
-                    )}
-                  />
-                )}
-              </Grid>
-            </Grid>
-
-            {/* Botones */}
-            <Box
-              className="flex justify-end gap-4 mt-6 pt-4"
-              sx={{ borderTop: 1, borderColor: "divider" }}
-            >
-              <CustomButton
-                type="button"
-                variant="outlined"
-                color="secondary"
-                onClick={handleReset}
-                disabled={registering}
-                sx={{ minWidth: "120px" }}
-              >
-                Limpiar
-              </CustomButton>
-              <CustomButton
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={!isValid || registering || loadingSedes}
-                onClick={() =>
-                  console.log(
-                    "🚀 Botón Registrar clickeado - estado válido:",
-                    isValid
-                  )
-                }
-                sx={{ minWidth: "120px" }}
-              >
-                {registering ? (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <CircularProgress
-                      size={20}
-                      sx={{ mr: 1, color: "white" }}
-                    />
-                    Registrando...
-                  </Box>
-                ) : (
-                  "Registrar"
-                )}
-              </CustomButton>
-            </Box>
-
-            {/* Mensaje de validación */}
-            {!isValid && (
-              <Typography
-                variant="body2"
-                color="error"
-                sx={{ mt: 2, textAlign: "center" }}
-              >
-                Complete todos los campos correctamente para habilitar el
-                registro
-              </Typography>
-            )}
+            <Typography variant="h5" component="h2" fontWeight="bold">
+              Registro de Aula
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              Ingrese los datos básicos del aula
+            </Typography>
           </Box>
-        </Box>
+
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 4 }}>
+            <Stack spacing={4}>
+              {/* Información Básica del Aula */}
+              <Box>
+                <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                  Información Básica del Aula
+                </Typography>
+                <Grid container spacing={3}>
+                  {/* Código del Aula */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <CustomLabel
+                      fullWidth
+                      label="Código del Aula *"
+                      variant="outlined"
+                      {...register("codigo")}
+                      error={!!errors.codigo}
+                      helperText={
+                        errors.codigo?.message ||
+                        "Código único identificador del aula (Ej: AULA-101, LAB-202)"
+                      }
+                      placeholder="Ej: AULA-101"
+                    />
+                  </Grid>
+
+                  {/* Tipo de Aula */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Controller
+                      name="tipo"
+                      control={control}
+                      defaultValue=""
+                      render={({ field, fieldState: { error } }) => (
+                        <CustomLabel
+                          select
+                          label="Tipo de Aula *"
+                          variant="outlined"
+                          fullWidth
+                          {...field}
+                          error={!!error}
+                          helperText={
+                            error?.message || "Seleccione el tipo de aula"
+                          }
+                        >
+                          <MenuItem value="">Seleccione un tipo</MenuItem>
+                          <MenuItem value="Convencional">Convencional</MenuItem>
+                          <MenuItem value="Laboratorio">Laboratorio</MenuItem>
+                          <MenuItem value="Taller">Taller</MenuItem>
+                          <MenuItem value="Auditorio">Auditorio</MenuItem>
+                          <MenuItem value="Sala de Conferencias">
+                            Sala de Conferencias
+                          </MenuItem>
+                        </CustomLabel>
+                      )}
+                    />
+                  </Grid>
+
+                  {/* Capacidad */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Controller
+                      name="capacidad"
+                      control={control}
+                      render={({ field, fieldState: { error } }) => (
+                        <CustomLabel
+                          fullWidth
+                          label="Capacidad *"
+                          variant="outlined"
+                          type="number"
+                          {...field}
+                          onChange={(e) => {
+                            // Convertir a número
+                            const value =
+                              e.target.value === ""
+                                ? ""
+                                : Number(e.target.value);
+                            field.onChange(value);
+                          }}
+                          error={!!error}
+                          helperText={
+                            error?.message || "Número máximo de estudiantes"
+                          }
+                          placeholder="Ej: 30"
+                          inputProps={{ min: 1, max: 500 }}
+                        />
+                      )}
+                    />
+                  </Grid>
+
+                  {/* Sede */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Controller
+                      name="id_sede"
+                      control={control}
+                      defaultValue=""
+                      render={({ field, fieldState: { error } }) => (
+                        <CustomLabel
+                          select
+                          label="Sede *"
+                          variant="outlined"
+                          fullWidth
+                          {...field}
+                          error={!!error}
+                          helperText={error?.message || "Seleccione la sede"}
+                          disabled={loadingSedes}
+                        >
+                          <MenuItem value="">Seleccione una sede</MenuItem>
+                          {loadingSedes ? (
+                            <MenuItem disabled>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                <CircularProgress size={20} />
+                                Cargando sedes...
+                              </Box>
+                            </MenuItem>
+                          ) : (
+                            sedes.map((sede) => (
+                              <MenuItem key={sede.id_sede} value={sede.id_sede}>
+                                {sede.nombre_sede}
+                              </MenuItem>
+                            ))
+                          )}
+                        </CustomLabel>
+                      )}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Divider />
+
+              {/* PNF Preferencial - Solo se muestra si hay una sede seleccionada */}
+              {selectedSede && (
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                    Asignación Preferencial (Opcional)
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Controller
+                      name="id_pnf"
+                      control={control}
+                      defaultValue={undefined}
+                      render={({ field, fieldState: { error } }) => (
+                        <CustomLabel
+                          select
+                          label="PNF Preferencial"
+                          variant="outlined"
+                          fullWidth
+                          {...field}
+                          error={!!error}
+                          helperText={
+                            error?.message ||
+                            "Seleccione el PNF al que estará asignada preferencialmente el aula"
+                          }
+                          disabled={loadingPnfs}
+                        >
+                          <MenuItem value={undefined}>
+                            {loadingPnfs
+                              ? "Cargando PNFs..."
+                              : pnfs.length === 0
+                              ? "No hay PNFs en esta sede"
+                              : "Sin PNF preferencial"}
+                          </MenuItem>
+                          {pnfs.map((pnf) => (
+                            <MenuItem key={pnf.id_pnf} value={pnf.id_pnf}>
+                              {pnf.codigo_pnf} - {pnf.nombre_pnf}
+                              {pnf.tiene_coordinador && " 👨‍🏫"}
+                            </MenuItem>
+                          ))}
+                        </CustomLabel>
+                      )}
+                    />
+                    <Alert
+                      severity="info"
+                      sx={{
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography variant="body2">
+                        <strong>Información:</strong> Esta asignación es
+                        opcional. El aula podrá ser utilizada por cualquier PNF,
+                        pero tendrá prioridad para el PNF seleccionado.
+                      </Typography>
+                    </Alert>
+                  </Grid>
+                </Box>
+              )}
+
+              {/* Nota informativa */}
+              <Alert severity="info" sx={{ borderRadius: 2 }}>
+                <Typography variant="body2">
+                  <strong>Nota:</strong> Todos los campos marcados con (*) son
+                  obligatorios. Asegúrese de que la información sea correcta
+                  antes de guardar.
+                </Typography>
+              </Alert>
+
+              {/* Botones de acción */}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  justifyContent: "flex-end",
+                  pt: 2,
+                  borderTop: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <CustomButton
+                  tipo="secondary"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  sx={{ minWidth: 120 }}
+                >
+                  Limpiar
+                </CustomButton>
+
+                <CustomButton
+                  tipo="primary"
+                  type="submit"
+                  disabled={!isValid || isSubmitting}
+                  sx={{ minWidth: 200 }}
+                >
+                  {isSubmitting ? "Registrando..." : "Registrar Aula"}
+                </CustomButton>
+              </Box>
+            </Stack>
+          </Box>
+        </Paper>
       </Box>
     </>
   );

@@ -27,21 +27,47 @@ export default function RegisterSede() {
   const alert = useSweetAlert();
   const [isSubiting, setIsSubiting] = useState(false);
 
-  console.log(watch(), errors);
-  const onSubmit = async (data) => {
-    setIsSubiting(true);
-    try {
-      await axios.post("/sedes", data);
-      alert.success("Sede Creada", "Se ha creado la sede existosamente");
+ const onSubmit = async (data) => {
+  setIsSubiting(true);
 
-      reset(); // 👈 Limpia el formulario después de registrar
-    } catch (error) {
-      alert.error();
-      console.error("Error al registrar la sede:", error);
-    } finally {
+  try {
+    // ✅ Confirmación antes de registrar
+    const confirm = await alert.confirm(
+      "¿Desea registrar esta sede?",
+      "Verifique que los datos sean correctos antes de continuar."
+    );
+    if (!confirm) {
       setIsSubiting(false);
+      return; // 👈 Cancela si el usuario no confirma
     }
-  };
+
+    // ✅ Envío al servidor
+    await axios.post("/sedes", data);
+
+    alert.success(
+      "Sede creada con éxito",
+      "Se ha registrado la sede exitosamente."
+    );
+
+    reset(); // 👈 Limpia el formulario después de registrar
+  } catch (error) {
+    // ✅ Manejo estandarizado de errores y validaciones
+    if (error?.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((error_validacion) => {
+        alert.toast(error_validacion.field, error_validacion.message);
+      });
+    } else {
+      alert.error(
+        error.title || "Error al registrar la sede",
+        error.message || "No se pudo completar el registro. Intente nuevamente."
+      );
+    }
+
+    console.error("Error al registrar la sede:", error);
+  } finally {
+    setIsSubiting(false);
+  }
+};
 
   return (
     <>

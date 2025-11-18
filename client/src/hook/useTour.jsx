@@ -1,6 +1,8 @@
 // src/hooks/useTour.js
 import introJs from "intro.js";
 import "intro.js/introjs.css";
+import { useCallback } from "react";
+import { useIntroTheme } from "./useThemeIntro";
 
 /**
  * Hook reutilizable para mostrar tours interactivos con Intro.js
@@ -9,23 +11,33 @@ import "intro.js/introjs.css";
  * @param {Object} options - Opciones adicionales de Intro.js
  */
 export function useTour(steps, storageKey = "tourUPTAMCA", options = {}) {
-  const startTour = () => {
+  useIntroTheme();
+  const startTour = useCallback(() => {
     try {
       // Verifica si el usuario ya vio el tour
       const yaVisto = localStorage.getItem(storageKey);
+
+      const defaultOptions = {
+        nextLabel: "Siguiente",
+        prevLabel: "Anterior",
+        doneLabel: "Finalizar",
+        tooltipPosition: "auto",
+        tooltipClass: "custom-intro-tooltip",
+        highlightClass: "custom-intro-highlight",
+        exitOnOverlayClick: false,
+        showBullets: true,
+        showProgress: true,
+        keyboardNavigation: true,
+        overlayOpacity: 0.5,
+        positionPrecedence: ["bottom", "top", "right", "left"],
+      };
 
       if (!yaVisto) {
         const intro = introJs();
 
         intro.setOptions({
           steps,
-          showProgress: true,
-          showStepNumbers: false,
-          showBullets: true,
-          exitOnOverlayClick: false,
-          nextLabel: "Siguiente →",
-          prevLabel: "← Anterior",
-          doneLabel: "Finalizar",
+          ...defaultOptions,
           ...options, // permite sobreescribir configuraciones
         });
 
@@ -38,13 +50,13 @@ export function useTour(steps, storageKey = "tourUPTAMCA", options = {}) {
     } catch (error) {
       console.error("Error iniciando tour:", error);
     }
-  };
+  }, [options, steps, storageKey]);
 
-  const resetTour = () => {
+  const resetTour = useCallback(() => {
     // Permite reactivar el tour manualmente
     localStorage.removeItem(storageKey);
     startTour();
-  };
+  }, [startTour, storageKey]);
 
   return { startTour, resetTour };
 }

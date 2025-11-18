@@ -11,6 +11,7 @@ import CustomLabel from "./customLabel";
 import { useState, useEffect } from "react";
 import pnfSchema from "../schemas/pnf.schema";
 import useApi from "../hook/useApi";
+import useSweetAlert from "../hook/useSweetAlert";
 
 export default function ModalEditarCampoPNF({
   open,
@@ -20,6 +21,7 @@ export default function ModalEditarCampoPNF({
   onGuardar,
 }) {
   const axios = useApi();
+  const alert = useSweetAlert();
   const [valor, setValor] = useState(valorActual || "");
   const [error, setError] = useState("");
   const [pnfs, setPnfs] = useState([]);
@@ -46,20 +48,59 @@ export default function ModalEditarCampoPNF({
     fetchPnfs();
   }, []);
 
-  // 💾 Guardar cambios con validación
-  const handleGuardar = () => {
-    console.log("🟢 [DEBUG] Guardando campo:", { campo, valor });
-    try {
-      const campoSchema = pnfSchema.pick({ [campo]: true });
-      campoSchema.parse({ [campo]: valor });
-      onGuardar(campo, valor);
-      setError("");
-      onClose();
-    } catch (err) {
-      console.error("❌ [DEBUG] Error validando campo:", err);
+const handleGuardar = async () => {
+  console.log("🟢 [DEBUG] Guardando campo:", { campo, valor });
+
+  try {
+    // ✅ Confirmar antes de guardar
+    const confirm = await alert.confirm(
+      "¿Desea guardar los cambios?",
+      "El valor actual será reemplazado por el nuevo."
+    );
+    if (!confirm) return;
+
+    // ✅ Validar el campo individual con Zod
+    const campoSchema = pnfSchema.pick({ [campo]: true });
+    campoSchema.parse({ [campo]: valor });
+
+    // ✅ Si pasa validación, guardar
+    onGuardar(campo, valor);
+    setError("");
+
+    // 🔽 Aquí debes poner el toast de éxito
+    alert.toast({
+      title: "Campo actualizado",
+      message: "El valor se guardó correctamente.",
+      config: { icon: "success" },
+    });
+
+    onClose();
+  } catch (err) {
+    console.error("❌ [DEBUG] Error validando campo:", err);
+
+    // ⚠️ Manejo detallado de errores de validación Zod
+    if (err.errors && Array.isArray(err.errors)) {
+      err.errors.forEach((e) => {
+        // 🔽 Aquí debes poner el toast de advertencia por cada validación
+        alert.toast({
+          title: "Validación",
+          message: e.message,
+          config: { icon: "warning" },
+        });
+      });
       setError(err.errors?.[0]?.message || "Error validando campo.");
+    } else {
+      // 🔽 Aquí debes poner el toast de error general
+      alert.toast({
+        title: "Error al guardar",
+        message: err.message || "El valor ingresado no es válido.",
+        config: { icon: "error" },
+      });
+
+      setError("Error validando campo.");
     }
-  };
+  }
+};
 
   // 🧠 Render dinámico según el campo
   const renderCampo = () => {

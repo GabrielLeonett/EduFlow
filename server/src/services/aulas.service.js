@@ -319,7 +319,11 @@ export default class AulaService {
       await notificationService.crearNotificacionMasiva({
         titulo: "Aula Actualizada",
         tipo: "aula_actualizada",
-        contenido: `Se han actualizado los datos del aula "${datos.nombre || aulaActual.nombre}" (${datos.codigo || aulaActual.codigo}) en la sede ${datos.sede || aulaActual.sede}`,
+        contenido: `Se han actualizado los datos del aula "${
+          datos.nombre || aulaActual.nombre
+        }" (${datos.codigo || aulaActual.codigo}) en la sede ${
+          datos.sede || aulaActual.sede
+        }`,
         metadatos: {
           aula_id: id_aula,
           aula_codigo: datos.codigo || aulaActual.codigo,
@@ -546,25 +550,36 @@ export default class AulaService {
    * @static
    * @async
    * @method obtenerAulasPorSede
-   * @description Obtener aulas filtradas por sede con validación
-   * @param {string} sede - Sede a filtrar
+   * @description Obtener aulas filtradas por sede con validación, paginación, ordenamiento y búsqueda
+   * @param {Object} queryParams - Parámetros de consulta
+   * @param {string} queryParams.page - Página actual
+   * @param {string} queryParams.limit - Límite por página
+   * @param {string} queryParams.sort_order - Campo para ordenar
+   * @param {string} queryParams.search - Término de búsqueda
+   * @param {string} sede - ID de la sede a filtrar
    * @returns {Object} Resultado de la operación
    */
-  static async obtenerAulasPorSede(sede) {
+  static async obtenerAulasPorSede(queryParams, sede) {
     try {
-      console.log(`🔍 [obtenerAulasPorSede] Filtrando aulas por sede: ${sede}`);
+      const queryParamsValidas = ["page", "limit", "sort_order", "search"];
+      const validationQuery = ValidationService.validateQueryParams(
+        queryParams,
+        queryParamsValidas
+      );
 
-      const respuestaModel = await AulaModel.filtrarPorSede(sede);
+      console.log(
+        `🔍 [obtenerAulasPorSede] Filtrando aulas por sede: ${sede}`,
+        queryParams
+      );
+
+      const respuestaModel = await AulaModel.filtrarPorSede(sede, queryParams);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
       return FormatterResponseService.success(
-        {
-          aulas: respuestaModel.data,
-          total: respuestaModel.data.length,
-        },
+        respuestaModel.data,
         `Aulas de la sede ${sede} obtenidas exitosamente`,
         {
           status: 200,

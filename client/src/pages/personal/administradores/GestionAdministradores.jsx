@@ -17,7 +17,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import useApi from "../../../hook/useApi";
 import useSweetAlert from "../../../hook/useSweetAlert";
 import { Route as RouteIcon } from "@mui/icons-material";
-import { useTour } from "../../../hook/useTour"
+import { useTour } from "../../../hook/useTour";
 
 export default function GestionAdministradores() {
   const axios = useApi();
@@ -61,28 +61,31 @@ export default function GestionAdministradores() {
   const { startTour, resetTour } = useTour(
     [
       {
-        intro: "👋 Bienvenido al módulo de gestión de administradores. Te mostraré dónde está todo."
+        intro:
+          "👋 Bienvenido al módulo de gestión de administradores. Te mostraré dónde está todo.",
       },
       {
         element: "#admin-container",
         intro: "Aquí verás la lista de todos los administradores registrados.",
-        position: "right"
+        position: "right",
       },
       {
         element: "#admin-card-ejemplo",
-        intro: "Cada tarjeta muestra la información de un administrador y sus permisos.",
-        position: "bottom"
+        intro:
+          "Cada tarjeta muestra la información de un administrador y sus permisos.",
+        position: "bottom",
       },
       {
         element: "#btn-registrar-admin",
         intro: "Desde este botón puedes registrar un nuevo administrador.",
-        position: "left"
+        position: "left",
       },
       {
         element: "#btn-reiniciar-tour",
-        intro: "Puedes repetir el tutorial en cualquier momento desde este botón.",
-        position: "top"
-      }
+        intro:
+          "Puedes repetir el tutorial en cualquier momento desde este botón.",
+        position: "top",
+      },
     ],
     "tourGestionAdministradores" // clave única para este módulo
   );
@@ -93,7 +96,6 @@ export default function GestionAdministradores() {
       startTour();
     }
   }, [usuarios]);
-
 
   return (
     <>
@@ -145,9 +147,14 @@ export default function GestionAdministradores() {
         {/* Tarjetas de usuario */}
         <Grid container spacing={3} id="admin-container">
           {usuariosFiltrados.map((usuario, index) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={usuario.id}
-              {...(index === 0 ? { id: "admin-card-ejemplo" } : {})}>
-              <CardAdmin usuario={usuario} />
+            <Grid
+              size={{ xs: 12, sm: 6, md: 4 }}
+              key={usuario.id}
+              {...(index === 0 ? { id: "admin-card-ejemplo" } : {})}
+            >
+              <CardAdmin
+                usuario={usuario}
+              />
             </Grid>
           ))}
         </Grid>

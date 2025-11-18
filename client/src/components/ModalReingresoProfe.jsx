@@ -14,10 +14,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
 import reingresoSchema from "../schemas/reingreso.schema.js"; // Asegúrate de importar tu schema
+import useSweetAlert from "../hook/useSweetAlert.jsx";
 
 export default function ModalReingresoProfe({ open, onClose, profesor }) {
   const navigate = useNavigate();
   const axios = useApi();
+  const alert = useSweetAlert();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -37,29 +39,54 @@ export default function ModalReingresoProfe({ open, onClose, profesor }) {
     },
   });
 
-  const onSubmit = async (data) => {
-    try {
-      setIsLoading(true);
+ const onSubmit = async (data) => {
+  try {
+    const confirm = await alert.confirm(
+      "¿Desea reingresar este profesor?",
+      "El profesor volverá a estar activo en el sistema."
+    );
+    if (!confirm) return;
 
-      // Convertir datos según el schema
-      const formData = {
-        ...data,
-        fecha_efectiva: data.fecha_efectiva || null,
-        observaciones: data.observaciones || null,
-      };
-      await axios.post("/profesores/reingresar", formData); // Cambiado a POST para reingreso
-      reset();
-      onClose();
+    setIsLoading(true);
 
-      // Redirigir a donde necesites después del reingreso
-      navigate("/profesores"); // O la ruta que corresponda
-    } catch (error) {
-      console.error("Error en reingreso de profesor:", error);
-      alert("Ocurrió un error al procesar el reingreso del profesor.");
-    } finally {
-      setIsLoading(false);
+    // 🧾 Preparar datos según el schema
+    const formData = {
+      ...data,
+      fecha_efectiva: data.fecha_efectiva || null,
+      observaciones: data.observaciones || null,
+    };
+
+    await axios.post("/profesores/reingresar", formData);
+
+    alert.success(
+      "Profesor reingresado con éxito",
+      "El profesor ha sido reactivado correctamente."
+    );
+
+    reset();
+    onClose();
+
+    // 🔄 Redirigir después del reingreso
+    navigate("/profesores");
+  } catch (error) {
+    console.error("❌ Error en reingreso de profesor:", error);
+
+    // ⚠️ Validaciones desde backend
+    if (error.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((errVal) => {
+        alert.toast(errVal.field, errVal.message);
+      });
+    } else {
+      // ❌ Error general
+      alert.error(
+        error.title || "Error al reingresar profesor",
+        error.message || "No se pudo procesar el reingreso del profesor."
+      );
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleClose = () => {
     reset();

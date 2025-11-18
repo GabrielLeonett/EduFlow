@@ -8,6 +8,8 @@ const {
   mostrarPNF,
   actualizarPNF,
   actualizarDescripcionTrayecto,
+  actualizarUnidadCurricular,
+  eliminarUnidadCurricular,
   mostrarTrayectos,
   mostrarSecciones,
   mostrarUnidadesCurriculares,
@@ -181,7 +183,7 @@ CurricularRouter.put(
  * =============================================
  * RUTAS DE UNIDADES CURRICULARES
  * =============================================
-*/
+ */
 
 /**
  * @name GET /trayectos/:idTrayecto/unidades-curriculares
@@ -194,7 +196,7 @@ CurricularRouter.put(
  *  - Coordinador
  *  - Profesor
  * @returns {Array} Lista de unidades curriculares
-*/
+ */
 CurricularRouter.get(
   "/trayectos/:idTrayecto/unidades-curriculares",
   middlewareAuth([
@@ -240,7 +242,7 @@ CurricularRouter.get(
  */
 CurricularRouter.get(
   "/unidades-curriculares/:codigoPNF/:valorTrayecto",
-    middlewareAuth([
+  middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
@@ -271,7 +273,7 @@ CurricularRouter.post(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
-    "Coordinador"
+    "Coordinador",
   ]),
   regitrarUnidadCurricular
 );
@@ -301,13 +303,41 @@ CurricularRouter.post(
  * }
  */
 CurricularRouter.put(
-  "/unidades-curriculares/:idUnidadCurricular",
+  "/unidades-curriculares/:id_unidad_curricular",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
   ]),
-  CurricularController.actualizarUnidadCurricular
+  actualizarUnidadCurricular
+);
+
+/**
+ * @name DELETE /unidades-curriculares/:id_unidad_curricular
+ * @description Actualiza una Unidad Curricular existente (parcial o completamente)
+ * @param {number} idUnidadCurricular - ID de la unidad curricular a actualizar
+ * @middleware Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ * @body {Object} datos - Datos actualizados de la unidad curricular
+ * @body {string} [datos.codigo_unidad] - Nuevo código de la unidad
+ * @body {string} [datos.nombre_unidad_curricular] - Nuevo nombre de la unidad
+ * @body {string} [datos.descripcion_unidad_curricular] - Nueva descripción
+ * @body {number} [datos.horas_clase] - Nuevas horas de clase
+ * @body {number} [datos.id_trayecto] - Nuevo ID del trayecto
+ * @returns {Object} Objeto con mensaje de confirmación y datos actualizados
+ * @example
+ * DELETE /unidades-curriculares/1
+ */
+CurricularRouter.delete(
+  "/unidades-curriculares/:id_unidad_curricular",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  eliminarUnidadCurricular
 );
 
 /**
@@ -373,7 +403,7 @@ CurricularRouter.get(
  */
 CurricularRouter.get(
   "/secciones/:codigoPNF/:valorTrayecto",
-    middlewareAuth([
+  middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
@@ -403,7 +433,7 @@ CurricularRouter.post(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
-    "Coordinador"
+    "Coordinador",
   ]),
   CrearSecciones
 );
@@ -426,7 +456,7 @@ CurricularRouter.put(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
-    "Coordinador"
+    "Coordinador",
   ]),
   asignacionTurnoSeccion
 );

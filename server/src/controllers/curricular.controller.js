@@ -43,6 +43,35 @@ export default class CurricularController {
   }
 
   /**
+   * @static
+   * @async
+   * @method eliminarUnidadCurricular
+   * @description Controlador para eliminar una unidad curricular
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async eliminarUnidadCurricular(req, res) {
+    try {
+      const { id_unidad_curricular } = req.params;
+      const user_action = req.user; // Asumiendo que el usuario viene del middleware de auth
+
+      return FormatResponseController.manejarServicio(
+        res,
+        await CurricularService.eliminarUnidadCurricular(
+          parseInt(id_unidad_curricular),
+          user_action
+        )
+      );
+    } catch (error) {
+      console.error("Error en controller eliminarUnidadCurricular:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Error al eliminar la unidad curricular",
+      });
+    }
+  }
+
+  /**
    * @name actualizarPNF
    * @description Actualizar un Programa Nacional de Formación (PNF) existente
    * @param {Object} req - Objeto de solicitud Express
@@ -86,16 +115,50 @@ export default class CurricularController {
    * @returns {void}
    */
   static async actualizarUnidadCurricular(req, res) {
-    const idUnidadCurricular = parseInt(req.params.idUnidadCurricular);
-
+    const id_unidad_curricular = parseInt(req.params.id_unidad_curricular);
+    console.log(id_unidad_curricular);
     return FormatResponseController.manejarServicio(
       res,
       CurricularService.actualizarUnidadCurricular(
-        idUnidadCurricular,
+        id_unidad_curricular,
         req.body,
         req.user
       )
     );
+  }
+  /**
+   * @static
+   * @async
+   * @method eliminarUnidadCurricular
+   * @description Controlador para eliminar una unidad curricular
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async eliminarUnidadCurricular(req, res) {
+    try {
+      const { id_unidad_curricular } = req.params;
+      const user_action = req.user; // Asumiendo que el usuario viene del middleware de auth
+
+      if (!id_unidad_curricular) {
+        return res.status(400).json({
+          success: false,
+          message: "ID de unidad curricular es requerido",
+        });
+      }
+
+      const resultado = await CurricularService.eliminarUnidadCurricular(
+        parseInt(id_unidad_curricular),
+        user_action
+      );
+
+      res.status(resultado.success ? 200 : 400).json(resultado);
+    } catch (error) {
+      console.error("Error en controller eliminarUnidadCurricular:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Error al eliminar la unidad curricular",
+      });
+    }
   }
 
   /**
@@ -108,7 +171,7 @@ export default class CurricularController {
   static async mostrarPNF(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      CurricularService.mostrarPNF()
+      CurricularService.mostrarPNF(req.query)
     );
   }
 

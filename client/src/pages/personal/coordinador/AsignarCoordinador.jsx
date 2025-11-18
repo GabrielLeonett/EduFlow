@@ -20,9 +20,11 @@ import CustomLabel from "../../../components/customLabel";
 import CustomButton from "../../../components/customButton";
 import useApi from "../../../hook/useApi"; // Added import for axios
 import { asignarCoordinadorSchema } from "../../../schemas/coordinador.schema";
+import useSweetAlert from "../../../hook/useSweetAlert";
 
 export default function AsignarCoordinador() {
   const axios = useApi();
+  const alert = useSweetAlert();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -82,76 +84,70 @@ export default function AsignarCoordinador() {
     fetchData();
   }, []);
 
-  const onSubmit = async (data) => {
-    try {
-      console.log("Datos enviados:", data);
+const onSubmit = async (data) => {
+  try {
+    console.log("Datos enviados:", data);
 
-      // Asegúrate de que los nombres de los campos coincidan con tu backend
-      const payload = {
-        id_profesor: data.id_profesor,
-        id_pnf: data.id_pnf,
-      };
+    // ✅ Confirmación antes de asignar
+    const confirm = await alert.confirm(
+      "¿Desea asignar este profesor como coordinador?",
+      "Esta acción actualizará la lista de coordinadores."
+    );
+    if (!confirm) return;
 
-      console.log("Payload:", payload);
+    // ✅ Construcción del payload según el backend
+    const payload = {
+      id_profesor: data.id_profesor,
+      id_pnf: data.id_pnf,
+    };
 
-      await axios.post("/coordinadores", payload);
+    console.log("Payload:", payload);
 
-      await Swal.fire({
-        icon: "success",
-        title: "¡Asignación exitosa!",
-        text: "El profesor ha sido asignado como coordinador del PNF.",
-        confirmButtonColor: "#3085d6",
-        timer: 3000,
-        showConfirmButton: true,
-      });
+    // ✅ Petición al servidor
+    await axios.post("/coordinadores", payload);
 
-      reset();
+    alert.success(
+      "¡Asignación exitosa!",
+      "El profesor ha sido asignado como coordinador del PNF."
+    );
 
-      // Recargar lista de profesores para actualizar coordinadores
-      const resProfesores = await axios.get("/Profesor");
-      let nuevosProfesores = [];
+    reset();
 
-      if (resProfesores.data && resProfesores) {
-        if (Array.isArray(resProfesores.data)) {
-          nuevosProfesores = resProfesores.data;
-        } else if (Array.isArray(resProfesores)) {
-          nuevosProfesores = resProfesores;
-        }
+    // ✅ Recargar lista de profesores actualizada
+    const resProfesores = await axios.get("/Profesor");
+    let nuevosProfesores = [];
+
+    if (resProfesores?.data) {
+      if (Array.isArray(resProfesores.data)) {
+        nuevosProfesores = resProfesores.data;
+      } else if (Array.isArray(resProfesores)) {
+        nuevosProfesores = resProfesores;
       }
-
-      const profesoresFiltrados = nuevosProfesores.filter(
-        (profe) => !profe.is_coordinador
-      );
-      setProfesores(profesoresFiltrados);
-    } catch (error) {
-      console.error("Error al asignar coordinador:", error);
-
-      // Manejo mejorado de errores
-      let errorMessage = "Hubo un problema en la asignación";
-
-      if (error.response) {
-        // El servidor respondió con un código de error
-        errorMessage =
-          error.response.data?.message ||
-          error.response.data?.error ||
-          `Error ${error.response.status}: ${error.response.statusText}`;
-      } else if (error.request) {
-        // La solicitud fue hecha pero no se recibió respuesta
-        errorMessage =
-          "No se pudo conectar con el servidor. Verifica tu conexión.";
-      } else {
-        // Algo pasó al configurar la solicitud
-        errorMessage = error.message;
-      }
-
-      await Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: errorMessage,
-        confirmButtonColor: "#d33",
-      });
     }
-  };
+
+    const profesoresFiltrados = nuevosProfesores.filter(
+      (profe) => !profe.is_coordinador
+    );
+    setProfesores(profesoresFiltrados);
+  } catch (error) {
+    console.error("Error al asignar coordinador:", error);
+
+    // ✅ Manejo estandarizado de errores del backend
+    if (error?.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((error_validacion) => {
+        alert.toast(error_validacion.field, error_validacion.message);
+      });
+    } else {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Hubo un problema en la asignación. Intente nuevamente.";
+
+      alert.error("Error al asignar coordinador", message);
+    }
+  }
+};
 
   const handleReset = () => {
     reset();

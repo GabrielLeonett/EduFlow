@@ -331,9 +331,14 @@ export default class HorarioService {
    * Mostrar profesores disponibles según horas necesarias
    * @param {number} id_seccion
    * @param {number} horas_necesarias
+   * @param {number} id_unidad_curricular
    * @returns {Object} Respuesta formateada con profesores disponibles
    */
-  static async mostrarProfesoresParaHorario(id_seccion, horas_necesarias) {
+  static async mostrarProfesoresParaHorario(
+    id_seccion,
+    horas_necesarias,
+    id_unidad_curricular = null
+  ) {
     try {
       const validationidSeccion = validationService.validateId(
         id_seccion,
@@ -356,10 +361,23 @@ export default class HorarioService {
           "Horas necesarias inválidas"
         );
       }
+      if (id_unidad_curricular != null) {
+        const validationIdUnidad = validationService.validateId(
+          id_unidad_curricular,
+          "id unidad curricular"
+        );
+        if (!validationIdUnidad.isValid) {
+          return FormatterResponseService.validationError(
+            validationIdUnidad.errors,
+            "Id de la unidad curricular inválido"
+          );
+        }
+      }
 
       const dbResponse = await HorarioModel.obtenerProfesoresDisponibles(
         id_seccion,
-        horas_necesarias
+        horas_necesarias,
+        id_unidad_curricular
       );
 
       if (dbResponse && dbResponse.state === "error") {
@@ -680,7 +698,8 @@ export default class HorarioService {
       console.log("📊 Datos obtenidos para el documento:", data);
 
       // 4️ Generar documento
-      const {buffer,extension} = await DocumentServices.generarDocumentoHorario(data);
+      const { buffer, extension } =
+        await DocumentServices.generarDocumentoHorario(data);
 
       return FormatterResponseService.success(
         {

@@ -89,7 +89,7 @@ const Miuser = () => {
       actions: [
         {
           label: "Asignar Administradores",
-          path: "/coordinacion/coordinadores/asignar",
+          path: "/administradores/crear",
           icon: <AdminPanelSettings />,
         },
         {

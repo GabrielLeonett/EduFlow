@@ -16,13 +16,14 @@ export default function ProgramasFormacion() {
 
   useEffect(() => {
     const fetchPNFS = async () => {
-      const { pnf } = await axios.get("/pnf");
-      setPNFS(pnf);
+      const { pnfs } = await axios.get("/pnf");
+      console.log(pnfs);
+      setPNFS(pnfs);
       setLoading(false);
     };
 
     fetchPNFS();
-  }, []);
+  }, [axios]);
 
   return (
     <>

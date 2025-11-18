@@ -45,41 +45,56 @@ export default function ModalRegisterPosgrado({ open, onClose, setState }) {
     },
   });
 
-  const onSubmit = async (data) => {
-    try {
-      setIsLoading(true);
+const onSubmit = async (data) => {
+  try {
+    const confirm = await alert.confirm(
+      "¿Desea registrar este posgrado?",
+      "Se agregará un nuevo tipo de posgrado al catálogo."
+    );
+    if (!confirm) return;
 
-      const payload = {
-        tipo_pos_grado: data.tipo,
-        nombre_pos_grado: data.nombre,
-      };
+    setIsLoading(true);
 
-      await axios.post("/catalogos/posgrados", payload);
+    // 🧾 Construcción del payload
+    const payload = {
+      tipo_pos_grado: data.tipo,
+      nombre_pos_grado: data.nombre,
+    };
 
-      // Actualizar la lista de posgrados
-      const res = await axios.get("/catalogos/posgrados");
-      setState(res.data || res);
+    await axios.post("/catalogos/posgrados", payload);
 
-      alert.success(
-        "Posgrado registrado con éxito",
-        "Ya puede seleccionarlo en el formulario."
+    // 🔄 Actualizar lista de posgrados
+    const res = await axios.get("/catalogos/posgrados");
+    setState(res.data || res);
+
+    alert.success(
+      "Posgrado registrado con éxito",
+      "Ya puede seleccionarlo en el formulario."
+    );
+
+    handleClose();
+  } catch (error) {
+    console.error("❌ Error al registrar posgrado:", error);
+
+    // ⚠️ Validaciones desde backend
+    if (error.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((errVal) => {
+        alert.toast(errVal.field, errVal.message);
+      });
+    } else {
+      // ❌ Error general
+      alert.error(
+        error.title || "Error al registrar posgrado",
+        error.message || "No se pudo registrar el posgrado, intente nuevamente."
       );
-    } catch (error) {
-      console.log("Error al registrar posgrado:", error);
-      console.log(error.error.totalErrors > 0);
-      if (error.error.totalErrors > 0) {
-        error.error.validationErrors.map((error_validacion) => {
-          console.log(error_validacion.field, error_validacion.message);
-          alert.toast({title: error_validacion.field, message:error_validacion.message});
-        });
-      } else {
-        alert.error(error.title, error.message);
-      }
-      handleClose()
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    handleClose();
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleClose = () => {
     reset();

@@ -11,11 +11,12 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import useApi from "../hook/useApi.jsx";
 import CustomButton from "./customButton.jsx";
+import useSweetAlert from "../hook/useSweetAlert.jsx";
 
 export default function ModalRegisterPreGrado({ open, onClose, setState }) {
   const [isLoading, setIsLoading] = useState(false);
   const axios  = useApi(true);
-
+  const alert = useSweetAlert();
   const { register, handleSubmit, reset, watch } = useForm({
     defaultValues: {
       tipo: "",
@@ -42,26 +43,56 @@ export default function ModalRegisterPreGrado({ open, onClose, setState }) {
     "Idiomas",
   ];
 
-  const onSubmit = async (data) => {
-    try {
-      setIsLoading(true);
-      const payload = {
-        tipo_pre_grado: data.tipo,
-        nombre_pre_grado: data.nombre,
-      };
+const onSubmit = async (data) => {
+  try {
+    const confirm = await alert.confirm(
+      "¿Desea registrar este pregrado?",
+      "Se agregará un nuevo tipo de pregrado al catálogo."
+    );
+    if (!confirm) return;
 
-      await axios.post("/catalogos/pregrados", payload);
+    setIsLoading(true);
 
-      // Actualizar lista
-      const res = await axios.get("/catalogos/pregrados");
-      setState(res); // ✅ Asegúrate de usar res.data
+    // 🧾 Construcción del payload
+    const payload = {
+      tipo_pre_grado: data.tipo,
+      nombre_pre_grado: data.nombre,
+    };
 
-      reset();
-    } finally {
-      onClose();
-      setIsLoading(false);
+    await axios.post("/catalogos/pregrados", payload);
+
+    alert.success(
+      "Pregrado registrado con éxito",
+      "Ya puede seleccionarlo en el formulario."
+    );
+
+    // 🔄 Actualizar lista
+    const res = await axios.get("/catalogos/pregrados");
+    setState(res.data || res);
+
+    reset();
+    onClose();
+  } catch (error) {
+    console.error("❌ Error al registrar pregrado:", error);
+
+    // ⚠️ Validaciones del backend
+    if (error.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((errVal) => {
+        alert.toast(errVal.field, errVal.message);
+      });
+    } else {
+      // ❌ Error general
+      alert.error(
+        error.title || "Error al registrar pregrado",
+        error.message || "No se pudo registrar el pregrado. Intente nuevamente."
+      );
     }
-  };
+
+    onClose();
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Manejar cierre del modal
   const handleClose = () => {

@@ -11,10 +11,19 @@ import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
+import {
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
+import {
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 
 export default function InicioSesion() {
   const theme = useTheme();
   const [processing, setProcessing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -30,11 +39,20 @@ export default function InicioSesion() {
 
   const { login } = useAuth();
 
+  const handleClickShowPassword = () => {
+    setShowPassword((show) => !show);
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
   const onSubmit = async (formData) => {
-    // Forzar validación antes de enviar
     setProcessing(true);
     try {
-      login(formData);
+      await login(formData);
+    } catch (error) {
+      console.error("Error en login:", error);
     } finally {
       setProcessing(false);
     }
@@ -66,6 +84,7 @@ export default function InicioSesion() {
             Inicio de sesión
           </Typography>
 
+          {/* Campo Email */}
           <Box className="mb-5 w-full">
             <CustomLabel
               fullWidth
@@ -76,21 +95,38 @@ export default function InicioSesion() {
               {...register("email")}
               error={!!errors.email}
               helperText={errors.email?.message || "Ej: usuario@dominio.com"}
-              className="mb-1"
             />
           </Box>
 
+          {/* ✅ Campo Contraseña CORREGIDO - solo CustomLabel */}
           <Box className="mb-6 w-full">
             <CustomLabel
               fullWidth
               id="password"
               label="Contraseña"
-              type="password"
+              type={showPassword ? "text" : "password"}
               variant="outlined"
               {...register("password")}
               error={!!errors.password}
-              helperText={errors.password?.message || "Mínimo 8 caracteres"}
-              className="mb-1"
+              helperText={errors.password?.message || "Ingresa tu contraseña"}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={
+                        showPassword
+                          ? "Ocultar contraseña"
+                          : "Mostrar contraseña"
+                      }
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
           </Box>
 
@@ -106,7 +142,7 @@ export default function InicioSesion() {
             className="h-15 w-full rounded-xl py-3 font-medium"
             disabled={processing || !isValid}
             onClick={async () => {
-              await trigger(); // Forzar validación
+              await trigger();
             }}
           >
             {processing ? (
@@ -120,9 +156,15 @@ export default function InicioSesion() {
             onClick={() => {
               navigate("/recuperar-contrasena");
             }}
-            sx={{ cursor: "pointer", color: theme.palette.primary.main }}
+            sx={{ 
+              cursor: "pointer", 
+              color: theme.palette.primary.main,
+              '&:hover': {
+                textDecoration: 'underline'
+              }
+            }}
             variant="body2"
-            className="mt-6 text-center text-gray-600"
+            className="mt-6 text-center"
           >
             ¿Olvidaste tu contraseña?
           </Typography>

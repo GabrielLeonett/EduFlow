@@ -82,7 +82,7 @@ export default class CurricularModel {
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
       )
     `;
-    console.log(datos)
+      console.log(datos);
 
       const valores = [
         null, // p_resultado (OUT parameter)
@@ -171,6 +171,7 @@ export default class CurricularModel {
    * @param {string} params.datos.descripcion_unidad_curricular - Descripción de la unidad
    * @param {number} params.datos.carga_horas_academicas - Carga horaria total
    * @param {string} params.datos.codigo_unidad_curricular - Código único de la unidad
+   * @param {Array<number>} params.datos.areas_conocimiento - Array de IDs de áreas de conocimiento
    * @param {number} usuario_accion - Usuario que realiza la acción
    * @returns {Promise<Object>} Resultado del registro
    */
@@ -182,9 +183,20 @@ export default class CurricularModel {
         descripcion_unidad_curricular,
         carga_horas_academicas,
         codigo_unidad_curricular,
+        areas_conocimiento = [], // Nuevo parámetro con valor por defecto
       } = datos;
 
-      const query = `CALL public.registrar_unidad_curricular_completo($1, $2, $3, $4, $5, $6, NULL)`;
+      // Validar que areas_conocimiento sea un array
+      if (!Array.isArray(areas_conocimiento)) {
+        throw new Error("El parámetro areas_conocimiento debe ser un array");
+      }
+
+      // Convertir a array de números si es necesario
+      const areasConocimientoArray = areas_conocimiento.map((area) =>
+        Number(area.id_area_conocimiento)
+      );
+
+      const query = `CALL public.registrar_unidad_curricular_completo($1, $2, $3, $4, $5, $6, $7, NULL)`;
       const params = [
         usuario_accion,
         idTrayecto,
@@ -192,7 +204,10 @@ export default class CurricularModel {
         descripcion_unidad_curricular,
         carga_horas_academicas,
         codigo_unidad_curricular,
+        areasConocimientoArray, // Nuevo parámetro
       ];
+
+      console.log("Parámetros para el procedimiento:", params);
 
       const { rows } = await pg.query(query, params);
 
@@ -208,49 +223,77 @@ export default class CurricularModel {
       );
     }
   }
+
   /**
    * @static
    * @async
    * @method actualizarUnidadCurricular
    * @description Actualizar una Unidad Curricular usando el procedimiento almacenado
-   * @param {number} idUnidadCurricular - ID de la unidad curricular
+   * @param {number} id_unidad_curricular - ID de la unidad curricular
    * @param {Object} datos - Datos de actualización
-   * @param {string} [datos.codigo_unidad] - Nuevo código de la unidad
+   * @param {string} [datos.codigo_unidad_curricular] - Nuevo código de la unidad
    * @param {string} [datos.nombre_unidad_curricular] - Nuevo nombre de la unidad
    * @param {string} [datos.descripcion_unidad_curricular] - Nueva descripción
-   * @param {number} [datos.horas_clase] - Nuevas horas de clase
+   * @param {number} [datos.carga_horas_academicas] - Nuevas horas de clase
    * @param {number} [datos.id_trayecto] - Nuevo ID del trayecto
+   * @param {boolean} [datos.activo] - Nuevo estado activo/inactivo
+   * @param {Array<number>} [datos.areas_conocimiento] - Array de IDs de áreas de conocimiento
    * @param {number} usuarioId - ID del usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
   static async actualizarUnidadCurricular(
-    idUnidadCurricular,
+    id_unidad_curricular,
     datos,
     usuarioId
   ) {
     try {
       console.log("📊 [Model] Actualizando unidad curricular:", {
-        idUnidadCurricular,
+        id_unidad_curricular,
         datos,
         usuarioId,
       });
 
       const query = `
-        CALL actualizar_unidad_curricular_completa_o_parcial(
-          $1, $2, $3, $4, $5, $6, $7, $8
-        )
-      `;
+      CALL actualizar_unidad_curricular_completo(
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+      )
+    `;
+
+      /*
+        OUT p_resultado JSON,
+        IN p_usuario_accion INTEGER,
+        IN p_id_unidad_curricular INTEGER,
+        IN p_id_trayecto INTEGER DEFAULT NULL,
+        IN p_codigo_unidad VARCHAR DEFAULT NULL,
+        IN p_nombre_unidad_curricular VARCHAR DEFAULT NULL,
+        IN p_descripcion_unidad_curricular TEXT DEFAULT NULL,
+        IN p_horas_clase SMALLINT DEFAULT NULL,
+        IN p_activo BOOLEAN DEFAULT NULL,
+        IN p_areas_conocimiento INTEGER[] DEFAULT NULL 
+      */
 
       const valores = [
         null, // p_resultado (OUT parameter)
-        usuarioId,
-        idUnidadCurricular,
-        datos.codigo_unidad || null,
-        datos.nombre_unidad_curricular || null,
-        datos.descripcion_unidad_curricular || null,
-        datos.horas_clase || null,
-        datos.id_trayecto || null,
+        usuarioId, // p_usuario_accion
+        id_unidad_curricular, // p_id_unidad_curricular
+        datos.id_trayecto || null, // p_id_trayecto
+        datos.codigo_unidad_curricular || null, // p_codigo_unidad
+        datos.nombre_unidad_curricular || null, // p_nombre_unidad_curricular
+        datos.descripcion_unidad_curricular || null, // p_descripcion_unidad_curricular
+        datos.carga_horas_academicas !== undefined
+          ? Number(datos.carga_horas_academicas)
+          : null, // p_horas_clase
+        datos.activo !== undefined ? Boolean(datos.activo) : null, // p_activo
+        datos.areas_conocimiento?.map((area) => {
+          return area.id_area_conocimiento;
+        }) || null, // p_areas_conocimiento (NUEVO parámetro)
       ];
+
+      console.log("🔍 [Model] Parámetros enviados al procedimiento:", {
+        ...valores,
+        // Ocultar el primer parámetro (null) para mejor legibilidad
+        areas_conocimiento: datos.areas_conocimiento || "No proporcionado",
+      });
 
       const { rows } = await pg.query(query, valores);
 
@@ -267,7 +310,6 @@ export default class CurricularModel {
       );
     }
   }
-
   // ===========================================================
   // MÉTODOS DE CONSULTA
   // ===========================================================
@@ -276,18 +318,75 @@ export default class CurricularModel {
    * @static
    * @async
    * @method mostrarPNF
-   * @description Obtiene todos los PNFs registrados
+   * @description Obtiene todos los PNFs registrados con filtros opcionales
+   * @param {Object} filters - Filtros opcionales
+   * @param {number} filters.id_sede - Filtrar por sede
+   * @param {boolean} filters.activo - Filtrar por estado activo/inactivo
+   * @param {boolean} filters.tiene_coordinador - Filtrar por PNFs con coordinador
+   * @param {string} filters.search - Búsqueda por nombre o código
    * @returns {Promise<Object>} Resultado de la consulta
    */
-  static async mostrarPNF() {
+  static async mostrarPNF(filters = {}) {
     try {
-      const { rows } = await pg.query(`SELECT * FROM public.vista_pnfs`);
+      let whereConditions = [];
+      let queryParams = [];
+      let paramCount = 0;
+
+      // Construir condiciones WHERE dinámicamente
+      if (filters.id_sede) {
+        paramCount++;
+        whereConditions.push(`id_sede = $${paramCount}`);
+        queryParams.push(filters.id_sede);
+      }
+
+      if (filters.activo !== undefined) {
+        paramCount++;
+        whereConditions.push(`activo = $${paramCount}`);
+        queryParams.push(filters.activo);
+      }
+
+      if (filters.tiene_coordinador !== undefined) {
+        paramCount++;
+        whereConditions.push(
+          `(EXISTS (SELECT 1 FROM coordinadores WHERE id_pnf = id_pnf)) = $${paramCount}`
+        );
+        queryParams.push(filters.tiene_coordinador);
+      }
+
+      if (filters.search) {
+        paramCount++;
+        whereConditions.push(
+          `(nombre_pnf ILIKE $${paramCount} OR codigo_pnf ILIKE $${paramCount})`
+        );
+        queryParams.push(`%${filters.search}%`);
+      }
+
+      // Construir la consulta final
+      const whereClause =
+        whereConditions.length > 0
+          ? `WHERE ${whereConditions.join(" AND ")}`
+          : "";
+
+      const query = `
+        SELECT * FROM public.vista_pnfs
+        ${whereClause}
+        ORDER BY nombre_pnf ASC
+      `;
+
+      console.log("🔍 Query ejecutada:", query);
+      console.log("📊 Parámetros:", queryParams);
+
+      const { rows } = await pg.query(query, queryParams);
+
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Listado de PNFs obtenidos."
+        "Listado de PNFs obtenidos exitosamente."
       );
     } catch (error) {
-      error.details = { path: "CurricularModel.mostrarPNF" };
+      error.details = {
+        path: "CurricularModel.mostrarPNF",
+        filters: filters,
+      };
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener los PNFs"
@@ -363,7 +462,10 @@ export default class CurricularModel {
    * @param {string|number} valorTrayecto - Valor del trayecto para filtrar
    * @returns {Promise<Object>} Resultado de la consulta
    */
-  static async mostrarSeccionesByPnfAndValueTrayecto(codigo_pnf, valorTrayecto) {
+  static async mostrarSeccionesByPnfAndValueTrayecto(
+    codigo_pnf,
+    valorTrayecto
+  ) {
     try {
       console.log("📊 [Model] Obteniendo secciones...", {
         codigo_pnf,
@@ -436,6 +538,7 @@ export default class CurricularModel {
         uc.nombre_unidad_curricular,
         uc.codigo_unidad,
         uc.horas_clase,
+        uc.descripcion_unidad_curricular,
         tr.valor_trayecto as trayecto_valor,
         p.codigo_pnf,
         p.nombre_pnf
@@ -453,7 +556,7 @@ export default class CurricularModel {
           " y su trayecto:" +
           valorTrayecto
       );
-      console.log(rows)
+      console.log(rows);
 
       console.log(`📊 [Model] ${rows.length} unidades curriculares obtenidas`);
 
@@ -526,14 +629,7 @@ export default class CurricularModel {
     try {
       const { rows } = await pg.query(
         `
-        SELECT 
-          id_unidad_curricular,
-          horas_clase,
-          nombre_unidad_curricular, 
-          descripcion_unidad_curricular,
-          codigo_unidad,
-          id_trayecto
-        FROM unidades_curriculares
+        SELECT * FROM public.vista_unidades_con_areas
         WHERE id_trayecto = $1
         ORDER BY nombre_unidad_curricular ASC;
         `,
@@ -549,6 +645,73 @@ export default class CurricularModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener las unidades curriculares"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerUnidadCurricularPorId
+   * @description
+   * @param {number} id
+   * @returns {Promise<Object>} Resultado de la consulta
+   */
+  static async obtenerUnidadCurricularPorId(id) {
+    try {
+      const { rows } = await pg.query(
+        `
+        SELECT * FROM public.vista_unidades_con_areas
+        WHERE id_unidad_curricular = $1
+        `,
+        [id]
+      );
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Unidades curriculares obtenidas correctamente."
+      );
+    } catch (error) {
+      error.details = { path: "CurricularModel.mostrarUnidadesCurriculares" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener las unidades curriculares"
+      );
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method eliminarUnidadCurricular
+   * @description Elimina físicamente una unidad curricular y todos sus registros relacionados
+   * @param {number} id_usuario - ID del usuario que ejecuta la acción
+   * @param {number} id_unidad_curricular - ID de la unidad curricular a eliminar
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async eliminarUnidadCurricular(id_usuario, id_unidad_curricular) {
+    try {
+      const query = `
+      CALL eliminar_unidad_curricular_fisicamente($1, $2, NULL);
+    `;
+
+      const { rows } = await pg.query(query, [
+        id_usuario,
+        id_unidad_curricular,
+      ]);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Unidad curricular eliminada correctamente."
+      );
+    } catch (error) {
+      error.details = {
+        path: "CurricularModel.eliminarUnidadCurricular",
+        id_usuario: id_usuario,
+        id_unidad_curricular: id_unidad_curricular,
+      };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al eliminar la unidad curricular"
       );
     }
   }

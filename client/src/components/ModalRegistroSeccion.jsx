@@ -9,6 +9,7 @@ import {
 import { useForm } from "react-hook-form";
 import CustomButton from "./customButton";
 import useApi from "../hook/useApi";
+import useSweetAlert from "../hook/useSweetAlert";
 
 export default function ModalRegistroSeccion({
   open,
@@ -17,17 +18,49 @@ export default function ModalRegistroSeccion({
 }) {
   const { register, handleSubmit, reset } = useForm();
   const axios = useApi(true);
+  const alert = useSweetAlert();
 
-  const onSubmit = async (data) => {
-    try {
-      await axios.post(`/trayectos/${idTrayecto}/secciones`, {
-        poblacionEstudiantil: parseInt(data.poblacion_estudiantil),
+const onSubmit = async (data) => {
+  try {
+    const confirm = await alert.confirm(
+      "¿Desea registrar esta sección?",
+      "Se agregará una nueva sección al trayecto seleccionado."
+    );
+    if (!confirm) return;
+
+    const payload = {
+      poblacionEstudiantil: parseInt(data.poblacion_estudiantil, 10),
+    };
+
+    await axios.post(`/trayectos/${idTrayecto}/secciones`, payload);
+
+    alert.success(
+      "Sección registrada con éxito",
+      "La sección se agregó correctamente al trayecto."
+    );
+
+    reset();
+    handleClose();
+  } catch (error) {
+    console.error("❌ Error al registrar sección:", error);
+
+    // ⚠️ Manejo de errores del backend
+    if (error.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((errVal) => {
+        console.warn("⚠️ Error de validación:", errVal);
+        alert.toast({title: errVal.field, message: errVal.message, config:{icon: "warning"}});
       });
-    } finally {
-      reset();
-      handleClose();
+    } else {
+      // ❌ Error general
+      alert.error(
+        error.title || "Error al registrar sección",
+        error.message || "No se pudo registrar la sección. Intente nuevamente."
+      );
     }
-  };
+
+    handleClose();
+  }
+};
 
   return (
     <Modal

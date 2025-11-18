@@ -569,56 +569,55 @@ export default class NotificationService {
   }
 
   /**
-   * Marca una notificación como leída y notifica a los clientes en tiempo real.
+   * Marca una notificación como leída para un usuario específico.
    *
    * @async
    * @method markAsRead
-   * @param {string|number} notificationId - ID de la notificación a marcar como leída
-   * @param {string|number} userId - ID del usuario que marca la notificación como leída
-   * @returns {Promise<Object>} Promesa que resuelve con la notificación actualizada
-   *
-   * @example
-   * // Marcar notificación como leída
-   * const notificacionActualizada = await notificationService.markAsRead(123, 31264460);
-   *
-   * @description
-   * Actualiza el estado de la notificación en la base de datos y emite un evento
-   * 'notification_updated' a través de Socket.io para notificar a los clientes
-   * en tiempo real sobre el cambio de estado.
+   * @param {string|number} notificationId - ID de la notificación a marcar como leída.
+   * @param {string|number} userId - ID del usuario que marca la notificación como leída.
+   * @returns {Promise<Object>} Promesa que resuelve con el estado de lectura actualizado (de notification_recipients).
    */
   async markAsRead(notificationId, userId) {
     const client = await this.connectDB();
     try {
-      // ✅ CORREGIDO: Usar parámetros posicionales de PostgreSQL ($1, $2)
+      // ❌ CAMBIO CRUCIAL: La actualización se hace en la tabla notification_recipients.
+      // Se utilizan dos condiciones: notification_id ($1) y user_id ($2).
       const result = await client.query(
-        `UPDATE public.notifications 
-       SET is_read = true, read_at = NOW() 
-       WHERE id = $1
-       RETURNING *`,
-        [notificationId]
+        `UPDATE public.notification_recipients
+             SET is_read = TRUE, read_at = NOW()
+             WHERE notification_id = $1 AND user_id = $2
+             RETURNING *`, // Retorna el registro de lectura actualizado
+        [notificationId, userId] // Se pasan ambos IDs
       );
 
       if (result.rows.length > 0) {
-        const updatedNotification = result.rows[0];
-        console.log(updatedNotification);
+        const updatedRecipientStatus = result.rows[0];
 
-        // ✅ MEJORADO: Emitir con más datos útiles
-        this.io.emit("notification_updated", {
-          notificationId,
-          userId,
+        // ✅ Notificación en tiempo real para el usuario específico (o el canal de notificaciones)
+        // Se emite un evento para que el cliente que hizo la acción actualice su lista
+        this.io.to(`user:${userId}`).emit("notification_updated", {
+          notificationId: updatedRecipientStatus.notification_id,
+          userId: updatedRecipientStatus.user_id,
           is_read: true,
-          read_at: updatedNotification.read_at,
-          action: "marked_read"
+          read_at: updatedRecipientStatus.read_at,
+          action: "marked_read",
         });
 
-        return updatedNotification;
+        return updatedRecipientStatus;
       } else {
-        throw new Error("Notificación no encontrada o usuario no autorizado");
+        // Error si no se encontró la fila. Esto puede significar:
+        // 1. La notificación no existe.
+        // 2. La notificación existe, pero no está dirigida a este usuario (no hay registro en notification_recipients).
+        throw new Error(
+          `Estado de Notificación ID ${notificationId} no encontrado para el Usuario ID ${userId}.`
+        );
       }
-
     } catch (error) {
       console.error("Error en markAsRead:", error);
       throw error;
+    } finally {
+      // Es crucial liberar el cliente de la base de datos si usas pool.connect()
+      // client.release(); // (Depende de tu implementación de connectDB)
     }
   }
 

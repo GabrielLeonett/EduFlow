@@ -135,4 +135,32 @@ export default class UserController {
       UserService.obtenerPerfil(req.user?.userId || req.user?.id)
     );
   }
+
+  /**
+   * @name desactivarUsuario
+   * @description Desactiva un usuario del sistema
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async desactivarUsuario(req, res) {
+    return FormatterResponseController.manejarServicio(
+      res,
+      UserService.desactivarUsuario(req.user.id, req.params.id_usuario)
+    );
+  }
+
+  /**
+   * @name activarUsuario
+   * @description Activa un usuario previamente desactivado
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async activarUsuario(req, res) {
+    return FormatterResponseController.manejarServicio(
+      res,
+      UserService.activarUsuario(req.user.id, req.params.id_usuario)
+    );
+  }
 }

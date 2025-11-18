@@ -241,29 +241,61 @@ export default class UserModel {
   /**
    * @static
    * @async
-   * @method actualizarUltimoLogin
-   * @description Actualiza la fecha del último login del usuario
-   * @param {number} usuarioId - ID del usuario
+   * @method desactivarUsuario
+   * @description Desactiva un usuario
+   * @param {number} usuario_accion - ID del usuario que realiza la acción
+   * @param {number} id_usuario - ID del usuario a desactivar
    * @returns {Promise<Object>} Resultado de la operación
    */
-  static async actualizarUltimoLogin(usuarioId) {
+  static async desactivarUsuario(usuario_accion, id_usuario) {
     try {
-      const query = "UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?";
-      const values = [usuarioId];
+      const query = ` CALL desactivar_usuario($1, $2, NULL)`;
+      const values = [id_usuario, usuario_accion];
 
-      const result = await client.query(query, values);
+      const { rows } = await client.query(query, values);
 
       return FormatResponseModel.respuestaPostgres(
-        result.rows,
-        "Último login actualizado"
+        rows,
+        "Usuario desactivado exitosamente"
       );
     } catch (error) {
       error.details = {
-        path: "UserModel.actualizarUltimoLogin",
+        path: "UserModel.desactivarUsuarioDirecto",
       };
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al actualizar último login"
+        "Error al desactivar usuario"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method activarUsuario
+   * @description Activa un usuario
+   * @param {number} usuario_accion - ID del usuario que realiza la acción
+   * @param {number} id_usuario - ID del usuario a activar
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async activarUsuario(usuario_accion, id_usuario) {
+    try {
+      const query = ` CALL activar_usuario($1, $2, NULL)`;
+      const values = [id_usuario, usuario_accion];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Usuario activado exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "UserModel.activarUsuario",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al activar usuario"
       );
     }
   }

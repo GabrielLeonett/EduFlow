@@ -100,7 +100,7 @@ export default class AulaController {
   static async obtenerAulasPorSede(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AulaService.obtenerAulasPorSede(req.params.id_sede)
+      AulaService.obtenerAulasPorSede(req.query, req.params.id_sede)
     );
   }
 

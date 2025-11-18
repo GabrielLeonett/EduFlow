@@ -29,7 +29,7 @@ export default class ProfesorModel {
       const Areasconocimiento = datos.areas_de_conocimiento.map((area) => {
         return area.nombre_area_conocimiento;
       });
-      console.log(Areasconocimiento)
+      console.log(Areasconocimiento);
       const {
         cedula,
         nombres,
@@ -96,21 +96,101 @@ export default class ProfesorModel {
    * @static
    * @async
    * @method obtenerTodos
-   * @description Obtener todos los profesores de la base de datos
-   * @returns {Promise<Object>} Lista de profesores formateada
+   * @description Obtener profesores con paginación, ordenamiento y búsqueda
+   * @param {Object} queryParams - Parámetros de consulta
+   * @param {number} queryParams.page - Página actual (default: 1)
+   * @param {number} queryParams.limit - Límite por página (default: 20)
+   * @param {string} queryParams.sort_order - Campo para ordenar (default: nombres)
+   * @param {string} queryParams.search - Término de búsqueda
+   * @returns {Promise<Object>} Lista de profesores paginada
    */
-  static async obtenerTodos() {
+  static async obtenerTodos(queryParams = {}) {
+
     try {
-      const query = "SELECT * FROM profesores_informacion_completa";
-      const { rows } = await client.query(query);
+      const {
+        page = 1,
+        limit = 20,
+        sort_order = "nombres",
+        search = "",
+      } = queryParams;
+
+      // Calcular offset
+      const offset = (page - 1) * limit;
+
+      // Validar y mapear campos de ordenamiento
+      const allowedSortFields = {
+        nombres: "nombres",
+        apellidos: "apellidos",
+        cedula: "cedula",
+        fecha_creacion: "fecha_creacion",
+        categoria: "categoria",
+        dedicacion: "dedicacion",
+      };
+
+      const sortField = allowedSortFields[sort_order] || "nombres";
+      const orderBy = `${sortField} ASC`;
+
+      // Construir consulta base
+      let whereClause = "";
+      let queryParamsArray = [];
+
+      if (search) {
+        whereClause = `WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula = $3 OR id_profesor = $4`;
+        queryParamsArray = [
+          `%${search}%`,
+          `%${search}%`,
+          `${search}`,
+          `${search}`,
+        ];
+      }
+
+      // Consulta para los datos
+      const dataQuery = `
+      SELECT * FROM profesores_informacion_completa 
+      ${whereClause}
+      ORDER BY ${orderBy} 
+      LIMIT $${whereClause ? queryParamsArray.length + 1 : 1} 
+      OFFSET $${whereClause ? queryParamsArray.length + 2 : 2}
+    `;
+
+      // Consulta para el total
+      const countQuery = `
+      SELECT COUNT(*) as total FROM profesores_informacion_completa 
+      ${whereClause}
+      `;
+
+      // Parámetros para las consultas
+      const dataParams = whereClause
+        ? [...queryParamsArray, parseInt(limit), offset]
+        : [parseInt(limit), offset];
+
+      // Ejecutar consultas en paralelo
+      const [dataResult, countResult] = await Promise.all([
+        client.query(dataQuery, dataParams),
+        client.query(countQuery, whereClause ? queryParamsArray : []),
+      ]);
+
+      const total = parseInt(countResult.rows[0].total);
+      const totalPages = Math.ceil(total / limit);
 
       return FormatResponseModel.respuestaPostgres(
-        rows,
+        {
+          profesores: dataResult.rows,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
+        },
         "Profesores obtenidos exitosamente"
       );
     } catch (error) {
       error.details = {
         path: "ProfesorModel.obtenerTodos",
+        queryParams,
       };
       throw FormatResponseModel.respuestaError(
         error,
@@ -124,21 +204,94 @@ export default class ProfesorModel {
    * @async
    * @method mostrarProfesoresEliminados
    * @description Obtener todos los profesores de la base de datos
+   * @param {Object} queryParams - Parámetros de consulta
+   * @param {number} queryParams.page - Página actual (default: 1)
+   * @param {number} queryParams.limit - Límite por página (default: 20)
+   * @param {string} queryParams.sort_order - Campo para ordenar (default: nombres)
+   * @param {string} queryParams.search - Término de búsqueda
    * @returns {Promise<Object>} Lista de profesores formateada
    */
-  static async mostrarProfesoresEliminados() {
+  static async mostrarProfesoresEliminados(queryParams) {
     try {
-      const query = "SELECT * FROM vista_profesores_eliminados";
-      const { rows } = await client.query(query);
-      console.log(rows);
+      const {
+        page = 1,
+        limit = 20,
+        sort_order = "nombres",
+        search = "",
+      } = queryParams;
+
+      // Calcular offset
+      const offset = (page - 1) * limit;
+
+      // Validar y mapear campos de ordenamiento
+      const allowedSortFields = {
+        nombres: "nombres",
+        apellidos: "apellidos",
+        cedula: "cedula",
+        fecha_creacion: "fecha_creacion",
+        categoria: "categoria",
+        dedicacion: "dedicacion",
+      };
+
+      const sortField = allowedSortFields[sort_order] || "nombres";
+      const orderBy = `${sortField} ASC`;
+
+      // Construir consulta base
+      let whereClause = "";
+      let queryParamsArray = [];
+
+      if (search) {
+        whereClause = `WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3`;
+        queryParamsArray = [`%${search}%`, `%${search}%`, `%${search}%`];
+      }
+
+      // Consulta para los datos
+      const dataQuery = `
+      SELECT * FROM vista_profesores_eliminados 
+      ${whereClause}
+      ORDER BY ${orderBy} 
+      LIMIT $${whereClause ? queryParamsArray.length + 1 : 1} 
+      OFFSET $${whereClause ? queryParamsArray.length + 2 : 2}
+    `;
+
+      // Consulta para el total
+      const countQuery = `
+      SELECT COUNT(*) as total FROM vista_profesores_eliminados 
+      ${whereClause}
+    `;
+
+      // Parámetros para las consultas
+      const dataParams = whereClause
+        ? [...queryParamsArray, parseInt(limit), offset]
+        : [parseInt(limit), offset];
+
+      // Ejecutar consultas en paralelo
+      const [dataResult, countResult] = await Promise.all([
+        client.query(dataQuery, dataParams),
+        client.query(countQuery, whereClause ? queryParamsArray : []),
+      ]);
+
+      const total = parseInt(countResult.rows[0].total);
+      const totalPages = Math.ceil(total / limit);
 
       return FormatResponseModel.respuestaPostgres(
-        rows,
+        {
+          profesores: dataResult.rows,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
+        },
         "Profesores obtenidos exitosamente"
       );
     } catch (error) {
       error.details = {
         path: "ProfesorModel.obtenerTodos",
+        queryParams,
       };
       throw FormatResponseModel.respuestaError(
         error,
@@ -644,7 +797,6 @@ export default class ProfesorModel {
         fecha_efectiva,
         registro_anterior_id,
       ];
-      console.log(values, datos);
 
       const { rows } = await client.query(query, values);
 

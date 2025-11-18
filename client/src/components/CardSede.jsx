@@ -11,11 +11,13 @@ import {
 import { Link } from "@mui/material";
 import CustomButton from "./customButton";
 import CustomChip from "./CustomChip";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
+import { LocationOn as LocationOnIcon, Visibility as VisibilityIcon } from "@mui/icons-material";
 import SchoolIcon from "@mui/icons-material/School";
+import { useNavigate } from "react-router-dom";
 
 export default function CardSede({ sede }) {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   return (
     <Grid container justifyContent="center">
@@ -104,6 +106,19 @@ export default function CardSede({ sede }) {
                   <LocationOnIcon fontSize="small" color="primary" />
                   {sede.ubicacion_sede}
                 </Typography>
+
+                <CustomButton
+                  variant="contained"
+                  startIcon={<VisibilityIcon />}
+                  sx={{
+                    minWidth: "auto",
+                    px: 2,
+                    py: 1,
+                  }}
+                  onClick={() => navigate(`/infraestructura/sedes/${sede.id_sede}/aulas`)}
+                >
+                  Ver Sede
+                </CustomButton>
 
                 {/* PNFs */}
                 <Box>

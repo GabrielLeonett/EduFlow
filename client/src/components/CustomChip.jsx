@@ -20,6 +20,7 @@ export default function CustomChip({
       variant={variant}
       size={size}
       sx={{
+        maxWidth: "100%",
         margin: "2px",
         fontWeight: theme.typography.fontWeightMedium,
         transition: "all 0.3s ease",
@@ -33,9 +34,10 @@ export default function CustomChip({
         }),
         ...(deletable && {
           "&:hover": {
-            backgroundColor: variant === "filled" 
-              ? theme.palette[color].dark 
-              : theme.palette[color].light,
+            backgroundColor:
+              variant === "filled"
+                ? theme.palette[color].dark
+                : theme.palette[color].light,
             transform: "scale(1.05)",
             boxShadow: theme.shadows[2],
           },

@@ -404,7 +404,7 @@ export default class AdminService {
         this.getTranslation(req, "admins:service.mostrarAdmin.start")
       );
 
-      const allowedParams = ["page", "limit", "sort", "order", "rol", "estado"];
+      const allowedParams = ["page", "limit", "sort", "order", "rol", "estado",];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
         allowedParams
@@ -860,7 +860,7 @@ export default class AdminService {
           id: id_admin,
         })
       );
-
+      
       const idValidation = ValidationService.validateId(
         id_admin,
         "administrador"

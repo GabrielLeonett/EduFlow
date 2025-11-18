@@ -190,7 +190,7 @@ export default class ProfesorService {
         Correo: Correo,
         verificarEmail: false,
       });
-      
+
       console.log("📧 Email enviado:", Resultado);
 
       // 6. Enviar notificaciones
@@ -266,7 +266,7 @@ export default class ProfesorService {
   static async obtenerTodos(queryParams = {}) {
     try {
       // Validar parámetros de consulta
-      const allowedParams = ["page", "limit", "sort", "order"];
+      const allowedParams = ["page", "limit", "sort_order", "search"];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
         allowedParams
@@ -279,35 +279,36 @@ export default class ProfesorService {
         );
       }
 
-      const respuestaModel = await ProfesorModel.obtenerTodos();
+      const respuestaModel = await ProfesorModel.obtenerTodos(allowedParams);
 
       // Parsear los campos JSON en cada profesor
-      const profesoresProcesados = respuestaModel.data.map((profesor) => ({
-        ...profesor,
-        areas_de_conocimiento: profesor.areas_de_conocimiento
-          ? JSON.parse(profesor.areas_de_conocimiento)
-          : [],
-        disponibilidad: profesor.disponibilidad
-          ? JSON.parse(profesor.disponibilidad)
-          : [],
-        pre_grados: profesor.pre_grados ? JSON.parse(profesor.pre_grados) : [],
-        pos_grados: profesor.pos_grados ? JSON.parse(profesor.pos_grados) : [],
-      }));
+      const profesoresProcesados = respuestaModel.data.profesores.map(
+        (profesor) => ({
+          ...profesor,
+          areas_de_conocimiento: profesor.areas_de_conocimiento
+            ? JSON.parse(profesor.areas_de_conocimiento)
+            : [],
+          disponibilidad: profesor.disponibilidad
+            ? JSON.parse(profesor.disponibilidad)
+            : [],
+          pre_grados: profesor.pre_grados
+            ? JSON.parse(profesor.pre_grados)
+            : [],
+          pos_grados: profesor.pos_grados
+            ? JSON.parse(profesor.pos_grados)
+            : [],
+        })
+      );
 
       // Reemplazar los datos en la respuesta
-      respuestaModel.data = profesoresProcesados;
+      respuestaModel.data.profesores = profesoresProcesados;
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
       return FormatterResponseService.success(
-        {
-          profesores: respuestaModel.data,
-          total: respuestaModel.data.length,
-          page: parseInt(queryParams.page) || 1,
-          limit: parseInt(queryParams.limit) || respuestaModel.data.length,
-        },
+        respuestaModel.data,
         "Profesores obtenidos exitosamente",
         {
           status: 200,
@@ -331,7 +332,7 @@ export default class ProfesorService {
   static async mostrarProfesoresEliminados(queryParams = {}) {
     try {
       // Validar parámetros de consulta
-      const allowedParams = ["page", "limit", "sort", "order"];
+      const allowedParams = ["page", "limit", "sort_order", "search"];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
         allowedParams
@@ -344,35 +345,16 @@ export default class ProfesorService {
         );
       }
 
-      const respuestaModel = await ProfesorModel.mostrarProfesoresEliminados();
-
-      // Parsear los campos JSON en cada profesor
-      const profesoresProcesados = respuestaModel.data.map((profesor) => ({
-        ...profesor,
-        areas_de_conocimiento: profesor.areas_de_conocimiento
-          ? JSON.parse(profesor.areas_de_conocimiento)
-          : [],
-        disponibilidad: profesor.disponibilidad
-          ? JSON.parse(profesor.disponibilidad)
-          : [],
-        pre_grados: profesor.pre_grados ? JSON.parse(profesor.pre_grados) : [],
-        pos_grados: profesor.pos_grados ? JSON.parse(profesor.pos_grados) : [],
-      }));
-
-      // Reemplazar los datos en la respuesta
-      respuestaModel.data = profesoresProcesados;
+      const respuestaModel = await ProfesorModel.mostrarProfesoresEliminados(
+        allowedParams
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
       return FormatterResponseService.success(
-        {
-          profesoresEliminados: respuestaModel.data,
-          total: respuestaModel.data.length,
-          page: parseInt(queryParams.page) || 1,
-          limit: parseInt(queryParams.limit) || respuestaModel.data.length,
-        },
+        respuestaModel.data,
         "Profesores obtenidos exitosamente",
         {
           status: 200,
@@ -845,10 +827,10 @@ export default class ProfesorService {
       }
 
       // Verificar que el profesor existe
-      const profesores = await ProfesorModel.obtenerTodos();
-      const profesor = profesores.data.find(
-        (p) => p.id_profesor === datos.id_profesor
-      );
+      const profesores = await ProfesorModel.obtenerTodos({
+        search: datos.id_profesor,
+      });
+      const profesor = profesores.data.profesores.find((profe)=> profe.id_profesor === datos.id_profesor)
 
       if (!profesor) {
         return FormatterResponseService.notFound("Profesor", datos.id_profesor);
@@ -984,11 +966,12 @@ export default class ProfesorService {
       }
 
       // Verificar que el profesor existe y está inactivo
-      const profesores = await ProfesorModel.obtenerTodos();
-      const profesor = profesores.data.find(
+      const profesores = await ProfesorModel.mostrarProfesoresEliminados({
+        search: datos.id_profesor,
+      });
+      const profesor = profesores.data.profesores.find(
         (p) => p.id_profesor === datos.id_profesor
       );
-
       if (!profesor) {
         return FormatterResponseService.notFound("Profesor", datos.id_profesor);
       }
@@ -1394,6 +1377,7 @@ export default class ProfesorService {
       console.log(
         "🔍 [registrarDisponibilidad] Iniciando creación de disponibilidad..."
       );
+      console.log("Datos recibidos:", datos);
 
       // Validar datos de disponibilidad
       const validation = ValidationService.validateDisponibilidadDocente(datos);

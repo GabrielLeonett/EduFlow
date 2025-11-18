@@ -8,9 +8,11 @@ import ResponsiveAppBar from "../../components/navbar";
 import pnfSchema from "../../schemas/pnf.schema";
 import useApi from "../../hook/useApi"; // Added import for axios
 import { Watch } from "@mui/icons-material";
+import useSweetAlert from "../../hook/useSweetAlert";
 
 export default function PnfForm() {
   const axios = useApi();
+  const alert = useSweetAlert();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sedes, setSedes] = useState([]);
 
@@ -43,16 +45,38 @@ export default function PnfForm() {
     fetchSedes();
   }, [axios]);
 
-  const onSubmit = async (data) => {
-    setIsSubmitting(true);
-    console.log(data);
-    try {
-      await axios.post("/pnf", data);
-      reset();
-    } finally {
-      setIsSubmitting(false);
+const onSubmit = async (data) => {
+  setIsSubmitting(true);
+  console.log(data);
+
+  try {
+    await axios.post("/pnf", data);
+
+    alert.success(
+      "PNF creado con éxito",
+      "Se ha registrado el PNF exitosamente."
+    );
+
+    reset();
+  } catch (error) {
+    // ✅ Manejo estandarizado de errores
+    if (error?.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((error_validacion) => {
+        alert.toast(error_validacion.field, error_validacion.message);
+      });
+    } else {
+      alert.error(
+        error.title || "Error al registrar el PNF",
+        error.message || "No se pudo registrar el PNF. Intente nuevamente."
+      );
     }
-  };
+
+    console.error("Error al registrar el PNF:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <>

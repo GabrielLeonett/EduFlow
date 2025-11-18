@@ -71,6 +71,14 @@ export const UTILS = {
 
     return `${horas12}:${String(minutos).padStart(2, "0")} ${periodo}`;
   },
+  formatearHoraMilitar: (horaMilitar) => {
+    const horas = Math.floor(horaMilitar / 100);
+    const minutos = horaMilitar % 100;
+    const horas12 = horas > 12 ? horas - 12 : horas === 0 ? 12 : horas;
+    const ceroAñadido = horas > 9 ? "" : "0";
+
+    return `${ceroAñadido}${horas12}:${String(minutos).padStart(2, "0")}:00`;
+  },
   obtenerTrayectoNumero(trayecto) {
     const trayectos = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 };
     return trayectos[trayecto] || 1;
@@ -90,12 +98,34 @@ export const UTILS = {
 
     Object.keys(UTILS.initialHours).forEach((hora) => {
       if (hora >= inicio_hora && hora < fin_hora) {
+        console.log("Añadiendo bloque:", hora);
         bloques.push(hora);
       }
     });
 
     return bloques;
   },
+  horariosAcademicos: [
+    "07:00",
+    "07:45",
+    "08:30",
+    "09:15",
+    "10:00",
+    "10:45",
+    "11:30",
+    "12:15",
+    "13:00",
+    "13:45",
+    "14:30",
+    "15:15",
+    "16:00",
+    "16:45",
+    "17:30",
+    "18:15",
+    "19:00",
+    "19:45",
+  ],
+  diasSemana: ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"],
 
   initialHours: {
     700: null,

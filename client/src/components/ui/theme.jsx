@@ -74,6 +74,29 @@ const baseTheme = {
   shape: {
     borderRadius: 2,
   },
+  // En ambas paletas (light y dark)
+  success: {
+    main: "#2e7d32",
+    light: "#4caf50",
+    dark: "#1b5e20",
+  },
+  palette: {
+    error: {
+      main: "#d32f2f",
+      light: "#ef5350",
+      dark: "#c62828",
+    },
+    warning: {
+      main: "#ed6c02",
+      light: "#ff9800",
+      dark: "#e65100",
+    },
+    info: {
+      main: "#0288d1",
+      light: "#03a9f4",
+      dark: "#01579b",
+    },
+  },
   spacing: 10,
   shadows: [
     "none",
@@ -118,6 +141,14 @@ const baseTheme = {
           borderRadius: 8,
           textTransform: "none",
           fontWeight: 500,
+          padding: "8px 16px",
+          fontSize: "0.875rem",
+        },
+        contained: {
+          boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+          "&:hover": {
+            boxShadow: "0px 4px 8px rgba(0,0,0,0.15)",
+          },
         },
       },
     },
@@ -217,16 +248,16 @@ export const darkTheme = createTheme({
     mode: "dark",
     primary: {
       main: "#1C75BA",
-      900: "#1C75BA",
-      800: "#242B30",
-      700: "#232A2F",
-      600: "#22282E",
-      500: "#21272D",
-      400: "#20262B",
-      300: "#1F252A",
-      200: "#1E2429",
-      100: "#1D2328",
-      50: "#1C2226",
+      900: "#0d4a7d",
+      800: "#105c99",
+      700: "#136db5",
+      600: "#167fd1",
+      500: "#1C75BA", // main
+      400: "#4a95d1",
+      300: "#78b5e8",
+      200: "#a6d5ff",
+      100: "#d4f5ff",
+      50: "#f0f9ff",
       contrastText: "#ffffff",
     },
     secondary: {

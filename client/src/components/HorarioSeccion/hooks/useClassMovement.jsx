@@ -78,7 +78,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         }
       );
 
-      if (result.isConfirmed) {
+      if (result) {
         setTableHorario((prev) => {
           console.log("Eliminando clase:", clase);
           console.log("Horario antes de eliminar:", prev);
