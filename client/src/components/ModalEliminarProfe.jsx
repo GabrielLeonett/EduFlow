@@ -64,7 +64,7 @@ const onSubmit = async (data) => {
 
     reset();
     onClose();
-    navigate("/profesores/eliminados");
+    navigate("/academico/profesores/eliminados");
   } catch (error) {
     console.error("❌ Error al eliminar profesor:", error);
 

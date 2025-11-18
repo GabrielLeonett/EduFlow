@@ -95,10 +95,10 @@ export default function GestionProfesores() {
 
       <Box mt={12} p={3}>
         <Typography variant="h3" fontWeight={600} mb={1}>
-          Gestión de Profesores
+          Profesores Eliminados
         </Typography>
         <Typography variant="body2" color="text.secondary" mb={3}>
-          Visualizar, Editar y Crear Profesores
+          Lista de profesores eliminados y opciones de restauración
         </Typography>
 
         {/* Filtros y Búsqueda */}
