@@ -9,8 +9,12 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import { securityMiddleware } from "./middlewares/security.js";
 import { jsonSyntaxErrorHandler } from "./middlewares/process.js";
+<<<<<<< HEAD
+import {i18nMiddleware} from "./locales/index.js";
+=======
 import languageMiddleware from "./middlewares/language.js";
 import { i18nMiddleware } from "./locales/index.js";
+>>>>>>> 1695a4f97cdf92f3f1444d009b501b24b6a4f361
 import helmet from "helmet";
 import { createServer } from "node:http";
 
@@ -42,7 +46,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(jsonSyntaxErrorHandler);
 app.use(i18nMiddleware);
-app.use(languageMiddleware);
 
 // Rutas del sistema
 app.use("", adminRouter);
