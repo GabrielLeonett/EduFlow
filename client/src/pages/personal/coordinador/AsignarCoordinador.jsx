@@ -67,9 +67,10 @@ export default function AsignarCoordinador() {
         }
 
         // Para PNFs - ajusta según tu estructura real
-        if (resPnfs.pnf) {
-          if (Array.isArray(resPnfs.pnf)) datosPnfs = resPnfs.pnf;
+        if (resPnfs.pnfs) {
+          if (Array.isArray(resPnfs.pnfs)) datosPnfs = resPnfs.pnfs;
         }
+
 
         console.log("Todos los profesores:", datosProfesores);
 
