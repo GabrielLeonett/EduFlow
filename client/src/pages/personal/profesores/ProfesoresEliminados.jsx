@@ -7,13 +7,16 @@ import {
   Pagination,
   MenuItem,
 } from "@mui/material";
-import { Search as SearchIcon } from "@mui/icons-material";
+import { Search as SearchIcon, Route as RouteIcon } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
 import ResponsiveAppBar from "../../../components/navbar";
 import CardProfesorEliminado from "../../../components/CardProfesorEliminado";
 import CustomAutocomplete from "../../../components/CustomAutocomplete";
 import CustomLabel from "../../../components/customLabel";
+import { useTour } from "../../../hook/useTour";
+import { Tooltip } from "@mui/material";
+import CustomButton from "../../../components/customButton";
 
 export default function GestionProfesores() {
   const axios = useApi(false);
@@ -88,6 +91,36 @@ export default function GestionProfesores() {
       page: 1,
     }));
   };
+
+  const { startTour, resetTour } = useTour(
+      [
+    {
+      intro: "👋 Bienvenido. Aquí puedes ver los profesores eliminados.",
+    },
+    {
+      element: "#filtros-busqueda",
+      intro: "Aquí puedes buscar y filtrar los profesores eliminados.",
+      position: "bottom",
+    },
+    {
+      element: "#profesores-container",
+      intro:
+        "En esta sección se listan los profesores eliminados. Puedes restaurarlos.",
+      position: "right",
+    },
+    {
+      element: "#btn-reiniciar-tour",
+      intro: "Haz clic aquí si deseas volver a ver este tutorial.",
+      position: "left",
+    },
+  ],
+  "tourProfesoresEliminados"
+);
+    useEffect(() => {
+      if (!loading && profesores.length > 0) {
+        startTour();
+      }
+    }, [loading, profesores, startTour]);
 
   return (
     <>
@@ -196,7 +229,7 @@ export default function GestionProfesores() {
               </Typography>
             ) : (
               <>
-                <Grid container spacing={3} sx={{ width: "100%", margin: 0 , justifyContent:'center', alignContent:'center'}}>
+                <Grid container spacing={3} sx={{ width: "100%", margin: 0 }}>
                   {profesores.map((profesor) => (
                     <Grid item key={profesor.cedula || profesor.id}>
                       <CardProfesorEliminado prof={profesor} />
@@ -248,6 +281,29 @@ export default function GestionProfesores() {
           </Typography>
         )}
       </Box>
+      <Tooltip title="Tutorial" placement="left-start">
+                <CustomButton
+                  id="btn-reiniciar-tour"
+                  variant="contained"
+                  onClick={resetTour}
+                  sx={{
+                    position: "fixed",
+                    bottom: 128,
+                    right: 24,
+                    minWidth: "auto",
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    zIndex: 9999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  aria-label="Ver tutorial"
+                >
+                  <RouteIcon />
+                </CustomButton>
+              </Tooltip>
     </>
   );
 }
