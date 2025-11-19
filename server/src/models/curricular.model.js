@@ -179,11 +179,26 @@ export default class CurricularModel {
     try {
       console.log("Datos para registrar Unidad Curricular:", datos);
       const {
+        // id_trayecto, // NO SE UTILIZA YA QUE SE PASA COMO PARÁMETRO DIRECTO (idTrayecto)
         nombre_unidad_curricular,
+        codigo_unidad_curricular,
+        tipo_unidad,
         descripcion_unidad_curricular,
         carga_horas_academicas,
-        codigo_unidad_curricular,
-        areas_conocimiento = [], // Nuevo parámetro con valor por defecto
+        creditos,
+        semanas,
+        areas_conocimiento = [],
+        lineas_investigacion = [],
+        // Nota: `sinoptico` e `id_linea_investigacion` parecen faltar en el destructuring,
+        // por lo que se asumen valores por defecto (null o undefined) para la consulta.
+        sinoptico,
+        id_linea_investigacion,
+        hte,
+        hse,
+        hta,
+        hsa,
+        hti,
+        hsi,
       } = datos;
 
       // Validar que areas_conocimiento sea un array
@@ -191,20 +206,72 @@ export default class CurricularModel {
         throw new Error("El parámetro areas_conocimiento debe ser un array");
       }
 
-      // Convertir a array de números si es necesario
+      // Validar que lineas_investigacion sea un array (asumiendo estructura similar)
+      if (!Array.isArray(lineas_investigacion)) {
+        throw new Error("El parámetro lineas_investigacion debe ser un array");
+      }
+
+      // Convertir areas_conocimiento a array de números
       const areasConocimientoArray = areas_conocimiento.map((area) =>
         Number(area.id_area_conocimiento)
       );
 
-      const query = `CALL public.registrar_unidad_curricular_completo($1, $2, $3, $4, $5, $6, $7, NULL)`;
+      // Convertir lineas_investigacion a array de números
+      // **Asumiendo que el objeto tiene una propiedad id_linea_investigacion**
+      const lineasInvestigacionArray = lineas_investigacion.map((linea) =>
+        Number(linea.id_linea_investigacion)
+      );
+
+      // --- Consulta a la Función Almacenada (query) ---
+
+      // La consulta ya está bien definida, simplemente necesita un valor por cada placeholder ($1, $2, etc.)
+      // La vamos a dejar como template string por claridad, pero usaremos $n en los parámetros.
+      const query = `CALL registrar_unidad_curricular_completo(
+       $1,  -- p_usuario_accion
+       $2,  -- p_id_trayecto
+       $3,  -- p_nombre_unidad_curricular
+       $4,  -- p_descripcion_unidad_curricular
+       $5,  -- p_carga_horas
+       $6,  -- p_codigo_unidad
+       $7,  -- p_areas_conocimiento (integer[])
+       $8,  -- p_lineas_investigacion (integer[])
+       $9,  -- p_sinoptico (text)
+       $10, -- p_id_linea_investigacion (bigint)
+       $11, -- p_creditos (smallint)
+       $12, -- p_semanas (smallint)
+       $13, -- p_tipo_unidad (character varying)
+       $14, -- p_hte (numeric)
+       $15, -- p_hse (numeric)
+       $16, -- p_hta (numeric)
+       $17, -- p_hsa (numeric)
+       $18, -- p_hti (numeric)
+       $19, -- p_hsi (numeric)
+       NULL
+     )`;
+
+      // --- Array de Parámetros (params) ---
+
+      // Deben coincidir en orden con los placeholders ($1, $2, $3, etc.) de la consulta.
       const params = [
-        usuario_accion,
-        idTrayecto,
-        nombre_unidad_curricular,
-        descripcion_unidad_curricular,
-        carga_horas_academicas,
-        codigo_unidad_curricular,
-        areasConocimientoArray, // Nuevo parámetro
+        usuario_accion, // $1
+        idTrayecto, // $2
+        nombre_unidad_curricular, // $3
+        descripcion_unidad_curricular, // $4
+        carga_horas_academicas, // $5
+        codigo_unidad_curricular, // $6
+        areasConocimientoArray, // $7
+        lineasInvestigacionArray, // $8 (Usamos el array de líneas de investigación)
+        sinoptico, // $9 (Usamos null si no viene en los datos)
+        id_linea_investigacion, // $10 (Usamos null si no viene en los datos)
+        creditos, // $11
+        semanas, // $12
+        tipo_unidad, // $13
+        hte, // $14 (Horas Teóricas Estudiantiles)
+        hse, // $15 (Horas Seminario Estudiantiles)
+        hta, // $16 (Horas Teóricas Académicas)
+        hsa, // $17 (Horas Seminario Académicas)
+        hti, // $18 (Horas Taller Investigación)
+        hsi, // $19 (Horas Seminario Investigación)
       ];
 
       console.log("Parámetros para el procedimiento:", params);
@@ -220,6 +287,127 @@ export default class CurricularModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al registrar la Unidad Curricular"
+      );
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method registrarLineasInvestigacion
+   * @description Registra una nueva Línea de Investigación
+   * @param {Object} datos - Datos de la Línea de Investigación
+   * @param {string} datos.nombre_linea_investigacion - Nombre de la línea de investigación
+   * @param {string} [datos.descripcion] - Descripción de la línea (opcional)
+   * @param {boolean} [datos.activo=true] - Estado activo de la línea (opcional, por defecto true)
+   * @param {number} [id_trayecto] - ID del trayecto asociado (opcional)
+   * @param {number} usuario_accion - Usuario que realiza la acción
+   * @returns {Promise<Object>} Resultado del registro
+   */
+  static async registrarLineasInvestigacion(datos, usuario_accion) {
+    try {
+      const {
+        nombre_linea_investigacion,
+        descripcion = null,
+        id_trayecto = null,
+      } = datos;
+
+      const query = `CALL public.registrar_linea_investigacion($1, $2, $3, $4, NULL)`;
+      const params = [
+        usuario_accion,
+        nombre_linea_investigacion,
+        descripcion,
+        id_trayecto,
+      ];
+
+      console.log(
+        "Parámetros para el procedimiento de línea de investigación:",
+        params
+      );
+
+      const { rows } = await pg.query(query, params);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Línea de investigación registrada exitosamente."
+      );
+    } catch (error) {
+      error.details = { path: "CurricularModel.registrarLineasInvestigacion" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al registrar la Línea de Investigación"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarLineasInvestigacion
+   * @description Obtiene las líneas de investigación (con opción de filtrar por trayecto)
+   * @param {number} [id_trayecto] - ID del trayecto asociado (opcional)
+   * @returns {Promise<Object>} Resultado de la consulta
+   */
+  static async mostrarLineasInvestigacion(id_trayecto = null) {
+    try {
+      let query;
+      let params = [];
+
+      if (id_trayecto) {
+        // Si se proporciona un trayecto, obtener líneas asociadas a ese trayecto a través del PNF
+        query = `
+        SELECT 
+          li.id_linea_investigacion,
+          li.nombre_linea_investigacion,
+          li.descripcion,
+          li.activo,
+          li.id_pnf,
+          li.created_at,
+          li.updated_at,
+          t.id_trayecto,
+          p.nombre_pnf
+        FROM lineas_investigacion li
+        LEFT JOIN trayectos t ON li.id_pnf = t.id_pnf
+        LEFT JOIN pnfs p ON li.id_pnf = p.id_pnf
+        WHERE t.id_trayecto = $1
+        ORDER BY li.nombre_linea_investigacion
+      `;
+        params = [id_trayecto];
+      } else {
+        // Si no se proporciona trayecto, obtener todas las líneas
+        query = `
+        SELECT 
+          li.id_linea_investigacion,
+          li.nombre_linea_investigacion,
+          li.descripcion,
+          li.activo,
+          li.id_pnf,
+          li.created_at,
+          li.updated_at,
+          p.nombre_pnf
+        FROM lineas_investigacion li
+        LEFT JOIN pnfs p ON li.id_pnf = p.id_pnf
+        ORDER BY li.nombre_linea_investigacion
+      `;
+      }
+
+      console.log("🔍 Ejecutando consulta de líneas de investigación:", {
+        query,
+        params,
+      });
+
+      const { rows } = await pg.query(query, params);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        id_trayecto
+          ? "Líneas de investigación obtenidas exitosamente para el trayecto especificado"
+          : "Todas las líneas de investigación obtenidas exitosamente"
+      );
+    } catch (error) {
+      error.details = { path: "CurricularModel.mostrarLineasInvestigacion" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener las líneas de investigación"
       );
     }
   }

@@ -270,6 +270,215 @@ export default class CurricularService {
       throw error;
     }
   }
+  /**
+   * @static
+   * @async
+   * @method registrarLineaInvestigacion
+   * @description Registrar una nueva Línea de Investigación
+   * @param {Object} datos - Datos de la línea de investigación
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @param {number} [id_trayecto] - ID del trayecto asociado (opcional)
+   * @returns {Object} Resultado de la operación
+   */
+  static async registrarLineaInvestigacion(
+    datos,
+    user_action,
+    id_trayecto = null
+  ) {
+    try {
+      console.log(
+        "🔍 [registrarLineaInvestigacion] Iniciando registro de línea de investigación..."
+      );
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos recibidos:", {
+          datos: JSON.stringify(datos, null, 2),
+          id_trayecto: id_trayecto,
+          user_action: user_action,
+        });
+      }
+
+      // 1. Validar datos de la línea de investigación
+      console.log("✅ Validando datos de la línea de investigación...");
+      const validation = ValidationService.validateLineaInvestigacion(datos);
+
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Error de validación en registro de línea de investigación"
+        );
+      }
+
+      // 2. Validar ID de usuario
+      const idValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 3. Validar ID de trayecto si se proporciona
+      if (id_trayecto !== null) {
+        const idTrayectoValidation = ValidationService.validateId(
+          id_trayecto,
+          "trayecto"
+        );
+
+        if (!idTrayectoValidation.isValid) {
+          console.error(
+            "❌ Validación de ID de trayecto fallida:",
+            idTrayectoValidation.errors
+          );
+          return FormatterResponseService.validationError(
+            idTrayectoValidation.errors,
+            "ID de trayecto inválido"
+          );
+        }
+      }
+
+      // 4. Preparar datos para el modelo
+      const datosLineaInvestigacion = {
+        nombre_linea_investigacion: datos.nombre_linea_investigacion,
+        descripcion: datos.descripcion || null,
+        activo: datos.activo !== undefined ? datos.activo : true,
+        id_trayecto: id_trayecto,
+      };
+
+      // 5. Crear línea de investigación en el modelo
+      console.log("📚 Creando línea de investigación en base de datos...");
+      const respuestaModel = await CurricularModel.registrarLineasInvestigacion(
+        datosLineaInvestigacion,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error(
+          "❌ Error en modelo crear línea de investigación:",
+          respuestaModel
+        );
+        return respuestaModel;
+      }
+
+      // 6. Enviar notificación específica para investigación
+      console.log("🔔 Enviando notificaciones de línea de investigación...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Nueva Línea de Investigación Registrada",
+        tipo: "linea_investigacion_creada",
+        contenido: `Se ha registrado la línea de investigación "${datos.nombre_linea_investigacion}" en el sistema`,
+        metadatos: {
+          linea_investigacion_nombre: datos.nombre_linea_investigacion,
+          descripcion: datos.descripcion,
+          activo: datos.activo !== undefined ? datos.activo : true,
+          id_trayecto: id_trayecto,
+          usuario_creador: user_action.id,
+          fecha_registro: new Date().toISOString(),
+          url_action: `/investigacion/lineas-investigacion`,
+        },
+        roles_ids: [7, 9, 10, 20], // Directores, SuperAdmin
+        users_ids: [user_action.id], // Usuario que creó la línea de investigación
+      });
+
+      console.log("🎉 Línea de investigación registrada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Línea de investigación creada exitosamente",
+          linea_investigacion: {
+            id:
+              respuestaModel.data?.id_linea_investigacion ||
+              respuestaModel.data?.id,
+            nombre: datos.nombre_linea_investigacion,
+            descripcion: datos.descripcion,
+            activo: datos.activo !== undefined ? datos.activo : true,
+            id_trayecto: id_trayecto,
+          },
+        },
+        "Línea de investigación registrada exitosamente",
+        {
+          status: 201,
+          title: "Línea de Investigación Creada",
+        }
+      );
+    } catch (error) {
+      console.error(
+        "💥 Error en servicio registrar línea de investigación:",
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarLineasInvestigacion
+   * @description Obtiene las líneas de investigación (opcionalmente filtradas por trayecto)
+   * @param {number} [id_trayecto] - ID del trayecto asociado (opcional)
+   * @returns {Object} Resultado de la operación
+   */
+  static async mostrarLineasInvestigacion(id_trayecto = null) {
+    try {
+      console.log(
+        "🔍 [mostrarLineasInvestigacion] Obteniendo líneas de investigación..."
+      );
+
+      // Validar ID de trayecto si se proporciona
+      if (id_trayecto !== null) {
+        const idTrayectoValidation = ValidationService.validateId(
+          id_trayecto,
+          "trayecto"
+        );
+
+        if (!idTrayectoValidation.isValid) {
+          console.error(
+            "❌ Validación de ID de trayecto fallida:",
+            idTrayectoValidation.errors
+          );
+          return FormatterResponseService.validationError(
+            idTrayectoValidation.errors,
+            "ID de trayecto inválido"
+          );
+        }
+      }
+
+      // Obtener líneas de investigación del modelo
+      const respuestaModel = await CurricularModel.mostrarLineasInvestigacion(
+        id_trayecto
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error(
+          "❌ Error en modelo al obtener líneas de investigación:",
+          respuestaModel
+        );
+        return respuestaModel;
+      }
+
+      return FormatterResponseService.success(
+        respuestaModel.data,
+        id_trayecto
+          ? "Líneas de investigación obtenidas exitosamente para el trayecto especificado"
+          : "Todas las líneas de investigación obtenidas exitosamente",
+        {
+          status: 200,
+          title: "Líneas de Investigación Obtenidas",
+        }
+      );
+    } catch (error) {
+      console.error(
+        "💥 Error en servicio al obtener líneas de investigación:",
+        error
+      );
+      throw error;
+    }
+  }
 
   /**
    * @static

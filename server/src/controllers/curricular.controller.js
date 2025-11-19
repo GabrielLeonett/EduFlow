@@ -43,6 +43,39 @@ export default class CurricularController {
   }
 
   /**
+   * @name regitrarUnidadCurricular
+   * @description Registrar una nueva Unidad Curricular
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async registrarLineaInvestigacion(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.registrarLineaInvestigacion(
+        req.body,
+        req.user,
+        req.params.idTrayecto
+      )
+    );
+  }
+  /**
+   * @name mostrarLineasInvestigacion
+   * @description Obtiene las líneas de investigación (opcionalmente filtradas por trayecto)
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async mostrarLineasInvestigacion(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.mostrarLineasInvestigacion(
+        req.params.idTrayecto || null
+      )
+    );
+  }
+
+  /**
    * @static
    * @async
    * @method eliminarUnidadCurricular

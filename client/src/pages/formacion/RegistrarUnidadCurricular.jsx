@@ -16,6 +16,7 @@ import CustomButton from "../../components/customButton";
 import CustomLabel from "../../components/customLabel";
 import CustomAutocomplete from "../../components/CustomAutocomplete";
 import ModalRegisterAreaConocimiento from "../../components/ModalRegisterAreaConocimiento";
+import ModalRegisterLineaInvestigacion from "../../components/ModalRegisterLineaInves"; // Importa el nuevo modal
 import CustomChip from "../../components/CustomChip";
 import ResponsiveAppBar from "../../components/navbar";
 import UnidadCurricularSchema from "../../schemas/unidadcurricular.schema";
@@ -27,7 +28,9 @@ export default function RegistrarUnidadCurricular() {
   const theme = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [areasDisponibles, setAreasDisponibles] = useState([]);
+  const [lineasDisponibles, setLineasDisponibles] = useState([]);
   const [openModalArea, setOpenModalArea] = useState(false);
+  const [openModalLinea, setOpenModalLinea] = useState(false);
   const location = useLocation();
   const { idTrayecto } = location.state;
   const axios = useApi(true);
@@ -36,26 +39,37 @@ export default function RegistrarUnidadCurricular() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const areasRes = await axios.get("/catalogos/areas-conocimiento");
+        const [areasRes, lineasRes] = await Promise.all([
+          axios.get("/catalogos/areas-conocimiento"),
+          axios.get(`/catalogo/trayectos/${idTrayecto}/lineas-investigacion`),
+        ]);
+
         console.log("Áreas de Conocimiento:", areasRes);
+        console.log("Líneas de Investigación:", lineasRes);
+
         setAreasDisponibles(areasRes.areas_conocimiento || []);
+        setLineasDisponibles(lineasRes.lineas_investigacion || lineasRes || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, [axios]);
+  }, [axios, idTrayecto]); // 👈 Agregar idTrayecto como dependencia
 
   const {
     register,
     handleSubmit,
     reset,
     control,
+    watch,
     formState: { errors, isValid },
   } = useForm({
     resolver: zodResolver(UnidadCurricularSchema),
     mode: "onChange",
+    defaultValues: {
+      id_trayecto: idTrayecto,
+    },
   });
 
   const onSubmit = async (data) => {
@@ -90,6 +104,7 @@ export default function RegistrarUnidadCurricular() {
     }
   };
 
+  // Funciones para Áreas de Conocimiento
   const handleAgregarArea = (field, nuevaArea) => {
     const areasActuales = field.value || [];
     const existe = areasActuales.some(
@@ -108,7 +123,7 @@ export default function RegistrarUnidadCurricular() {
     field.onChange(nuevasAreas);
   };
 
-  const handleSeleccionAutocomplete = (field, nuevaArea) => {
+  const handleSeleccionArea = (field, nuevaArea) => {
     if (nuevaArea) {
       console.log(nuevaArea);
       if (nuevaArea.id_area_conocimiento === "otro") {
@@ -119,10 +134,41 @@ export default function RegistrarUnidadCurricular() {
     }
   };
 
+  // Funciones para Líneas de Investigación
+  const handleAgregarLinea = (field, nuevaLinea) => {
+    const lineasActuales = field.value || [];
+    const existe = lineasActuales.some(
+      (linea) =>
+        linea.id_linea_investigacion === nuevaLinea.id_linea_investigacion
+    );
+
+    if (!existe) {
+      const nuevasLineas = [...lineasActuales, nuevaLinea];
+      field.onChange(nuevasLineas);
+    }
+  };
+
+  const handleEliminarLinea = (field, index) => {
+    const lineasActuales = field.value || [];
+    const nuevasLineas = lineasActuales.filter((_, i) => i !== index);
+    field.onChange(nuevasLineas);
+  };
+
+  const handleSeleccionLinea = (field, nuevaLinea) => {
+    if (nuevaLinea) {
+      console.log(nuevaLinea);
+      if (nuevaLinea.id_linea_investigacion === "otro") {
+        setOpenModalLinea(true);
+      } else {
+        handleAgregarLinea(field, nuevaLinea);
+      }
+    }
+  };
+
+  // Manejo de cierre de modales
   const handleCerrarModalArea = (nuevaArea) => {
     setOpenModalArea(false);
     if (nuevaArea) {
-      // Actualizar áreas disponibles después de registrar una nueva
       const fetchAreas = async () => {
         try {
           const areasRes = await axios.get("/catalogos/areas-conocimiento");
@@ -132,6 +178,21 @@ export default function RegistrarUnidadCurricular() {
         }
       };
       fetchAreas();
+    }
+  };
+
+  const handleCerrarModalLinea = (nuevaLinea) => {
+    setOpenModalLinea(false);
+    if (nuevaLinea) {
+      const fetchLineas = async () => {
+        try {
+          const lineasRes = await axios.get("/catalogos/lineas-investigacion");
+          setLineasDisponibles(lineasRes.lineas_investigacion || []);
+        } catch (error) {
+          console.error("Error actualizando líneas:", error);
+        }
+      };
+      fetchLineas();
     }
   };
 
@@ -184,7 +245,7 @@ export default function RegistrarUnidadCurricular() {
                   Información Básica
                 </Typography>
                 <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, md: 4 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <CustomLabel
                       fullWidth
                       label="Nombre de la Unidad Curricular *"
@@ -197,7 +258,7 @@ export default function RegistrarUnidadCurricular() {
                       }
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <CustomLabel
                       fullWidth
                       label="Código de la Unidad *"
@@ -210,7 +271,7 @@ export default function RegistrarUnidadCurricular() {
                       }
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <Controller
                       name="carga_horas_academicas"
                       control={control}
@@ -237,7 +298,329 @@ export default function RegistrarUnidadCurricular() {
                       )}
                     />
                   </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Controller
+                      name="tipo_unidad"
+                      control={control}
+                      defaultValue={"Taller"}
+                      rules={{
+                        required: "Se requiere el tipo de unidad curricular.",
+                      }}
+                      render={({ field, fieldState: { error } }) => (
+                        <CustomLabel
+                          select
+                          id="tipo_unidad"
+                          label="Tipo Unidad Curricular *"
+                          variant="outlined"
+                          fullWidth
+                          {...field}
+                          error={!!error}
+                          helperText={
+                            error?.message || "Seleccione las horas academicas"
+                          }
+                        >
+                          <MenuItem value={"Taller"}>{"Taller"}</MenuItem>
+                          <MenuItem value={"Proyecto"}>{"Proyecto"}</MenuItem>
+                          <MenuItem value={"Asignatura"}>
+                            {"Asignatura"}
+                          </MenuItem>
+                          <MenuItem value={"Seminario"}>{"Seminario"}</MenuItem>
+                        </CustomLabel>
+                      )}
+                    />
+                  </Grid>
                 </Grid>
+              </Box>
+
+              <Divider />
+
+              <Box>
+                <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                  Distribución de Horas y Créditos
+                </Typography>
+                <Grid container spacing={3}>
+                  {/* Créditos y Semanas */}
+                  <Grid container size={{ sm: 12, lg: 4 }}>
+                    <Grid size={6}>
+                      <Controller
+                        name="creditos"
+                        control={control}
+                        defaultValue={1}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            {...field}
+                            fullWidth
+                            label="Créditos *"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{
+                              min: 0,
+                              max: 10,
+                              step: 0.5,
+                            }}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? ""
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
+                            value={field.value || ""}
+                            error={!!error}
+                            helperText={
+                              error?.message || "Número de créditos (1-10)"
+                            }
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={6}>
+                      <Controller
+                        name="semanas"
+                        control={control}
+                        defaultValue={0}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            {...field}
+                            fullWidth
+                            label="Semanas *"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{
+                              min: 0,
+                              max: 16,
+                              step: 0.5,
+                            }}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? ""
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
+                            value={field.value || ""}
+                            error={!!error}
+                            helperText={
+                              error?.message || "Duración en semanas (1-16)"
+                            }
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  {/* HTE y HSE */}
+                  <Grid container size={{ sm: 12, lg: 4 }}>
+                    <Grid size={6}>
+                      <Controller
+                        name="hte"
+                        control={control}
+                        defaultValue={0}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            {...field}
+                            fullWidth
+                            label="HTE *"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{
+                              min: 0,
+                              step: 0.5,
+                            }}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? ""
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
+                            value={field.value || ""}
+                            error={!!error}
+                            helperText={
+                              error?.message || "Horas Teóricas Presenciales"
+                            }
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={6}>
+                      <Controller
+                        name="hse"
+                        control={control}
+                        defaultValue={0}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            {...field}
+                            fullWidth
+                            label="HSE *"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{
+                              min: 0,
+                              step: 0.5,
+                            }}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? ""
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
+                            value={field.value || ""}
+                            error={!!error}
+                            helperText={
+                              error?.message || "Horas Semipresenciales"
+                            }
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  {/* HTA y HSA */}
+                  <Grid container size={{ sm: 12, lg: 4 }}>
+                    <Grid size={6}>
+                      <Controller
+                        name="hta"
+                        control={control}
+                        defaultValue={0}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            {...field}
+                            fullWidth
+                            label="HTA *"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{
+                              min: 0,
+                              step: 0.5,
+                            }}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? ""
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
+                            value={field.value || ""}
+                            error={!!error}
+                            helperText={
+                              error?.message || "Horas Trabajo Autónomo"
+                            }
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={6}>
+                      <Controller
+                        name="hsa"
+                        control={control}
+                        defaultValue={0}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            {...field}
+                            fullWidth
+                            label="HSA *"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{
+                              min: 0,
+                              step: 0.5,
+                            }}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? ""
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
+                            value={field.value || ""}
+                            error={!!error}
+                            helperText={
+                              error?.message || "Horas Servicio/Seminario"
+                            }
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  {/* HTI y HSI */}
+                  <Grid container size={{ sm: 12, lg: 4 }}>
+                    <Grid size={6}>
+                      <Controller
+                        name="hti"
+                        control={control}
+                        defaultValue={0}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            {...field}
+                            fullWidth
+                            label="HTI *"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{
+                              min: 0,
+                              step: 0.5,
+                            }}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? ""
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
+                            value={field.value || ""}
+                            error={!!error}
+                            helperText={
+                              error?.message || "Horas Tutoría/Taller"
+                            }
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={6}>
+                      <Controller
+                        name="hsi"
+                        control={control}
+                        defaultValue={0}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            {...field}
+                            fullWidth
+                            label="HSI *"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{
+                              min: 0,
+                              step: 0.5,
+                            }}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? ""
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
+                            value={field.value || ""}
+                            error={!!error}
+                            helperText={
+                              error?.message || "Horas Seminario Investigación"
+                            }
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                {/* Información adicional sobre las horas */}
+                <Alert severity="info" sx={{ mt: 2, borderRadius: 2 }}>
+                  <Typography variant="body2">
+                    <strong>Nota:</strong> La suma total de todas las horas
+                    (HTE, HSE, HTA, HSA, HTI, HSI) debe ser mayor a 0.
+                  </Typography>
+                </Alert>
               </Box>
 
               <Divider />
@@ -291,7 +674,7 @@ export default function RegistrarUnidadCurricular() {
                         }
                         value={null}
                         onChange={(event, nuevaArea) =>
-                          handleSeleccionAutocomplete(field, nuevaArea)
+                          handleSeleccionArea(field, nuevaArea)
                         }
                         renderInput={(params) => (
                           <CustomLabel
@@ -352,6 +735,95 @@ export default function RegistrarUnidadCurricular() {
                 />
               </Box>
 
+              <Divider />
+
+              {/* Líneas de Investigación */}
+              <Box>
+                <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                  Líneas de Investigación
+                </Typography>
+
+                <Controller
+                  name="lineas_investigacion"
+                  control={control}
+                  defaultValue={[]}
+                  render={({ field }) => (
+                    <Stack spacing={2}>
+                      <CustomAutocomplete
+                        options={[
+                          ...lineasDisponibles,
+                          {
+                            id_linea_investigacion: "otro",
+                            nombre_linea_investigacion:
+                              "➕ Registrar nueva línea",
+                          },
+                        ]}
+                        getOptionLabel={(option) =>
+                          option.nombre_linea_investigacion || ""
+                        }
+                        value={null}
+                        onChange={(event, nuevaLinea) =>
+                          handleSeleccionLinea(field, nuevaLinea)
+                        }
+                        renderInput={(params) => (
+                          <CustomLabel
+                            {...params}
+                            label="Seleccionar Líneas de Investigación *"
+                            placeholder="Busque y seleccione las líneas..."
+                            error={!!errors.lineas_investigacion}
+                            helperText={
+                              errors.lineas_investigacion?.message ||
+                              "Seleccione al menos una línea de investigación"
+                            }
+                          />
+                        )}
+                        isOptionEqualToValue={(option, value) =>
+                          option.id_linea_investigacion ===
+                          value?.id_linea_investigacion
+                        }
+                      />
+
+                      {/* Líneas seleccionadas */}
+                      {field.value && field.value.length > 0 && (
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            gutterBottom
+                          >
+                            Líneas seleccionadas ({field.value.length}):
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              p: 2,
+                              borderRadius: 2,
+                              backgroundColor: theme.palette.background.default,
+                              border: `1px solid ${theme.palette.divider}`,
+                            }}
+                          >
+                            {field.value.map((linea, index) => (
+                              <CustomChip
+                                key={linea.id_linea_investigacion}
+                                label={linea.nombre_linea_investigacion}
+                                color="secondary"
+                                size="medium"
+                                deletable
+                                onDelete={() =>
+                                  handleEliminarLinea(field, index)
+                                }
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+                    </Stack>
+                  )}
+                />
+              </Box>
+
               {/* Nota informativa */}
               <Alert severity="info" sx={{ borderRadius: 2 }}>
                 <Typography variant="body2">
@@ -379,7 +851,6 @@ export default function RegistrarUnidadCurricular() {
                 >
                   Limpiar
                 </CustomButton>
-
                 <CustomButton
                   tipo="primary"
                   type="submit"
@@ -395,8 +866,15 @@ export default function RegistrarUnidadCurricular() {
       </Box>
 
       <ModalRegisterAreaConocimiento
+        setState={areasDisponibles}
         open={openModalArea}
         onClose={handleCerrarModalArea}
+      />
+
+      <ModalRegisterLineaInvestigacion
+        id_trayecto={idTrayecto}
+        open={openModalLinea}
+        onClose={handleCerrarModalLinea}
       />
     </>
   );

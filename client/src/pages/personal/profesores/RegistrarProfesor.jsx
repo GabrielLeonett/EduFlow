@@ -37,6 +37,7 @@ export default function FormRegister() {
   const axios = useApi(false);
   const theme = useTheme();
   const alert = useSweetAlert();
+  
   const {
     register,
     formState: { errors, isValid },
@@ -339,18 +340,28 @@ export default function FormRegister() {
           </Grid>
 
           <Grid size={{ lg: 6, md: 6, sm: 12 }}>
-            <CustomLabel
-              id="telefono_local"
-              label="Teléfono Local"
-              type="tel"
-              variant="outlined"
-              fullWidth
-              {...register("telefono_local")}
-              error={!!errors.telefono_local}
-              helperText={
-                errors.telefono_local?.message ||
-                "Opcional - Ejemplo: 02121234567"
-              }
+            <Controller
+              control={control}
+              name="telefono_local"
+              defaultValue={undefined}
+              render={({ field, fieldState: { error } }) => (
+                <CustomLabel
+                  {...field}
+                  id="telefono_local"
+                  label="Teléfono Local"
+                  type="tel"
+                  variant="outlined"
+                  fullWidth
+                  value={field.value ?? ""} // 👈 Nullish coalescing
+                  onChange={(e) => {
+                    field.onChange(e.target.value || undefined); // 👈 Convierte "" a undefined
+                  }}
+                  error={!!error}
+                  helperText={
+                    error?.message || "Opcional - Ejemplo: 02121234567"
+                  }
+                />
+              )}
             />
           </Grid>
         </Grid>
@@ -1053,9 +1064,9 @@ export default function FormRegister() {
           }}
         >
           <Stepper activeStep={step - 1} alternativeLabel>
-            {steps.map((label) => {
+            {steps.map((label, index) => {
               return (
-                <Step key={label}>
+                <Step key={index}>
                   <StepLabel>
                     <Typography variant="subtitle2" component={"p"}>
                       {label.title}

@@ -23,7 +23,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { UTILS } from "../../../utils/UTILS";
 
 // Constantes
-const DAYS = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sábado"];
+const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 export default function DisponibilidadProfesor() {
   // Hooks
@@ -32,8 +32,7 @@ export default function DisponibilidadProfesor() {
   const theme = useTheme();
   const { id_profesor } = useParams();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   // Estados
   const [selectedBlocks, setSelectedBlocks] = useState({});
@@ -60,7 +59,8 @@ export default function DisponibilidadProfesor() {
       );
 
       console.log("Respuesta completa:", response);
-      const disponibilidades = response.disponibilidades || response.data?.disponibilidades || [];
+      const disponibilidades =
+        response.disponibilidades || response.data?.disponibilidades || [];
 
       // Inicializar selectedBlocks con arrays vacíos para cada día
       const nuevosBloques = {};
@@ -88,14 +88,21 @@ export default function DisponibilidadProfesor() {
           );
           const finTotalMinutos = UTILS.horasMinutos(horaFin, minutosFin);
 
-          const horasMilitarInicio = UTILS.calcularHorasHHMM(inicioTotalMinutos);
+          const horasMilitarInicio =
+            UTILS.calcularHorasHHMM(inicioTotalMinutos);
           const horasMilitarFin = UTILS.calcularHorasHHMM(finTotalMinutos);
 
-          console.log("Total minutos - Inicio:", horasMilitarInicio, "Fin:", horasMilitarFin);
+          console.log(
+            "Total minutos - Inicio:",
+            horasMilitarInicio,
+            "Fin:",
+            horasMilitarFin
+          );
 
           // Obtener los bloques individuales
           const bloquesDia = UTILS.RangoHorasSeguidasDisponibilidad(
-            horasMilitarInicio, horasMilitarFin
+            horasMilitarInicio,
+            horasMilitarFin
           );
 
           console.log(
@@ -158,8 +165,8 @@ export default function DisponibilidadProfesor() {
     if (!bloques || bloques.length === 0) return [];
 
     const bloquesOrdenados = [...bloques].sort((a, b) => {
-      const [horaA] = a.split(':').map(Number);
-      const [horaB] = b.split(':').map(Number);
+      const [horaA] = a.split(":").map(Number);
+      const [horaB] = b.split(":").map(Number);
       return horaA - horaB;
     });
 
@@ -171,8 +178,8 @@ export default function DisponibilidadProfesor() {
 
     for (let i = 1; i < bloquesOrdenados.length; i++) {
       const horaActual = bloquesOrdenados[i];
-      const [horaFinNum] = fin.split(':').map(Number);
-      const [horaActualNum] = horaActual.split(':').map(Number);
+      const [horaFinNum] = fin.split(":").map(Number);
+      const [horaActualNum] = horaActual.split(":").map(Number);
 
       // Si la hora actual es consecutiva a la final
       if (horaActualNum === horaFinNum + 1) {
@@ -196,13 +203,13 @@ export default function DisponibilidadProfesor() {
   const getResumenPorDias = () => {
     const resumen = {};
 
-    DAYS.forEach(day => {
+    DAYS.forEach((day) => {
       const bloquesDia = selectedBlocks[day] || [];
       if (bloquesDia.length > 0) {
         const rangos = agruparBloquesConsecutivos(bloquesDia);
         // 🔥 CORREGIDO: Asignar el array de rangos completo
-        resumen[day] = rangos.map(rango => ({
-          inicio: rango.inicio
+        resumen[day] = rangos.map((rango) => ({
+          inicio: rango.inicio,
         }));
       }
     });
@@ -214,7 +221,7 @@ export default function DisponibilidadProfesor() {
   // Función para contar total de horas seleccionadas
   const getTotalHoras = () => {
     let total = 0;
-    Object.values(selectedBlocks).forEach(bloques => {
+    Object.values(selectedBlocks).forEach((bloques) => {
       total += bloques.length;
     });
     return total;
@@ -240,8 +247,10 @@ export default function DisponibilidadProfesor() {
       const totalRangos = rangos.length;
       disponibilidadData.push({
         dia_semana: dia,
-        hora_inicio: `${UTILS.formatearHoraMilitar(rangos[0].inicio)}`,  // Formato: "8", "14:00"
-        hora_fin: `${UTILS.formatearHoraMilitar(rangos[totalRangos - 1].inicio)}`,  // Formato: "8", "14:00"
+        hora_inicio: `${UTILS.formatearHoraMilitar(rangos[0].inicio)}`, // Formato: "8", "14:00"
+        hora_fin: `${UTILS.formatearHoraMilitar(
+          rangos[totalRangos - 1].inicio
+        )}`, // Formato: "8", "14:00"
         disponibilidad_activa: true,
       });
     });
@@ -264,7 +273,8 @@ export default function DisponibilidadProfesor() {
       try {
         // 🔹 Enviar todo en un solo POST agrupado por día
         const response = await axios.post(
-          `/profesores/${id_profesor}/disponibilidad`, item
+          `/profesores/${id_profesor}/disponibilidad`,
+          item
         );
 
         await alert.confirm({
@@ -278,23 +288,11 @@ export default function DisponibilidadProfesor() {
         console.log("✅ Respuesta del backend:", response);
       } catch (error) {
         console.error("❌ Error al guardar disponibilidad:", error);
-
-        let errorMessage = "Error al guardar la disponibilidad";
-        if (error.response) {
-          errorMessage = error.response.data?.message || errorMessage;
-          console.error("🔍 Detalles del error del backend:", error.response.data);
-        }
-
-        alert.error({
-          icon: "error",
-          title: "Error",
-          text: errorMessage,
-        });
+        alert.error(error.title, error.message);
       } finally {
         setLoading(false);
       }
     });
-
   };
 
   // Obtener resumen para mostrar en UI
@@ -303,10 +301,13 @@ export default function DisponibilidadProfesor() {
   // Vista móvil simplificada
   const renderMobileView = () => (
     <Box>
-      {DAYS.map(day => (
+      {DAYS.map((day) => (
         <Card key={day} sx={{ mb: 2 }}>
           <CardContent>
-            <Typography variant="h6" sx={{ color: theme.palette.primary.main, mb: 2 }}>
+            <Typography
+              variant="h6"
+              sx={{ color: theme.palette.primary.main, mb: 2 }}
+            >
               {day}
             </Typography>
             <Grid container spacing={1}>
@@ -315,9 +316,17 @@ export default function DisponibilidadProfesor() {
                   <Chip
                     label={UTILS.formatearHora(hour)}
                     onClick={() => toggleBlock(day, hour)}
-                    color={selectedBlocks[day]?.includes(hour) ? "primary" : "default"}
-                    variant={selectedBlocks[day]?.includes(hour) ? "filled" : "outlined"}
-                    sx={{ width: '100%' }}
+                    color={
+                      selectedBlocks[day]?.includes(hour)
+                        ? "primary"
+                        : "default"
+                    }
+                    variant={
+                      selectedBlocks[day]?.includes(hour)
+                        ? "filled"
+                        : "outlined"
+                    }
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
               ))}
@@ -334,12 +343,17 @@ export default function DisponibilidadProfesor() {
       sx={{
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: 1,
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     >
       <TableHead>
         <TableRow sx={{ backgroundColor: theme.palette.primary.main }}>
-          <TableCell sx={{ color: theme.palette.primary.contrastText, fontWeight: "bold" }}>
+          <TableCell
+            sx={{
+              color: theme.palette.primary.contrastText,
+              fontWeight: "bold",
+            }}
+          >
             Hora
           </TableCell>
           {DAYS.map((day) => (
@@ -348,7 +362,7 @@ export default function DisponibilidadProfesor() {
               sx={{
                 color: theme.palette.primary.contrastText,
                 fontWeight: "bold",
-                textAlign: "center"
+                textAlign: "center",
               }}
             >
               {day}
@@ -358,8 +372,20 @@ export default function DisponibilidadProfesor() {
       </TableHead>
       <TableBody>
         {Object.keys(timeBlocks).map((hour) => (
-          <TableRow key={hour} sx={{ "&:nth-of-type(odd)": { backgroundColor: theme.palette.action.hover } }}>
-            <TableCell sx={{ fontWeight: "bold", borderRight: `1px solid ${theme.palette.divider}` }}>
+          <TableRow
+            key={hour}
+            sx={{
+              "&:nth-of-type(odd)": {
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
+          >
+            <TableCell
+              sx={{
+                fontWeight: "bold",
+                borderRight: `1px solid ${theme.palette.divider}`,
+              }}
+            >
               {UTILS.formatearHora(hour)}
             </TableCell>
             {DAYS.map((day) => (
@@ -378,8 +404,8 @@ export default function DisponibilidadProfesor() {
                   "&:hover": {
                     backgroundColor: selectedBlocks[day]?.includes(hour)
                       ? theme.palette.success.dark
-                      : theme.palette.action.hover
-                  }
+                      : theme.palette.action.hover,
+                  },
                 }}
               >
                 {selectedBlocks[day]?.includes(hour) ? "✔" : ""}
@@ -400,7 +426,7 @@ export default function DisponibilidadProfesor() {
           padding: { xs: 1, sm: 2, md: 3 },
           marginTop: "80px",
           backgroundColor: theme.palette.background.default,
-          minHeight: "100vh"
+          minHeight: "100vh",
         }}
       >
         <Paper
@@ -408,7 +434,7 @@ export default function DisponibilidadProfesor() {
           sx={{
             padding: { xs: 2, sm: 3 },
             backgroundColor: theme.palette.background.paper,
-            borderRadius: 2
+            borderRadius: 2,
           }}
         >
           <Typography
@@ -418,7 +444,7 @@ export default function DisponibilidadProfesor() {
               color: theme.palette.primary.main,
               fontWeight: "bold",
               marginBottom: 3,
-              fontSize: { xs: '1.5rem', sm: '2rem' }
+              fontSize: { xs: "1.5rem", sm: "2rem" },
             }}
           >
             Disponibilidad del Profesor
@@ -432,12 +458,22 @@ export default function DisponibilidadProfesor() {
             sx={{
               marginTop: 3,
               backgroundColor: theme.palette.background.default,
-              border: `1px solid ${theme.palette.divider}`
+              border: `1px solid ${theme.palette.divider}`,
             }}
           >
             <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: "bold" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.text.primary, fontWeight: "bold" }}
+                >
                   Resumen de disponibilidad:
                 </Typography>
                 <Chip
@@ -459,14 +495,14 @@ export default function DisponibilidadProfesor() {
                         elevation={1}
                         sx={{
                           padding: 2,
-                          backgroundColor: theme.palette.background.paper
+                          backgroundColor: theme.palette.background.paper,
                         }}
                       >
                         <Typography
                           sx={{
                             color: theme.palette.primary.main,
                             fontWeight: "bold",
-                            marginBottom: 1
+                            marginBottom: 1,
                           }}
                         >
                           {dia}
@@ -474,7 +510,9 @@ export default function DisponibilidadProfesor() {
                         {rangos.map((rango, index) => (
                           <Chip
                             key={index}
-                            label={`${UTILS.formatearHoraMilitar(rango.inicio)}`}
+                            label={`${UTILS.formatearHoraMilitar(
+                              rango.inicio
+                            )}`}
                             size="small"
                             color="success"
                             variant="outlined"
@@ -496,7 +534,7 @@ export default function DisponibilidadProfesor() {
               display: "flex",
               gap: 2,
               flexWrap: "wrap",
-              justifyContent: { xs: 'center', sm: 'flex-start' }
+              justifyContent: { xs: "center", sm: "flex-start" },
             }}
           >
             <Button
@@ -508,7 +546,7 @@ export default function DisponibilidadProfesor() {
                 paddingY: 1,
                 fontWeight: "bold",
                 textTransform: "none",
-                minWidth: { xs: '100%', sm: 200 }
+                minWidth: { xs: "100%", sm: 200 },
               }}
               onClick={guardarDisponibilidad}
               disabled={loading}
@@ -525,7 +563,7 @@ export default function DisponibilidadProfesor() {
                 paddingY: 1,
                 fontWeight: "bold",
                 textTransform: "none",
-                minWidth: { xs: '100%', sm: 200 }
+                minWidth: { xs: "100%", sm: 200 },
               }}
               onClick={cargarDisponibilidadExistente}
               disabled={loading}

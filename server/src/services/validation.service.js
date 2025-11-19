@@ -24,6 +24,7 @@ import seccionSchema from "../schemas/seccion.schema.js";
 import sedeSchema from "../schemas/sede.schema.js";
 import unidadCurricularSchema from "../schemas/unidadcurricular.schema.js";
 import userSchema from "../schemas/user.schema.js";
+import lineaInvestigacionSchema from "../schemas/lineasInves.schema.js";
 import { z } from "zod";
 
 /**
@@ -875,6 +876,28 @@ export default class ValidationService {
    */
   static validatePartialAdmins(data, options = {}) {
     const validationResult = adminSchema.partial().safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+  
+  // =============================================
+  // MÉTODOS DE VALIDACIÓN PARA lineas Investigacion
+  // =============================================
+
+  /**
+   * @name validateLineaInvestigacion
+   * @description Valida los datos completos de un usuario
+   * @param {Object} data - Datos del usuario a validar
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validateLineaInvestigacion(data, options = {}) {
+    const validationResult = lineaInvestigacionSchema.safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {

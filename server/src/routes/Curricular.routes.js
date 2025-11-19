@@ -12,10 +12,12 @@ const {
   eliminarUnidadCurricular,
   mostrarTrayectos,
   mostrarSecciones,
+  registrarLineaInvestigacion,
   mostrarUnidadesCurriculares,
   mostrarSeccionesByPnfAndValueTrayecto,
   mostrarSeccionesByPnfAndValueUnidadCurricular,
   CrearSecciones,
+  mostrarLineasInvestigacion,
   asignacionTurnoSeccion,
 } = CurricularController;
 
@@ -276,6 +278,69 @@ CurricularRouter.post(
     "Coordinador",
   ]),
   regitrarUnidadCurricular
+);
+
+/**
+ * @name POST /trayectos/:idTrayecto/unidades-curriculares
+ * @description Registra una nueva Unidad Curricular en un trayecto
+ * @param {number} idTrayecto - ID del trayecto
+ * @middleware Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ * @body {Object} datos - Datos de la unidad curricular
+ * @body {string} datos.nombre_unidad - Nombre de la unidad (requerido)
+ * @body {string} datos.descripcion_unidad - Descripción de la unidad
+ * @body {number} datos.carga_horas_unidad - Carga horaria en horas (requerido)
+ * @body {string} datos.codigo_unidad - Código único de la unidad (requerido)
+ * @returns {Object} Objeto con mensaje de confirmación
+ */
+CurricularRouter.post(
+  "/catalogo/:idTrayecto/linea-investigacion",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  registrarLineaInvestigacion
+);
+
+/**
+ * @name GET /catalogo/lineas-investigacion
+ * @name GET /catalogo/trayectos/:idTrayecto/lineas-investigacion
+ * @description Obtiene las líneas de investigación (todas o filtradas por trayecto)
+ * @param {number} [idTrayecto] - ID del trayecto para filtrar (opcional)
+ * @middleware Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ *  - Coordinador
+ *  - Profesor
+ * @returns {Object} Lista de líneas de investigación
+ */
+CurricularRouter.get(
+  "/catalogo/lineas-investigacion",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  CurricularController.mostrarLineasInvestigacion
+);
+
+CurricularRouter.get(
+  "/catalogo/trayectos/:idTrayecto/lineas-investigacion",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  CurricularController.mostrarLineasInvestigacion
 );
 
 /**
