@@ -44,27 +44,25 @@ export default function CardProfesor({ profesor, isSearch }) {
   const [valorEditando, setValorEditando] = useState("");
   const [profesorEditado, setProfesorEditado] = useState(false);
   const [isTitileando, setIsTitileando] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const hasFetched = useRef(false);
 
+  // Efectos
   useEffect(() => {
     console.log(profesorActual);
   }, [profesorActual]);
 
-  // Efecto de titileo cuando isSearch es true
   useEffect(() => {
     if (isSearch) {
       setIsTitileando(true);
-      const timer = setTimeout(() => {
-        setIsTitileando(false);
-      }, 5000); // Titileo durante 2 segundos
-
+      const timer = setTimeout(() => setIsTitileando(false), 5000);
       return () => clearTimeout(timer);
     }
   }, [isSearch]);
 
-  // Cargar imagen del profesor
   useEffect(() => {
     if (hasFetched.current || !profesor?.cedula) return;
+
     const loadProfessorImage = async () => {
       hasFetched.current = true;
       try {
@@ -76,6 +74,7 @@ export default function CardProfesor({ profesor, isSearch }) {
         setAvatarUrl(imageUrl);
       } catch (error) {
         console.error("Error cargando imagen:", error);
+        setAvatarUrl(null);
       }
     };
     loadProfessorImage();
@@ -87,14 +86,13 @@ export default function CardProfesor({ profesor, isSearch }) {
     };
   }, [avatarUrl]);
 
-  // Abrir modal de edición
+  // Handlers
   const handleOpenModalEditar = (campo, valorActual) => {
     setCampoEditando(campo);
     setValorEditando(valorActual || "");
     setOpenModalEditar(true);
   };
 
-  // Guardar el campo editado
   const handleGuardarCampo = (campo, nuevoValor) => {
     const actualizado = { ...profesorActual, [campo]: nuevoValor };
     setProfesorActual(actualizado);
@@ -102,7 +100,6 @@ export default function CardProfesor({ profesor, isSearch }) {
     setOpenModalEditar(false);
   };
 
-  // Guardar cambios en servidor
   const handleGuardarCambiosServidor = async () => {
     try {
       console.log(profesorActual);
@@ -117,32 +114,88 @@ export default function CardProfesor({ profesor, isSearch }) {
     }
   };
 
-  // Eliminar profesor
   const handleProfesorEliminado = () => {
     setTimeout(() => {
-      navigate("/profesores/${profesor.id_profesor}");
+      navigate("/profesores");
     }, 1200);
   };
 
-  // Iniciales del profesor
   const getInitials = () => {
     const firstname = profesor?.nombres?.charAt(0) || "N";
     const lastname = profesor?.apellidos?.charAt(0) || "E";
     return `${firstname}${lastname}`;
   };
-  const [anchorEl, setAnchorEl] = useState(null);
 
+  // Menu handlers
+  const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
+  const onSubmitDestitucion = async (data) => {
+    try {
+      const confirm = await alert.confirm(
+        "¿Está seguro de eliminar este profesor?",
+        "Esta acción no se puede deshacer."
+      );
+      if (!confirm) return;
+
+      setIsLoading(true);
+
+      // ✅ Construcción del payload
+      const payload = {
+        id_profesor: profesor.id_profesor,
+        tipo_accion: data.tipo_accion,
+        razon: data.razon,
+        observaciones: data.observaciones,
+        fecha_efectiva: data.fecha_efectiva,
+      };
+
+      // ✅ Petición DELETE con axios
+      await axios.delete(`/profesores/${profesor.id_profesor}`, {
+        data: payload,
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      });
+
+      // 🔽 Reemplazamos alert.success() por toast
+      alert.toast({
+        title: "Profesor eliminado",
+        message: "El profesor fue eliminado correctamente del sistema.",
+        config: { icon: "success" },
+      });
+
+      navigate("/academico/profesores/eliminados");
+    } catch (error) {
+      console.error("❌ Error al eliminar profesor:", error);
+
+      // ✅ Si hay errores de validación enviados desde el backend
+      if (error.error?.totalErrors > 0) {
+        error.error.validationErrors.forEach((e) => {
+          // 🔽 toast para cada error de validación
+          alert.toast({
+            title: e.field,
+            message: e.message,
+            config: { icon: "warning" },
+          });
+        });
+      } else {
+        // 🔽 Reemplazamos alert.error() por toast
+        alert.toast({
+          title: error.title || "Error al eliminar",
+          message:
+            error.message ||
+            "Ocurrió un error al intentar eliminar el profesor.",
+          config: { icon: "error" },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Box
-      id="cardprofesor"
       sx={{
         background: theme.palette.background.paper,
         borderRadius: "15px",
@@ -171,7 +224,7 @@ export default function CardProfesor({ profesor, isSearch }) {
         },
       }}
     >
-      {/* Imagen del profesor */}
+      {/* Header con imagen */}
       <Box
         sx={{
           position: "relative",
@@ -193,14 +246,12 @@ export default function CardProfesor({ profesor, isSearch }) {
             fontSize: "3rem",
             color: "white",
           }}
-          onError={(e) => {
-            setAvatarUrl(null);
-            e.target.style.display = "none";
-          }}
+          onError={() => setAvatarUrl(null)}
         >
           {!avatarUrl && getInitials()}
         </Avatar>
 
+        {/* Overlay gradiente */}
         <Box
           sx={{
             position: "absolute",
@@ -213,65 +264,39 @@ export default function CardProfesor({ profesor, isSearch }) {
           }}
         />
 
-        {/* Botón Editar - Izquierda */}
-        <Box
-          sx={{
-            position: "absolute",
-            left: 15,
-            top: 15,
-            color: "white",
-            fontWeight: "bold",
-            textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-            "&:hover": {
-              backgroundColor: "rgba(163, 163, 163, 0.3)",
-              borderRadius: "50%",
-            },
-            p: 0.5,
-            borderRadius: "50%",
-            transition: "background-color 0.2s ease-in-out",
-          }}
-        >
-          <Tooltip title="Editar Imagen" arrow>
-            <IconButton size="small" sx={{ color: "white", p: 0.5 }}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        {/* Botones de acción */}
+        <Tooltip title="Editar Imagen" arrow>
+          <IconButton
+            size="small"
+            sx={{
+              position: "absolute",
+              left: 15,
+              top: 15,
+              color: "white",
+              backgroundColor: "rgba(0,0,0,0.3)",
+              "&:hover": { backgroundColor: "rgba(163, 163, 163, 0.3)" },
+            }}
+          >
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
 
-        {/* Botón Acciones - Derecha */}
-        <Box
-          sx={{
-            position: "absolute",
-            right: 15,
-            top: 15,
-            color: "white",
-            fontWeight: "bold",
-            textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-            "&:hover": {
-              backgroundColor: "rgba(163, 163, 163, 0.3)",
-            },
-            borderRadius: "50%",
-            transition: "background-color 0.2s ease-in-out",
-          }}
-        >
-          <Tooltip id="acciones" title="Acciones" arrow>
-            <IconButton
-              onClick={handleClick}
-              size="small"
-              sx={{
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "transparent", // Evita doble hover
-                },
-              }}
-              aria-controls={open ? "account-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? "true" : undefined}
-            >
-              <SettingsIcon sx={{ color: "inherit" }} />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <Tooltip title="Acciones" arrow>
+          <IconButton
+            onClick={handleClick}
+            size="small"
+            sx={{
+              position: "absolute",
+              right: 15,
+              top: 15,
+              color: "white",
+              backgroundColor: "rgba(0,0,0,0.3)",
+              "&:hover": { backgroundColor: "rgba(163, 163, 163, 0.3)" },
+            }}
+          >
+            <SettingsIcon />
+          </IconButton>
+        </Tooltip>
 
         <Typography
           variant="h5"
@@ -289,7 +314,7 @@ export default function CardProfesor({ profesor, isSearch }) {
         </Typography>
       </Box>
 
-      {/* Información */}
+      {/* Contenido informativo */}
       <Box
         sx={{
           padding: "20px",
@@ -301,272 +326,151 @@ export default function CardProfesor({ profesor, isSearch }) {
         {/* Información Personal */}
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">Información Personal</Typography>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Información Personal
+            </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography>
-              <strong>Cédula:</strong>{" "}
-              {profesorActual?.cedula || "No especificado"}
-            </Typography>
-            <Typography>
-              <strong>Género:</strong>{" "}
-              {profesorActual?.genero || "No especificado"}
-            </Typography>
-            <Typography>
-              <strong>Fecha Nac.:</strong>{" "}
-              {profesor?.fecha_nacimiento
-                ? dayjs(profesor.fecha_nacimiento).format("DD/MM/YYYY")
-                : "No especificado"}
-            </Typography>
-            <Typography sx={{ display: "flex", alignItems: "center" }}>
-              <strong>Email:</strong>{" "}
-              {profesorActual?.email || "No especificado"}
-              <Tooltip title="Editar email" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    handleOpenModalEditar("email", profesorActual.email)
-                  }
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Typography>
+            <InfoRow label="Cédula" value={profesorActual?.cedula} />
+            <InfoRow label="Género" value={profesorActual?.genero} />
+            <InfoRow
+              label="Fecha Nac."
+              value={
+                profesor?.fecha_nacimiento
+                  ? dayjs(profesor.fecha_nacimiento).format("DD/MM/YYYY")
+                  : "No especificado"
+              }
+            />
+            <EditableInfoRow
+              label="Email"
+              value={profesorActual?.email}
+              onEdit={() =>
+                handleOpenModalEditar("email", profesorActual.email)
+              }
+            />
           </AccordionDetails>
         </Accordion>
 
         {/* Información Educativa */}
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">Información Educativa</Typography>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Información Educativa
+            </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            {/* Áreas de Conocimiento */}
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Typography
-                variant="body2"
-                sx={{ minWidth: 120, fontWeight: "bold" }}
-              >
-                Áreas:
-              </Typography>
-              <Box
-                sx={{
-                  flex: 1,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 0.5,
-                  alignItems: "center",
-                }}
-              >
-                {profesorActual?.areas_de_conocimiento &&
-                profesorActual.areas_de_conocimiento.length > 0 ? (
-                  <>
-                    {profesorActual.areas_de_conocimiento.map((area, index) => (
-                      <CustomChip
-                        key={area.id_area_conocimiento || index}
-                        label={area.nombre_area_conocimiento}
-                        color="primary"
-                        variant="outlined"
-                        size="small"
-                      />
-                    ))}
-                  </>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No especificado
-                  </Typography>
-                )}
-                <Tooltip title="Editar áreas" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={() =>
-                      handleOpenModalEditar(
-                        "areas_de_conocimiento",
-                        profesorActual?.areas_de_conocimiento || []
-                      )
-                    }
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
+            <ChipSection
+              label="Áreas"
+              items={profesorActual?.areas_de_conocimiento}
+              getLabel={(area) => area.nombre_area_conocimiento}
+              color="primary"
+              onEdit={() =>
+                handleOpenModalEditar(
+                  "areas_de_conocimiento",
+                  profesorActual?.areas_de_conocimiento || []
+                )
+              }
+            />
 
-            {/* Pre-Grados */}
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Typography
-                variant="body2"
-                sx={{ minWidth: 120, fontWeight: "bold" }}
-              >
-                Pre-Grados:
-              </Typography>
-              <Box
-                sx={{
-                  flex: 1,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 0.5,
-                  alignItems: "center",
-                }}
-              >
-                {profesorActual?.pre_grados &&
-                profesorActual.pre_grados.length > 0 ? (
-                  <>
-                    {profesorActual.pre_grados.map((pregrado, index) => (
-                      <CustomChip
-                        key={pregrado.id_pre_grado || index}
-                        label={`${pregrado.tipo_pre_grado} ${pregrado.nombre_pre_grado}`}
-                        color="secondary"
-                        variant="outlined"
-                        size="small"
-                      />
-                    ))}
-                  </>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No especificado
-                  </Typography>
-                )}
-                <Tooltip title="Editar pre-grados" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={() =>
-                      handleOpenModalEditar(
-                        "pre_grados",
-                        profesorActual?.pre_grados || []
-                      )
-                    }
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
+            <ChipSection
+              label="Pre-Grados"
+              items={profesorActual?.pre_grados}
+              getLabel={(pregrado) =>
+                `${pregrado.tipo_pre_grado} ${pregrado.nombre_pre_grado}`
+              }
+              color="secondary"
+              onEdit={() =>
+                handleOpenModalEditar(
+                  "pre_grados",
+                  profesorActual?.pre_grados || []
+                )
+              }
+            />
 
-            {/* Pos-Grados */}
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Typography
-                variant="body2"
-                sx={{ minWidth: 120, fontWeight: "bold" }}
-              >
-                Pos-Grados:
-              </Typography>
-              <Box
-                sx={{
-                  flex: 1,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 0.5,
-                  alignItems: "center",
-                }}
-              >
-                {profesorActual?.pos_grados &&
-                profesorActual.pos_grados.length > 0 ? (
-                  <>
-                    {profesorActual.pos_grados.map((posgrado, index) => (
-                      <CustomChip
-                        key={posgrado.id_pos_grado || index}
-                        label={`${posgrado.tipo_pos_grado} ${posgrado.nombre_pos_grado}`}
-                        color="success"
-                        variant="outlined"
-                        size="small"
-                      />
-                    ))}
-                  </>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No especificado
-                  </Typography>
-                )}
-                <Tooltip title="Editar pos-grados" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={() =>
-                      handleOpenModalEditar(
-                        "pos_grados",
-                        profesorActual?.pos_grados || []
-                      )
-                    }
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
+            <ChipSection
+              label="Pos-Grados"
+              items={profesorActual?.pos_grados}
+              getLabel={(posgrado) =>
+                `${posgrado.tipo_pos_grado} ${posgrado.nombre_pos_grado}`
+              }
+              color="success"
+              onEdit={() =>
+                handleOpenModalEditar(
+                  "pos_grados",
+                  profesorActual?.pos_grados || []
+                )
+              }
+            />
           </AccordionDetails>
         </Accordion>
 
         {/* Información Profesional */}
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">Información Profesional</Typography>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Información Profesional
+            </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography sx={{ display: "flex", alignItems: "center" }}>
-              <strong>Categoría:</strong>{" "}
-              {profesorActual?.categoria || "No especificado"}
-              <Tooltip title="Editar categoría" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    handleOpenModalEditar("categoria", profesorActual.categoria)
-                  }
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Typography>
-            <Typography sx={{ display: "flex", alignItems: "center" }}>
-              <strong>Dedicación:</strong>{" "}
-              {profesorActual?.dedicacion || "No especificado"}
-              <Tooltip title="Editar dedicación" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    handleOpenModalEditar(
-                      "dedicacion",
-                      profesorActual.dedicacion
-                    )
-                  }
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Typography>
+            <EditableInfoRow
+              label="Categoría"
+              value={profesorActual?.categoria}
+              onEdit={() =>
+                handleOpenModalEditar("categoria", profesorActual.categoria)
+              }
+            />
+            <EditableInfoRow
+              label="Dedicación"
+              value={profesorActual?.dedicacion}
+              onEdit={() =>
+                handleOpenModalEditar("dedicacion", profesorActual.dedicacion)
+              }
+            />
           </AccordionDetails>
         </Accordion>
 
+        {/* Disponibilidad */}
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1">
-              Información Disponibilidad
+            <Typography variant="subtitle1" fontWeight="bold">
+              Disponibilidad
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <List>
-              {profesor.disponibilidad.map((dis) => {
-                return (
-                  <ListItem key={dis.id_disponibilidad || dis.dia_semana}>
-                    {dis.dia_semana}: {dis.hora_inicio} - {dis.hora_fin}
+            <List dense>
+              {profesor.disponibilidad && profesor.disponibilidad.length > 0 ? (
+                profesor.disponibilidad.map((dis, index) => (
+                  <ListItem key={dis.id_disponibilidad || index}>
+                    <Typography variant="body2">
+                      {dis.dia_semana}: {dis.hora_inicio} - {dis.hora_fin}
+                    </Typography>
                   </ListItem>
-                );
-              })}
+                ))
+              ) : (
+                <ListItem>
+                  <Typography variant="body2" color="text.secondary">
+                    No especificado
+                  </Typography>
+                </ListItem>
+              )}
             </List>
           </AccordionDetails>
         </Accordion>
 
+        {/* Botón Guardar Cambios */}
         {profesorEditado && (
           <CustomButton
             tipo="success"
             variant="contained"
             onClick={handleGuardarCambiosServidor}
+            fullWidth
           >
             Guardar Cambios
           </CustomButton>
         )}
       </Box>
 
-      {/* ✅ Modal editar campo */}
+      {/* Modales */}
       <ModalEditarCampoProfesor
         open={openModalEditar}
         onClose={() => setOpenModalEditar(false)}
@@ -575,33 +479,28 @@ export default function CardProfesor({ profesor, isSearch }) {
         onGuardar={handleGuardarCampo}
       />
 
-      {/* Modal eliminar */}
       <ModalEliminarProfe
         profesor={profesorActual}
         open={openModalEliminar}
+        onSubmit={onSubmitDestitucion}
+        isLoading={isLoading}
         onClose={() => setOpenModalEliminar(false)}
         onEliminado={handleProfesorEliminado}
       />
 
+      {/* Menú de acciones */}
       <Menu
         anchorEl={anchorEl}
-        id="account-menu"
         open={open}
         onClose={handleClose}
         onClick={handleClose}
         slotProps={{
           paper: {
-            elevation: 0,
+            elevation: 3,
             sx: {
               overflow: "visible",
               filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
               mt: 1.5,
-              "& .MuiAvatar-root": {
-                width: 32,
-                height: 32,
-                ml: -0.5,
-                mr: 1,
-              },
               "&::before": {
                 content: '""',
                 display: "block",
@@ -621,9 +520,9 @@ export default function CardProfesor({ profesor, isSearch }) {
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
         <MenuItem
-          onClick={() => {
-            navigate(`/horarios/profesores/${profesor.id_profesor}`);
-          }}
+          onClick={() =>
+            navigate(`/horarios/profesores/${profesor.id_profesor}`)
+          }
         >
           <ListItemIcon>
             <ClassIcon fontSize="small" />
@@ -631,11 +530,11 @@ export default function CardProfesor({ profesor, isSearch }) {
           Horario Profesor
         </MenuItem>
         <MenuItem
-          onClick={() => {
+          onClick={() =>
             navigate(
               `/academico/profesores/disponibilidad/${profesor.id_profesor}`
-            );
-          }}
+            )
+          }
         >
           <ListItemIcon>
             <ScheduleIcon fontSize="small" />
@@ -652,3 +551,80 @@ export default function CardProfesor({ profesor, isSearch }) {
     </Box>
   );
 }
+
+// Componentes auxiliares para mejor organización
+const InfoRow = ({ label, value }) => (
+  <Typography sx={{ mb: 1.5 }}>
+    <strong>{label}:</strong> {value || "No especificado"}
+  </Typography>
+);
+
+const EditableInfoRow = ({ label, value, onEdit }) => (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      mb: 1.5,
+    }}
+  >
+    <Typography>
+      <strong>{label}:</strong> {value || "No especificado"}
+    </Typography>
+    <Tooltip title={`Editar ${label.toLowerCase()}`} arrow>
+      <IconButton size="small" onClick={onEdit}>
+        <EditIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
+  </Box>
+);
+
+const ChipSection = ({ label, items, getLabel, color, onEdit }) => (
+  <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}>
+    <Typography
+      variant="body2"
+      sx={{ minWidth: 100, fontWeight: "bold", mt: 0.5 }}
+    >
+      {label}:
+    </Typography>
+    <Box
+      sx={{
+        flex: 1,
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 0.5,
+        alignItems: "center",
+      }}
+    >
+      {items && items.length > 0 ? (
+        <>
+          {items.map((item, index) => (
+            <CustomChip
+              key={item.id || index}
+              label={getLabel(item)}
+              color={color}
+              variant="outlined"
+              size="small"
+            />
+          ))}
+          <Tooltip title={`Editar ${label.toLowerCase()}`} arrow>
+            <IconButton size="small" onClick={onEdit}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </>
+      ) : (
+        <>
+          <Typography variant="body2" color="text.secondary">
+            No especificado
+          </Typography>
+          <Tooltip title={`Editar ${label.toLowerCase()}`} arrow>
+            <IconButton size="small" onClick={onEdit}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </>
+      )}
+    </Box>
+  </Box>
+);
