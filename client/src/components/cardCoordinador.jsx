@@ -29,15 +29,17 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
-import ModalEliminarProfe from "./ModalEliminarProfe.jsx";
+import ModalDestitucion from "./ModalDestitucion.jsx";
 import ModalEditarCampoProfesor from "./ModalEditarCampoProfesor.jsx";
 import CustomButton from "./customButton.jsx";
 import CustomChip from "./CustomChip.jsx";
+import useSweetAlert from "../hook/useSweetAlert.jsx";
 
 export default function CardCoordinador({ coordinador, isSearch }) {
-  const axios = useApi(false);
+  const axios = useApi();
   const theme = useTheme();
   const navigate = useNavigate();
+  const alert = useSweetAlert();
 
   const [coordinadorActual, setCoordinadorActual] = useState(coordinador);
   const [avatarUrl, setAvatarUrl] = useState(null);
@@ -99,20 +101,18 @@ export default function CardCoordinador({ coordinador, isSearch }) {
 
       // ✅ Construcción del payload para coordinador
       const payload = {
-        id_coordinador: coordinador.id_coordinador,
-        id_profesor: coordinador.id_profesor,
+        id_usuario: parseInt(coordinador.cedula),
         id_pnf: coordinador.id_pnf,
         tipo_accion: data.tipo_accion,
         razon: data.razon,
         observaciones: data.observaciones,
         fecha_efectiva: data.fecha_efectiva,
       };
+      console.log("Datos:", payload);
 
       // ✅ Petición DELETE específica para coordinador
-      await axios.delete(`/coordinadores/${coordinador.id_coordinador}`, {
+      await axios.delete(`/coordinadores/${coordinador.cedula}/destituir`, {
         data: payload,
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
       });
 
       // ✅ Mensaje de éxito para coordinador
@@ -627,7 +627,7 @@ export default function CardCoordinador({ coordinador, isSearch }) {
         onGuardar={handleGuardarCampo}
       />
 
-      <ModalEliminarProfe
+      <ModalDestitucion
         profesor={coordinadorActual}
         open={openModalEliminar}
         onSubmit={onSubmitDestitucion}

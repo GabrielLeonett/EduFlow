@@ -733,14 +733,14 @@ export default class ProfesorModel {
    */
   static async eliminar(datos, usuarioId) {
     try {
-      const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } =
+      const { id_usuario, tipo_accion, razon, observaciones, fecha_efectiva } =
         datos;
 
       const query =
         "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)";
       const values = [
         usuarioId,
-        id_profesor,
+        id_usuario,
         tipo_accion,
         razon,
         observaciones,
@@ -758,7 +758,7 @@ export default class ProfesorModel {
       error.details = {
         path: "ProfesorModel.eliminar",
         usuario_id: usuarioId,
-        id_profesor: datos.id_profesor,
+        id_usuario: datos.id_usuario,
       };
       throw FormatResponseModel.respuestaError(
         error,
@@ -766,6 +766,7 @@ export default class ProfesorModel {
       );
     }
   }
+
   /**
    * @static
    * @async
@@ -778,7 +779,7 @@ export default class ProfesorModel {
   static async reingresar(datos, usuarioId) {
     try {
       const {
-        id_profesor,
+        id_usuario,
         tipo_reingreso,
         motivo_reingreso,
         observaciones,
@@ -790,7 +791,7 @@ export default class ProfesorModel {
         "CALL reingresar_profesor(NULL, $1, $2, $3, $4, $5, $6, $7)";
       const values = [
         usuarioId,
-        id_profesor,
+        id_usuario,
         tipo_reingreso,
         motivo_reingreso,
         observaciones,
@@ -808,7 +809,7 @@ export default class ProfesorModel {
       error.details = {
         path: "ProfesorModel.reingresar",
         usuario_id: usuarioId,
-        id_profesor: datos.id_profesor,
+        id_usuario: datos.id_usuario,
       };
       throw FormatResponseModel.respuestaError(
         error,

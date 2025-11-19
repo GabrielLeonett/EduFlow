@@ -252,31 +252,46 @@ export default class CoordinadorModel {
   /**
    * @static
    * @async
-   * @method eliminarCoordinador
-   * @description Elimina (destituye) un coordinador mediante un procedimiento almacenado
-   * @param {number} id_coordinador - ID del coordinador a eliminar
+   * @method destituirCoordinador
+   * @description Destituye un coordinador mediante un procedimiento almacenado
+   * @param {number} id_coordinador - ID del coordinador a destituir
    * @param {number} id_usuario - ID del usuario que realiza la acción
+   * @param {string} tipo_accion - Tipo de acción (DESTITUCION, RENUNCIA)
+   * @param {string} razon - Razón de la destitución
+   * @param {string} observaciones - Observaciones adicionales (opcional)
+   * @param {string} fecha_efectiva - Fecha efectiva de la destitución (opcional)
    * @returns {Promise<Object>} Resultado de la operación
    */
-  static async eliminarCoordinador(id_coordinador, id_usuario) {
+  static async destituirCoordinador(
+    id_coordinador,
+    id_usuario,
+    tipo_accion,
+    razon,
+    observaciones = null,
+    fecha_efectiva = null
+  ) {
     try {
-      const query = `CALL desasignar_coordinador($1, $2, $3)`;
+      const query = `CALL eliminar_destituir_coordinador($1, $2, $3, $4, $5, $6, $7)`;
       const params = [
         id_usuario,
         id_coordinador,
-        "Destitución por usuario del sistema",
+        tipo_accion,
+        razon,
+        observaciones,
+        fecha_efectiva,
       ];
+
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Coordinador eliminado correctamente"
+        "Coordinador destituido correctamente"
       );
     } catch (error) {
-      error.details = { path: "CoordinadorModel.eliminarCoordinador" };
+      error.details = { path: "CoordinadorModel.destituirCoordinador" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al eliminar coordinador"
+        "Error al destituir coordinador"
       );
     }
   }
@@ -284,34 +299,52 @@ export default class CoordinadorModel {
   /**
    * @static
    * @async
-   * @method desasignarCoordinador
-   * @description Desasigna un coordinador de su PNF mediante un procedimiento almacenado
-   * @param {Object} params - Parámetros de entrada
-   * @param {number} params.id_coordinador - ID del coordinador
-   * @param {number} params.id_usuario - ID del usuario que realiza la desasignación
-   * @param {string} [params.motivo] - Motivo de la desasignación
+   * @method restituirCoordinador
+   * @description Restituye (reingresa) un coordinador destituido mediante un procedimiento almacenado
+   * @param {number} id_coordinador - ID del coordinador a restituir
+   * @param {number} id_usuario - ID del usuario que realiza la acción
+   * @param {string} tipo_reingreso - Tipo de reingreso (REINGRESO, REINCORPORACION, REINTEGRO)
+   * @param {string} motivo_reingreso - Motivo del reingreso
+   * @param {string} observaciones - Observaciones adicionales (opcional)
+   * @param {string} fecha_efectiva - Fecha efectiva del reingreso (opcional)
+   * @param {number} registro_anterior_id - ID del registro de destitución anterior (opcional)
+   * @param {number} id_pnf - ID del PNF al que se reasigna (opcional)
    * @returns {Promise<Object>} Resultado de la operación
    */
-  static async desasignarCoordinador({ id_coordinador, id_usuario, motivo }) {
+  static async restituirCoordinador(
+    id_coordinador,
+    id_usuario,
+    tipo_reingreso,
+    motivo_reingreso,
+    observaciones = null,
+    fecha_efectiva = null,
+    registro_anterior_id = null,
+    id_pnf = null
+  ) {
     try {
-      const query = `CALL desasignar_coordinador($1, $2, $3)`;
+      const query = `CALL reingresar_coordinador($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
       const params = [
         id_usuario,
         id_coordinador,
-        motivo || "Desasignación por usuario del sistema",
+        tipo_reingreso,
+        motivo_reingreso,
+        observaciones,
+        fecha_efectiva,
+        registro_anterior_id,
+        id_pnf,
       ];
 
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Coordinador desasignado correctamente"
+        "Coordinador restituido correctamente"
       );
     } catch (error) {
-      error.details = { path: "CoordinadorModel.desasignarCoordinador" };
+      error.details = { path: "CoordinadorModel.restituirCoordinador" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al desasignar coordinador"
+        "Error al restituir coordinador"
       );
     }
   }
@@ -319,35 +352,46 @@ export default class CoordinadorModel {
   /**
    * @static
    * @async
-   * @method verificarCoordinadorActivo
-   * @description Verifica si un coordinador está activo en un PNF específico
-   * @param {number} cedula_profesor - Cédula del profesor
-   * @param {number} id_pnf - ID del PNF
-   * @returns {Promise<Object>} Información sobre la coordinación activa
+   * @method obtenerHistorialDestituciones
+   * @description Obtiene el historial de destituciones de un coordinador
+   * @param {number} id_coordinador - ID del coordinador
+   * @returns {Promise<Object>} Historial de destituciones
    */
-  static async verificarCoordinadorActivo(cedula_profesor, id_pnf) {
+  static async obtenerHistorialDestituciones(id_coordinador) {
     try {
       const query = `
-        SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE cedula = $1 AND id_pnf = $2 AND activo = true
+        SELECT 
+          d.id_registro,
+          d.tipo_accion,
+          d.razon,
+          d.observaciones,
+          d.fecha_efectiva,
+          d.created_at,
+          u.nombres || ' ' || u.apellidos as usuario_accion_nombre
+        FROM destituciones d
+        INNER JOIN coordinadores c ON d.usuario_id = c.id_profesor
+        INNER JOIN users u ON d.usuario_accion = u.cedula
+        WHERE c.id_coordinador = $1
+        ORDER BY d.created_at DESC
       `;
-      const params = [cedula_profesor, id_pnf];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await pg.query(query, [id_coordinador]);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Verificación de coordinador activo completada"
+        "Historial obtenido correctamente"
       );
     } catch (error) {
-      error.details = { path: "CoordinadorModel.verificarCoordinadorActivo" };
+      error.details = {
+        path: "CoordinadorModel.obtenerHistorialDestituciones",
+      };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al verificar coordinador activo"
+        "Error al obtener historial de destituciones"
       );
     }
   }
-
+  
   /**
    * @static
    * @async

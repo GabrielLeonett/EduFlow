@@ -328,7 +328,7 @@ CurricularRouter.get(
     "Coordinador",
     "Profesor",
   ]),
-  CurricularController.mostrarLineasInvestigacion
+  mostrarLineasInvestigacion
 );
 
 CurricularRouter.get(
@@ -340,7 +340,7 @@ CurricularRouter.get(
     "Coordinador",
     "Profesor",
   ]),
-  CurricularController.mostrarLineasInvestigacion
+  mostrarLineasInvestigacion
 );
 
 /**

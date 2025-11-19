@@ -386,11 +386,18 @@ export default class CoordinadorService {
    * @description Elimina un coordinador (destitución)
    * @param {number} id - ID del coordinador
    * @param {object} user_action - Usuario que realiza la acción
+   * @param {object} dataDestitucion - Datos específicos de la destitución
+   * @param {string} dataDestitucion.tipo_accion - Tipo de acción (DESTITUCION, RENUNCIA)
+   * @param {string} dataDestitucion.razon - Razón de la destitución
+   * @param {string} dataDestitucion.observaciones - Observaciones adicionales
+   * @param {string} dataDestitucion.fecha_efectiva - Fecha efectiva de la destitución
    * @returns {Object} Resultado de la operación
    */
-  static async eliminarCoordinador(id, user_action) {
+  static async eliminarCoordinador(id, user_action, dataDestitucion = {}) {
     try {
-      console.log(`🔍 [eliminarCoordinador] Eliminando coordinador ID: ${id}`);
+      console.log(
+        `🔍 [eliminarCoordinador] Destituyendo coordinador datos: ${dataDestitucion}`
+      );
 
       // 1. Validar ID del coordinador
       const idValidation = ValidationService.validateId(id, "coordinador");
@@ -418,6 +425,307 @@ export default class CoordinadorService {
         );
       }
 
+      // 3. Validar datos de destitución
+      const validacionDestitucion =
+        ValidationService.validateDestitucion(dataDestitucion);
+      if (!validacionDestitucion.isValid) {
+        console.error(
+          "❌ Validación de datos de destitución fallida:",
+          validacionDestitucion.errors
+        );
+        return FormatterResponseService.validationError(
+          validacionDestitucion.errors,
+          "Datos de destitución inválidos"
+        );
+      }
+
+      // 4. Verificar que el coordinador existe
+      const coordinadorExistente =
+        await CoordinadorModel.obtenerCoordinadorPorId(id);
+
+      if (FormatterResponseService.isError(coordinadorExistente)) {
+        return coordinadorExistente;
+      }
+
+      if (
+        !coordinadorExistente.data ||
+        coordinadorExistente.data.length === 0
+      ) {
+        console.error("❌ Coordinador no encontrado:", id);
+        return FormatterResponseService.notFound("Coordinador", id);
+      }
+
+      const coordinador = coordinadorExistente.data[0];
+
+      // 5. Verificar que el coordinador está activo
+      if (coordinador.estatus_coordinador !== "activo") {
+        console.error("❌ Coordinador ya está inactivo:", id);
+        return FormatterResponseService.validationError(
+          ["El coordinador ya se encuentra inactivo en el sistema"],
+          "No se puede destituir un coordinador inactivo"
+        );
+      }
+
+      // 6. Destituir coordinador en el modelo
+      console.log("🗑️ Destituyendo coordinador en base de datos...");
+      const respuestaModel = await CoordinadorModel.destituirCoordinador(
+        id,
+        user_action.id,
+        dataDestitucion.tipo_accion || "DESTITUCION",
+        dataDestitucion.razon,
+        dataDestitucion.observaciones,
+        dataDestitucion.fecha_efectiva
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo:", respuestaModel);
+        return respuestaModel;
+      }
+
+      // 7. Enviar notificación
+      console.log("🔔 Enviando notificaciones...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Coordinador Destituido",
+        tipo: "coordinador_destituido",
+        contenido: `Se ha destituido al coordinador ${coordinador.nombres} ${coordinador.apellidos} del PNF ${coordinador.nombre_pnf}. Razón: ${dataDestitucion.razon}`,
+        metadatos: {
+          coordinador_id: id,
+          coordinador_cedula: coordinador.cedula,
+          coordinador_nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
+          pnf_id: coordinador.id_pnf,
+          pnf_nombre: coordinador.nombre_pnf,
+          tipo_accion: dataDestitucion.tipo_accion || "DESTITUCION",
+          razon: dataDestitucion.razon,
+          fecha_efectiva:
+            dataDestitucion.fecha_efectiva ||
+            new Date().toISOString().split("T")[0],
+          usuario_ejecutor: user_action.id,
+          fecha_destitucion: new Date().toISOString(),
+        },
+        roles_ids: [7, 8, 9, 10], // Ajustar según los roles que necesiten notificación
+        users_ids: [user_action.id, coordinador.cedula],
+      });
+
+      console.log("✅ Coordinador destituido exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Coordinador destituido exitosamente",
+          coordinador: {
+            id: id,
+            cedula: coordinador.cedula,
+            nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
+            pnf: coordinador.nombre_pnf,
+            tipo_accion: dataDestitucion.tipo_accion || "DESTITUCION",
+            fecha_efectiva:
+              dataDestitucion.fecha_efectiva ||
+              new Date().toISOString().split("T")[0],
+            estatus: "destituido",
+          },
+        },
+        "Coordinador destituido exitosamente",
+        {
+          status: 200,
+          title: "Coordinador Destituido",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio eliminar coordinador:", error);
+      throw error;
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method restituirCoordinador
+   * @description Restituye (reingresa) un coordinador destituido
+   * @param {number} id - ID del coordinador
+   * @param {object} user_action - Usuario que realiza la acción
+   * @param {object} dataRestitucion - Datos específicos de la restitución
+   * @param {string} dataRestitucion.tipo_reingreso - Tipo de reingreso (REINGRESO, REINCORPORACION, REINTEGRO)
+   * @param {string} dataRestitucion.motivo_reingreso - Motivo del reingreso
+   * @param {string} dataRestitucion.observaciones - Observaciones adicionales
+   * @param {string} dataRestitucion.fecha_efectiva - Fecha efectiva del reingreso
+   * @param {number} dataRestitucion.registro_anterior_id - ID del registro de destitución anterior
+   * @param {number} dataRestitucion.id_pnf - ID del PNF al que se reasigna
+   * @returns {Object} Resultado de la operación
+   */
+  static async restituirCoordinador(id, user_action, dataRestitucion = {}) {
+    try {
+      console.log(
+        `🔍 [restituirCoordinador] Restituyendo coordinador ID: ${id}`
+      );
+
+      // 1. Validar ID del coordinador
+      const idValidation = ValidationService.validateId(id, "coordinador");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de coordinador inválido"
+        );
+      }
+
+      // 2. Validar ID de usuario
+      const usuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!usuarioValidation.isValid) {
+        console.error(
+          "❌ Validación de usuario fallida:",
+          usuarioValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          usuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 3. Validar datos de restitución
+      const validacionRestitucion =
+        ValidationService.validateReingreso(dataRestitucion);
+      if (!validacionRestitucion.isValid) {
+        console.error(
+          "❌ Validación de datos de restitución fallida:",
+          validacionRestitucion.errors
+        );
+        return FormatterResponseService.validationError(
+          validacionRestitucion.errors,
+          "Datos de restitución inválidos"
+        );
+      }
+
+      // 4. Verificar que el coordinador existe
+      const coordinadorExistente =
+        await CoordinadorModel.obtenerCoordinadorPorId(id);
+
+      if (FormatterResponseService.isError(coordinadorExistente)) {
+        return coordinadorExistente;
+      }
+
+      if (
+        !coordinadorExistente.data ||
+        coordinadorExistente.data.length === 0
+      ) {
+        console.error("❌ Coordinador no encontrado:", id);
+        return FormatterResponseService.notFound("Coordinador", id);
+      }
+
+      const coordinador = coordinadorExistente.data[0];
+
+      // 5. Verificar que el coordinador está destituido
+      if (coordinador.estatus_coordinador !== "destituido") {
+        console.error("❌ Coordinador no está destituido:", id);
+        return FormatterResponseService.validationError(
+          ["El coordinador no se encuentra en estado destituido"],
+          "Solo se pueden restituir coordinadores previamente destituidos"
+        );
+      }
+
+      // 6. Restituir coordinador en el modelo
+      console.log("🔄 Restituyendo coordinador en base de datos...");
+      const respuestaModel = await CoordinadorModel.restituirCoordinador(
+        id,
+        user_action.id,
+        dataRestitucion.tipo_reingreso || "REINGRESO",
+        dataRestitucion.motivo_reingreso,
+        dataRestitucion.observaciones,
+        dataRestitucion.fecha_efectiva,
+        dataRestitucion.registro_anterior_id,
+        dataRestitucion.id_pnf
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo:", respuestaModel);
+        return respuestaModel;
+      }
+
+      // 7. Enviar notificación
+      console.log("🔔 Enviando notificaciones...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Coordinador Restituido",
+        tipo: "coordinador_restituido",
+        contenido: `Se ha restituido al coordinador ${coordinador.nombres} ${
+          coordinador.apellidos
+        } en el PNF ${
+          dataRestitucion.id_pnf ? "nuevo PNF" : coordinador.nombre_pnf
+        }. Motivo: ${dataRestitucion.motivo_reingreso}`,
+        metadatos: {
+          coordinador_id: id,
+          coordinador_cedula: coordinador.cedula,
+          coordinador_nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
+          pnf_id: dataRestitucion.id_pnf || coordinador.id_pnf,
+          pnf_nombre: dataRestitucion.id_pnf
+            ? "Nuevo PNF"
+            : coordinador.nombre_pnf,
+          tipo_reingreso: dataRestitucion.tipo_reingreso || "REINGRESO",
+          motivo_reingreso: dataRestitucion.motivo_reingreso,
+          fecha_efectiva:
+            dataRestitucion.fecha_efectiva ||
+            new Date().toISOString().split("T")[0],
+          usuario_ejecutor: user_action.id,
+          fecha_restitucion: new Date().toISOString(),
+        },
+        roles_ids: [7, 8, 9, 10],
+        users_ids: [user_action.id, coordinador.cedula],
+      });
+
+      console.log("✅ Coordinador restituido exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Coordinador restituido exitosamente",
+          coordinador: {
+            id: id,
+            cedula: coordinador.cedula,
+            nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
+            pnf: dataRestitucion.id_pnf ? "Nuevo PNF" : coordinador.nombre_pnf,
+            tipo_reingreso: dataRestitucion.tipo_reingreso || "REINGRESO",
+            fecha_efectiva:
+              dataRestitucion.fecha_efectiva ||
+              new Date().toISOString().split("T")[0],
+            estatus: "activo",
+          },
+        },
+        "Coordinador restituido exitosamente",
+        {
+          status: 200,
+          title: "Coordinador Restituido",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio restituir coordinador:", error);
+      throw error;
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method obtenerHistorialDestituciones
+   * @description Obtiene el historial de destituciones de un coordinador
+   * @param {number} id - ID del coordinador
+   * @param {object} user_action - Usuario que realiza la consulta
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerHistorialDestituciones(id, user_action) {
+    try {
+      console.log(
+        `🔍 [obtenerHistorialDestituciones] Consultando historial del coordinador ID: ${id}`
+      );
+
+      // 1. Validar ID del coordinador
+      const idValidation = ValidationService.validateId(id, "coordinador");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de coordinador inválido"
+        );
+      }
+
       // 3. Verificar que el coordinador existe
       const coordinadorExistente =
         await CoordinadorModel.obtenerCoordinadorPorId(id);
@@ -436,58 +744,81 @@ export default class CoordinadorService {
 
       const coordinador = coordinadorExistente.data[0];
 
-      // 4. Eliminar coordinador en el modelo
-      console.log("🗑️ Eliminando coordinador en base de datos...");
-      const respuestaModel = await CoordinadorModel.eliminarCoordinador(
-        id,
-        user_action.id
-      );
+      // 4. Verificar permisos de acceso (si el usuario es coordinador, solo puede ver su propio historial)
+      if (
+        user_action.rol === "Coordinador" &&
+        user_action.id_coordinador !== parseInt(id)
+      ) {
+        console.error("❌ Intento de acceso no autorizado al historial:", {
+          usuario: user_action.id,
+          coordinador_solicitado: id,
+          coordinador_usuario: user_action.id_coordinador,
+        });
+        return FormatterResponseService.unauthorized(
+          "No tienes permisos para ver el historial de otro coordinador"
+        );
+      }
+
+      // 5. Obtener historial de destituciones desde el modelo
+      console.log("📋 Obteniendo historial de destituciones...");
+      const respuestaModel =
+        await CoordinadorModel.obtenerHistorialDestituciones(id);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         console.error("❌ Error en modelo:", respuestaModel);
         return respuestaModel;
       }
 
-      // 5. Enviar notificación
-      console.log("🔔 Enviando notificaciones...");
-      const notificationService = new NotificationService();
-      await notificationService.crearNotificacionMasiva({
-        titulo: "Coordinador Destituido",
-        tipo: "coordinador_eliminado",
-        contenido: `Se ha destituido al coordinador ${coordinador.nombres} ${coordinador.apellidos} del PNF ${coordinador.nombre_pnf}`,
-        metadatos: {
-          coordinador_id: id,
-          coordinador_cedula: coordinador.cedula,
-          coordinador_nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
-          pnf_id: coordinador.id_pnf,
-          pnf_nombre: coordinador.nombre_pnf,
-          usuario_ejecutor: user_action.id,
-          fecha_destitucion: new Date().toISOString(),
-        },
-        roles_ids: [7, 8, 9, 10],
-        users_ids: [user_action.id, coordinador.cedula],
-      });
+      const historial = respuestaModel.data || [];
 
-      console.log("✅ Coordinador eliminado exitosamente");
+      console.log(
+        `✅ Historial obtenido exitosamente. Registros encontrados: ${historial.length}`
+      );
+
+      // 6. Registrar auditoría de la consulta
+      const auditService = new AuditService();
+      await auditService.registrarAuditoria({
+        accion: "CONSULTA_HISTORIAL_DESTITUCIONES",
+        usuario_id: user_action.id,
+        recurso_afectado: "coordinador",
+        recurso_id: id,
+        detalles: {
+          coordinador_nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
+          coordinador_cedula: coordinador.cedula,
+          registros_encontrados: historial.length,
+          pnf: coordinador.nombre_pnf,
+        },
+        ip: user_action.ip || "N/A",
+        user_agent: user_action.user_agent || "N/A",
+      });
 
       return FormatterResponseService.success(
         {
-          message: "Coordinador destituido exitosamente",
+          historial: historial,
           coordinador: {
             id: id,
             cedula: coordinador.cedula,
             nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
             pnf: coordinador.nombre_pnf,
+            total_registros: historial.length,
+          },
+          metadata: {
+            total_registros: historial.length,
+            coordinador_id: id,
+            fecha_consulta: new Date().toISOString(),
           },
         },
-        "Coordinador destituido exitosamente",
+        "Historial de destituciones obtenido correctamente",
         {
           status: 200,
-          title: "Coordinador Destituido",
+          title: "Historial Obtenido",
         }
       );
     } catch (error) {
-      console.error("💥 Error en servicio eliminar coordinador:", error);
+      console.error(
+        "💥 Error en servicio obtener historial destituciones:",
+        error
+      );
       throw error;
     }
   }

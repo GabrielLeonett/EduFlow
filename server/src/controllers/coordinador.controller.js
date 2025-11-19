@@ -70,9 +70,123 @@ export default class CoordinadorController {
    * @returns {void}
    */
   static async eliminarCoordinador(req, res) {
-    return FormatResponseController.manejarServicio(
-      res,
-      CoordinadorService.eliminarCoordinador(parseInt(req.params.id), req.user)
-    );
+    try {
+      const { id } = req.params;
+      const user_action = req.user;
+      
+      return FormatResponseController.manejarServicio(
+        res,
+        await CoordinadorService.eliminarCoordinador(
+          parseInt(id), 
+          user_action, 
+          req.body
+        )
+      );
+    } catch (error) {
+      console.error('💥 Error en controlador eliminarCoordinador:', error);
+      return FormatResponseController.error(
+        res,
+        'Error interno del servidor al procesar la destitución',
+        500
+      );
+    }
+  }
+  /**
+   * @name restituirCoordinador
+   * @description Restituye (reingresa) un coordinador destituido
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async restituirCoordinador(req, res) {
+    try {
+      const { id } = req.params;
+      const user_action = req.user;
+      
+      // Validar que el ID esté presente
+      if (!id) {
+        return FormatResponseController.error(
+          res,
+          'ID de coordinador es requerido',
+          400
+        );
+      }
+
+      // Obtener datos de restitución del body
+      const {
+        tipo_reingreso = 'REINGRESO',
+        motivo_reingreso,
+        observaciones = '',
+        fecha_efectiva = new Date().toISOString().split('T')[0],
+        registro_anterior_id = null,
+        id_pnf = null
+      } = req.body;
+
+      // Validar datos requeridos
+      if (!motivo_reingreso || motivo_reingreso.trim() === '') {
+        return FormatResponseController.error(
+          res,
+          'El motivo del reingreso es requerido',
+          400
+        );
+      }
+
+      const dataRestitucion = {
+        tipo_reingreso,
+        motivo_reingreso: motivo_reingreso.trim(),
+        observaciones: observaciones.trim(),
+        fecha_efectiva,
+        registro_anterior_id,
+        id_pnf
+      };
+
+      return FormatResponseController.manejarServicio(
+        res,
+        await CoordinadorService.restituirCoordinador(
+          parseInt(id), 
+          user_action, 
+          dataRestitucion
+        )
+      );
+    } catch (error) {
+      console.error('💥 Error en controlador restituirCoordinador:', error);
+      return FormatResponseController.error(
+        res,
+        'Error interno del servidor al procesar la restitución',
+        500
+      );
+    }
+  }
+  /**
+   * @name obtenerHistorialDestituciones
+   * @description Obtiene el historial de destituciones de un coordinador
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async obtenerHistorialDestituciones(req, res) {
+    try {
+      const { id } = req.params;
+      
+      if (!id) {
+        return FormatResponseController.error(
+          res,
+          'ID de coordinador es requerido',
+          400
+        );
+      }
+
+      return FormatResponseController.manejarServicio(
+        res,
+        await CoordinadorService.obtenerHistorialDestituciones(parseInt(id), req.user)
+      );
+    } catch (error) {
+      console.error('💥 Error en controlador obtenerHistorialDestituciones:', error);
+      return FormatResponseController.error(
+        res,
+        'Error interno del servidor al obtener el historial',
+        500
+      );
+    }
   }
 }

@@ -3,11 +3,13 @@ import { middlewareAuth } from "../middlewares/auth.js";
 import CoordinadorController from "../controllers/coordinador.controller.js";
 
 // Destructuración de los métodos del controlador de Coordinador
-const { 
-  asignarCoordinador, 
+const {
+  asignarCoordinador,
   listarCoordinadores,
   actualizarCoordinador,
   eliminarCoordinador,
+  obtenerHistorialDestituciones,
+  restituirCoordinador
 } = CoordinadorController;
 
 // Creación del router para las rutas de Coordinador
@@ -33,7 +35,7 @@ export const coordinadorRouter = Router();
  * @example
  * // Obtener todos los coordinadores activos
  * curl -X GET 'http://localhost:3000/coordinadores?estatus=activo'
- * 
+ *
  * // Obtener coordinadores de un departamento específico
  * curl -X GET 'http://localhost:3000/coordinadores?departamento=Informática'
  */
@@ -68,7 +70,7 @@ coordinadorRouter.get(
     "Vicerrector",
     "Director General de Gestión Curricular",
     "Coordinador",
-  ]),
+  ])
   //obtenerCoordinadorPorId
 );
 
@@ -147,19 +149,31 @@ coordinadorRouter.put(
 );
 
 /**
- * @name DELETE /coordinadores/:id
- * @description Elimina un coordinador del sistema (eliminación lógica)
- * @param {number} id - ID del coordinador a eliminar
+ * @name DELETE /coordinadores/:id/destituir
+ * @description Destituye un coordinador del sistema (remueve del cargo pero mantiene como profesor)
+ * @param {number} id - ID del coordinador a destituir
+ * @body {Object} datosDestitucion - Datos de la destitución
+ * @body {string} datosDestitucion.tipo_accion - Tipo de acción (DESTITUCION, RENUNCIA)
+ * @body {string} datosDestitucion.razon - Razón de la destitución
+ * @body {string} [datosDestitucion.observaciones] - Observaciones adicionales
+ * @body {string} [datosDestitucion.fecha_efectiva] - Fecha efectiva de la destitución
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
  *   - Vicerrector
  *   - Director General de Gestión Curricular
- * @returns {Object} Confirmación de eliminación
+ * @returns {Object} Confirmación de destitución
  * @example
- * curl -X DELETE 'http://localhost:3000/coordinadores/1'
+ * curl -X DELETE 'http://localhost:3000/coordinadores/1/destituir' \
+ *   -H "Content-Type: application/json" \
+ *   -d '{
+ *     "tipo_accion": "DESTITUCION",
+ *     "razon": "Falta grave a las normas institucionales",
+ *     "observaciones": "Incumplimiento reiterado de funciones",
+ *     "fecha_efectiva": "2024-01-15"
+ *   }'
  */
 coordinadorRouter.delete(
-  "/coordinadores/:id",
+  "/coordinadores/:id/destituir",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -167,6 +181,68 @@ coordinadorRouter.delete(
   ]),
   eliminarCoordinador
 );
+
+/**
+ * @name POST /coordinadores/:id/restitur
+ * @description Restituye (reingresa) un coordinador previamente destituido
+ * @param {number} id - ID del coordinador a restituir
+ * @body {Object} datosRestitucion - Datos de la restitución
+ * @body {string} datosRestitucion.tipo_reingreso - Tipo de reingreso (REINGRESO, REINCORPORACION, REINTEGRO)
+ * @body {string} datosRestitucion.motivo_reingreso - Motivo del reingreso
+ * @body {string} [datosRestitucion.observaciones] - Observaciones adicionales
+ * @body {string} [datosRestitucion.fecha_efectiva] - Fecha efectiva del reingreso
+ * @body {number} [datosRestitucion.registro_anterior_id] - ID del registro de destitución anterior
+ * @body {number} [datosRestitucion.id_pnf] - ID del PNF al que se reasigna
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ * @returns {Object} Confirmación de restitución
+ * @example
+ * curl -X POST 'http://localhost:3000/coordinadores/1/restitur' \
+ *   -H "Content-Type: application/json" \
+ *   -d '{
+ *     "tipo_reingreso": "REINGRESO",
+ *     "motivo_reingreso": "Revisión favorable del caso",
+ *     "observaciones": "Coordinador reincorporado tras evaluación positiva",
+ *     "fecha_efectiva": "2024-02-01",
+ *     "id_pnf": 5
+ *   }'
+ */
+coordinadorRouter.post(
+  "/coordinadores/:id/restitur",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  restituirCoordinador
+);
+
+/**
+ * @name GET /coordinadores/:id/historial-destituciones
+ * @description Obtiene el historial de destituciones de un coordinador
+ * @param {number} id - ID del coordinador
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador (solo su propio historial)
+ * @returns {Object} Lista de destituciones del coordinador
+ * @example
+ * curl -X GET 'http://localhost:3000/coordinadores/1/historial-destituciones'
+ */
+coordinadorRouter.get(
+  "/coordinadores/:id/historial-destituciones",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  obtenerHistorialDestituciones
+);
+
 
 /**
  * =============================================
@@ -194,7 +270,7 @@ coordinadorRouter.get(
     "Vicerrector",
     "Director General de Gestión Curricular",
     "Coordinador",
-  ]),
+  ])
   // Aquí iría el controlador específico
 );
 
@@ -224,6 +300,6 @@ coordinadorRouter.put(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
-  ]),
+  ])
   // Aquí iría el controlador para cambiar estatus
 );

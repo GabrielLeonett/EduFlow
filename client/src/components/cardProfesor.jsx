@@ -26,7 +26,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
-import ModalEliminarProfe from "./ModalEliminarProfe.jsx";
+import ModalDestitucion from "./ModalDestitucion.jsx";
 import ModalEditarCampoProfesor from "./ModalEditarCampoProfesor.jsx";
 import CustomButton from "./customButton.jsx";
 import CustomChip from "./CustomChip.jsx";
@@ -479,7 +479,7 @@ export default function CardProfesor({ profesor, isSearch }) {
         onGuardar={handleGuardarCampo}
       />
 
-      <ModalEliminarProfe
+      <ModalDestitucion
         profesor={profesorActual}
         open={openModalEliminar}
         onSubmit={onSubmitDestitucion}

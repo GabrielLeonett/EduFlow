@@ -12,7 +12,7 @@ import CustomLabel from "./customLabel.jsx"; // ✅ tu componente personalizado
 import CustomCalendar from "./customCalendar.jsx"; // ✅ tu componente personalizado
 import dayjs from "dayjs";
 
-export default function ModalEliminacionProfe({open, onClose, onSubmit, isLoading}) {
+export default function ModalDestitucion({open, onClose, onSubmit, isLoading}) {
 
   const { register, handleSubmit, control } = useForm({
     defaultValues: {
@@ -93,16 +93,16 @@ export default function ModalEliminacionProfe({open, onClose, onSubmit, isLoadin
           />
 
           <Controller
-            name="fecha_nacimiento"
+            name="fecha_efectiva"
             control={control}
-            rules={{ required: "Seleccione su fecha de nacimiento" }}
+            rules={{ required: "Seleccione su fecha efectiva" }}
             render={({ field, fieldState: { error } }) => (
               <CustomCalendar
-                label="Fecha de Nacimiento"
+                label="Fecha Efectiva"
                 value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
                 onChange={(date) => field.onChange(date?.format("DD-MM-YYYY"))}
                 helperText={
-                  error?.message || "Selecciona tu fecha de nacimiento"
+                  error?.message || "Seleccionar la fecha en la que sera efectivo este cambio."
                 }
                 error={!!error}
                 fullWidth

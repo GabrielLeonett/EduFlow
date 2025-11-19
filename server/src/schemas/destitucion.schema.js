@@ -2,10 +2,10 @@ import { z } from "zod";
 
 // Schema corregido
 const destitucionSchema = z.object({
-  id_profesor: z.number({
-    required_error: "El ID del profesor es requerido",
-    invalid_type_error: "El ID del profesor debe ser un número"
-  }).int().positive("El ID del profesor debe ser un número positivo"),
+  id_usuario: z.number({
+    required_error: "El ID del usuario es requerido",
+    invalid_type_error: "El ID del usuario debe ser un número"
+  }).int().positive("El ID del usuario debe ser un número positivo"),
   
   tipo_accion: z.enum(['DESTITUCION', 'ELIMINACION', 'RENUNCIA', 'RETIRO'], {
     required_error: "El tipo de acción es requerido",
@@ -30,7 +30,7 @@ const destitucionSchema = z.object({
   fecha_efectiva: z.string({
     invalid_type_error: "La fecha efectiva debe ser un texto"
   })
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)")
+  .regex(/^\d{2}-\d{2}-\d{4}$/, "Formato de fecha inválido (DD-MM-YYYY)")
   .optional()
   .nullable()
   .default(null)

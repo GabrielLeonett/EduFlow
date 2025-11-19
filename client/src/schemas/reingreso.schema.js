@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Schema para reingreso
 const reingresoSchema = z.object({
-  id_profesor: z.number({
+  id_usuario: z.number({
     required_error: "El ID del profesor es requerido",
     invalid_type_error: "El ID del profesor debe ser un número"
   }).int().positive("El ID del profesor debe ser un número positivo"),
