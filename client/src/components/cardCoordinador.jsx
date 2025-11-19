@@ -122,8 +122,6 @@ export default function CardCoordinador({ coordinador, isSearch }) {
         config: { icon: "success" },
       });
 
-      // ✅ Navegación a la página de coordinadores
-      navigate("/academico/coordinadores");
     } catch (error) {
       console.error("❌ Error al destituir coordinador:", error);
 

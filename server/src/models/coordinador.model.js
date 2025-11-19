@@ -271,7 +271,7 @@ export default class CoordinadorModel {
     fecha_efectiva = null
   ) {
     try {
-      const query = `CALL eliminar_destituir_coordinador($1, $2, $3, $4, $5, $6, $7)`;
+      const query = `CALL eliminar_destituir_coordinador(NULL, $1, $2, $3, $4, $5, $6)`;
       const params = [
         id_usuario,
         id_coordinador,
