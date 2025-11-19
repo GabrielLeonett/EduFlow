@@ -1,5 +1,5 @@
 import ResponsiveAppBar from "../../../components/navbar";
-import { CardCoordinador } from "../../../components/cardCoordinador";
+import CardCoordinador from "../../../components/CardCoordinador";
 import { Typography, Box, CircularProgress, TextField, Tooltip } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
