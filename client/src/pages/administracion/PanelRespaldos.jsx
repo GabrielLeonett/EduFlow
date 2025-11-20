@@ -131,7 +131,7 @@ export default function PanelRespaldos() {
     };
     const deleteBackup = async (backupFileName) => {
         try {
-            await axios.delete(`/system/backups/cleanup/${encodeURIComponent(backupFileName)}`);
+            await axios.delete(`/system/backups/${encodeURIComponent(backupFileName)}`);
             alert.success("Backup eliminado exitosamente");
             loadBackups();
         } catch (error) {

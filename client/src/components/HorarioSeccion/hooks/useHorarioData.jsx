@@ -720,7 +720,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     success: false,
                     error: errorData,
                   });
-
+                  console.log(errorData)
                   if (errorData.conflictos) {
                     datos_clase.conflictos = errorData.conflictos;
                     hayConflictos = true;

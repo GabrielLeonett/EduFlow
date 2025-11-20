@@ -38,7 +38,7 @@ export const unidadcurricularSchema = z.object({
     .trim()
     .toUpperCase(),
 
-    tipo_unidad: z.enum(["Taller", "Proyecto", "Asignatura", "Seminario"], {
+    tipo_unidad: z.enum(["Taller", "Proyecto", "Asignatura", "Seminario", "Curso"], {
         invalid_type_error: "El tipo de unidad curricular es inválido.",
         required_error: "El tipo de unidad curricular es obligatorio.",
     }),

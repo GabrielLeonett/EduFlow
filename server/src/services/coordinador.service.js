@@ -84,7 +84,7 @@ export default class CoordinadorService {
         tipo: "coordinador_asignado",
         contenido: `Se ha asignado al profesor ${respuestaModel.data.coordinador.nombres} como coordinador del PNF ${respuestaModel.data.coordinador.nombre_pnf}`,
         metadatos: {
-          coordinador_cedula: datos.cedula_profesor,
+          coordinador_cedula: datos.cedula,
           coordinador_nombre: respuestaModel.data.coordinador.nombres,
           pnf_id: datos.id_pnf,
           pnf_nombre: respuestaModel.data.coordinador.nombre_pnf,
@@ -93,7 +93,7 @@ export default class CoordinadorService {
           fecha_asignacion: new Date().toISOString(),
         },
         roles_ids: [7, 8, 9, 10], // IDs de roles administrativos
-        users_ids: [user_action.id, datos.cedula_profesor],
+        users_ids: [user_action.id, datos.cedula],
       });
 
       console.log("🎉 Coordinador asignado exitosamente");
@@ -125,14 +125,14 @@ export default class CoordinadorService {
    * @static
    * @async
    * @method listarCoordinadores
-   * @description Obtiene el listado de todos los coordinadores
+   * @description Obtiene el listado de todos los coordinadores activos
    * @param {Object} queryParams - Parámetros de consulta
    * @returns {Object} Resultado de la operación
    */
   static async listarCoordinadores(queryParams = {}) {
     try {
       console.log(
-        "🔍 [listarCoordinadores] Obteniendo listado de coordinadores..."
+        "🔍 [listarCoordinadores] Obteniendo listado de coordinadores activos..."
       );
 
       // Validar parámetros de consulta
@@ -141,8 +141,12 @@ export default class CoordinadorService {
         "limit",
         "sort",
         "order",
-        "activo",
         "id_pnf",
+        "cedula",
+        "nombre_pnf",
+        "tipo_accion",
+        "estado",
+        "search"
       ];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
@@ -170,7 +174,9 @@ export default class CoordinadorService {
       }
 
       console.log(
-        `✅ Se encontraron ${respuestaModel.data?.length || 0} coordinadores`
+        `✅ Se encontraron ${
+          respuestaModel.data?.length || 0
+        } coordinadores activos`
       );
 
       return FormatterResponseService.success(
@@ -184,7 +190,7 @@ export default class CoordinadorService {
         "Coordinadores obtenidos exitosamente",
         {
           status: 200,
-          title: "Lista de Coordinadores",
+          title: "Lista de Coordinadores Activos",
         }
       );
     } catch (error) {
@@ -192,7 +198,6 @@ export default class CoordinadorService {
       throw error;
     }
   }
-
   /**
    * @static
    * @async

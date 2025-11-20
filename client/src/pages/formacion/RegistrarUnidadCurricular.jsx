@@ -325,6 +325,7 @@ export default function RegistrarUnidadCurricular() {
                             {"Asignatura"}
                           </MenuItem>
                           <MenuItem value={"Seminario"}>{"Seminario"}</MenuItem>
+                          <MenuItem value={"Curso"}>{"Curso"}</MenuItem>
                         </CustomLabel>
                       )}
                     />
@@ -866,12 +867,13 @@ export default function RegistrarUnidadCurricular() {
       </Box>
 
       <ModalRegisterAreaConocimiento
-        setState={areasDisponibles}
+        setState={setAreasDisponibles}
         open={openModalArea}
         onClose={handleCerrarModalArea}
       />
 
       <ModalRegisterLineaInvestigacion
+        setState={setLineasDisponibles}
         id_trayecto={idTrayecto}
         open={openModalLinea}
         onClose={handleCerrarModalLinea}

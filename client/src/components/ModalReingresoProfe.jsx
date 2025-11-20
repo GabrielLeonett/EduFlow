@@ -15,6 +15,9 @@ import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
 import reingresoSchema from "../schemas/reingreso.schema.js"; // Asegúrate de importar tu schema
 import useSweetAlert from "../hook/useSweetAlert.jsx";
+import CustomCalendar from "./customCalendar.jsx"; // ✅ tu componente personalizado
+import dayjs from "dayjs";
+
 
 export default function ModalReingresoProfe({ open, onClose, profesor }) {
   const navigate = useNavigate();
@@ -26,6 +29,7 @@ export default function ModalReingresoProfe({ open, onClose, profesor }) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isValid },
   } = useForm({
     resolver: zodResolver(reingresoSchema),
@@ -187,14 +191,22 @@ export default function ModalReingresoProfe({ open, onClose, profesor }) {
             }}
           />
 
-          <CustomLabel
-            label="Fecha Efectiva"
+          <Controller
             name="fecha_efectiva"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            {...register("fecha_efectiva")}
-            error={!!errors.fecha_efectiva}
-            helperText={errors.fecha_efectiva?.message}
+            control={control}
+            rules={{ required: "Seleccione su fecha efectiva" }}
+            render={({ field, fieldState: { error } }) => (
+              <CustomCalendar
+                label="Fecha Efectiva"
+                value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
+                onChange={(date) => field.onChange(date?.format("DD-MM-YYYY"))}
+                helperText={
+                  error?.message || "Seleccionar la fecha en la que sera efectivo este cambio."
+                }
+                error={!!error}
+                fullWidth
+              />
+            )}
           />
 
           <Box

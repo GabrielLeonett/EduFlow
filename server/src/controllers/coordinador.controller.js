@@ -33,6 +33,19 @@ export default class CoordinadorController {
       CoordinadorService.listarCoordinadores(req.query)
     );
   }
+  /**
+   * @name listarCoordinadoresDestituidos
+   * @description Obtiene el listado de todos los coordinadores destituidos
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async listarCoordinadoresDestituidos(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      CoordinadorService.listarCoordinadoresDestituidos(req.query)
+    );
+  }
 
   /**
    * @name obtenerCoordinador
@@ -58,7 +71,11 @@ export default class CoordinadorController {
   static async actualizarCoordinador(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      CoordinadorService.actualizarCoordinador(parseInt(req.params.id), req.body, req.user)
+      CoordinadorService.actualizarCoordinador(
+        parseInt(req.params.id),
+        req.body,
+        req.user
+      )
     );
   }
 
@@ -73,20 +90,20 @@ export default class CoordinadorController {
     try {
       const { id } = req.params;
       const user_action = req.user;
-      
+
       return FormatResponseController.manejarServicio(
         res,
         await CoordinadorService.eliminarCoordinador(
-          parseInt(id), 
-          user_action, 
+          parseInt(id),
+          user_action,
           req.body
         )
       );
     } catch (error) {
-      console.error('💥 Error en controlador eliminarCoordinador:', error);
+      console.error("💥 Error en controlador eliminarCoordinador:", error);
       return FormatResponseController.error(
         res,
-        'Error interno del servidor al procesar la destitución',
+        "Error interno del servidor al procesar la destitución",
         500
       );
     }
@@ -102,31 +119,31 @@ export default class CoordinadorController {
     try {
       const { id } = req.params;
       const user_action = req.user;
-      
+
       // Validar que el ID esté presente
       if (!id) {
         return FormatResponseController.error(
           res,
-          'ID de coordinador es requerido',
+          "ID de coordinador es requerido",
           400
         );
       }
 
       // Obtener datos de restitución del body
       const {
-        tipo_reingreso = 'REINGRESO',
+        tipo_reingreso = "REINGRESO",
         motivo_reingreso,
-        observaciones = '',
-        fecha_efectiva = new Date().toISOString().split('T')[0],
+        observaciones = "",
+        fecha_efectiva = new Date().toISOString().split("T")[0],
         registro_anterior_id = null,
-        id_pnf = null
+        id_pnf = null,
       } = req.body;
 
       // Validar datos requeridos
-      if (!motivo_reingreso || motivo_reingreso.trim() === '') {
+      if (!motivo_reingreso || motivo_reingreso.trim() === "") {
         return FormatResponseController.error(
           res,
-          'El motivo del reingreso es requerido',
+          "El motivo del reingreso es requerido",
           400
         );
       }
@@ -137,22 +154,22 @@ export default class CoordinadorController {
         observaciones: observaciones.trim(),
         fecha_efectiva,
         registro_anterior_id,
-        id_pnf
+        id_pnf,
       };
 
       return FormatResponseController.manejarServicio(
         res,
         await CoordinadorService.restituirCoordinador(
-          parseInt(id), 
-          user_action, 
+          parseInt(id),
+          user_action,
           dataRestitucion
         )
       );
     } catch (error) {
-      console.error('💥 Error en controlador restituirCoordinador:', error);
+      console.error("💥 Error en controlador restituirCoordinador:", error);
       return FormatResponseController.error(
         res,
-        'Error interno del servidor al procesar la restitución',
+        "Error interno del servidor al procesar la restitución",
         500
       );
     }
@@ -167,24 +184,30 @@ export default class CoordinadorController {
   static async obtenerHistorialDestituciones(req, res) {
     try {
       const { id } = req.params;
-      
+
       if (!id) {
         return FormatResponseController.error(
           res,
-          'ID de coordinador es requerido',
+          "ID de coordinador es requerido",
           400
         );
       }
 
       return FormatResponseController.manejarServicio(
         res,
-        await CoordinadorService.obtenerHistorialDestituciones(parseInt(id), req.user)
+        await CoordinadorService.obtenerHistorialDestituciones(
+          parseInt(id),
+          req.user
+        )
       );
     } catch (error) {
-      console.error('💥 Error en controlador obtenerHistorialDestituciones:', error);
+      console.error(
+        "💥 Error en controlador obtenerHistorialDestituciones:",
+        error
+      );
       return FormatResponseController.error(
         res,
-        'Error interno del servidor al obtener el historial',
+        "Error interno del servidor al obtener el historial",
         500
       );
     }

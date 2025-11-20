@@ -6,6 +6,7 @@ import CoordinadorController from "../controllers/coordinador.controller.js";
 const {
   asignarCoordinador,
   listarCoordinadores,
+  listarCoordinadoresDestituidos,
   actualizarCoordinador,
   eliminarCoordinador,
   obtenerHistorialDestituciones,
@@ -48,6 +49,44 @@ coordinadorRouter.get(
     "Coordinador",
   ]),
   listarCoordinadores
+);
+
+/**
+ * @name GET /coordinadores/destituidos
+ * @description Obtiene listado de todos los coordinadores destituidos
+ * @query {number} [page] - Página para paginación
+ * @query {number} [limit] - Límite de resultados por página
+ * @query {string} [sort] - Campo para ordenar (nombres, apellidos, nombre_pnf, fecha_destitucion)
+ * @query {string} [order] - Orden (ASC/DESC)
+ * @query {number} [id_pnf] - Filtrar por ID de PNF
+ * @query {string} [cedula] - Filtrar por cédula del coordinador
+ * @query {string} [nombre_pnf] - Filtrar por nombre del PNF
+ * @query {string} [tipo_accion] - Filtrar por tipo de acción (DESTITUCION, ELIMINACION)
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador
+ * @returns {Array} Lista de coordinadores destituidos
+ * @example
+ * // Obtener todos los coordinadores destituidos
+ * curl -X GET 'http://localhost:3000/coordinadores/destituidos'
+ *
+ * // Obtener coordinadores destituidos con paginación
+ * curl -X GET 'http://localhost:3000/coordinadores/destituidos?page=1&limit=10&sort=fecha_destitucion&order=DESC'
+ *
+ * // Filtrar por PNF específico
+ * curl -X GET 'http://localhost:3000/coordinadores/destituidos?id_pnf=1'
+ */
+coordinadorRouter.get(
+  "/coordinadores/destituidos",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  listarCoordinadoresDestituidos
 );
 
 /**
@@ -241,65 +280,4 @@ coordinadorRouter.get(
     "Coordinador",
   ]),
   obtenerHistorialDestituciones
-);
-
-
-/**
- * =============================================
- * RUTAS ESPECÍFICAS DE COORDINADORES
- * =============================================
- */
-
-/**
- * @name GET /coordinadores/departamento/:departamento
- * @description Obtiene coordinadores por departamento específico
- * @param {string} departamento - Nombre del departamento
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @returns {Array} Lista de coordinadores del departamento
- * @example
- * curl -X GET 'http://localhost:3000/coordinadores/departamento/Informática'
- */
-coordinadorRouter.get(
-  "/coordinadores/departamento/:departamento",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ])
-  // Aquí iría el controlador específico
-);
-
-/**
- * @name PUT /coordinadores/:id/estatus
- * @description Cambia el estatus de un coordinador (activar/desactivar)
- * @param {number} id - ID del coordinador
- * @body {Object} Datos del estatus
- * @body {string} body.estatus - Nuevo estatus (activo/inactivo)
- * @body {string} [body.observaciones] - Razón del cambio
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- * @returns {Object} Confirmación del cambio
- * @example
- * curl -X PUT 'http://localhost:3000/coordinadores/1/estatus' \
- *   -H 'Content-Type: application/json' \
- *   -d '{
- *     "estatus": "inactivo",
- *     "observaciones": "Finalización de período"
- *   }'
- */
-coordinadorRouter.put(
-  "/coordinadores/:id/estatus",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-  ])
-  // Aquí iría el controlador para cambiar estatus
 );
