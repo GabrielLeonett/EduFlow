@@ -105,6 +105,63 @@ export default class CurricularController {
   }
 
   /**
+   * @static
+   * @async
+   * @method eliminarPnf
+   * @description Controlador para eliminar una unidad curricular
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async eliminarPnf(req, res) {
+    try {
+      const { id_pnf } = req.params;
+      const user_action = req.user; // Asumiendo que el usuario viene del middleware de auth
+
+      return FormatResponseController.manejarServicio(
+        res,
+        await CurricularService.eliminarPnf(
+          parseInt(id_pnf),
+          user_action
+        )
+      );
+    } catch (error) {
+      console.error("Error en controller eliminarPnf:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Error al eliminar la unidad curricular",
+      });
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method reactivarPnf
+   * @description Controlador para eliminar una unidad curricular
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async reactivarPnf(req, res) {
+    try {
+      const { id_pnf } = req.params;
+      const user_action = req.user; // Asumiendo que el usuario viene del middleware de auth
+
+      return FormatResponseController.manejarServicio(
+        res,
+        await CurricularService.reactivarPnf(
+          parseInt(id_pnf),
+          user_action
+        )
+      );
+    } catch (error) {
+      console.error("Error en controller reactivarPnf:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Error al eliminar la unidad curricular",
+      });
+    }
+  }
+
+  /**
    * @name actualizarPNF
    * @description Actualizar un Programa Nacional de Formación (PNF) existente
    * @param {Object} req - Objeto de solicitud Express

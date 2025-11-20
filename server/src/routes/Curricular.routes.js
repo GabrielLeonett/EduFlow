@@ -10,6 +10,8 @@ const {
   actualizarDescripcionTrayecto,
   actualizarUnidadCurricular,
   eliminarUnidadCurricular,
+  eliminarPnf,
+  reactivarPnf,
   mostrarTrayectos,
   mostrarSecciones,
   registrarLineaInvestigacion,
@@ -403,6 +405,50 @@ CurricularRouter.delete(
     "Director General de Gestión Curricular",
   ]),
   eliminarUnidadCurricular
+);
+
+/**
+ * @name POST /pnfs/:id_pnf/activar
+ * @description Reactiva un PNF existente junto con sus trayectos
+ * @param {number} id_pnf - ID del PNF a reactivar
+ * @middleware Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ * @returns {Object} Objeto con mensaje de confirmación y datos reactivados
+ * @example
+ * POST /pnfs/7/activar
+ */
+CurricularRouter.post(
+  "/pnfs/:id_pnf/activar",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  reactivarPnf
+);
+
+/**
+ * @name DELETE /pnfs/:id_pnf
+ * @description Elimina un PNF físicamente junto con sus trayectos y secciones
+ * @param {number} id_pnf - ID del PNF a eliminar
+ * @middleware Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ * @returns {Object} Objeto con mensaje de confirmación y datos de eliminación
+ * @example
+ * DELETE /pnfs/7
+ */
+CurricularRouter.delete(
+  "/pnfs/:id_pnf",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  eliminarPnf
 );
 
 /**

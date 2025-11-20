@@ -78,6 +78,7 @@ const HorarioTable = ({
                 sx={{
                   backgroundColor: theme.palette.primary.main,
                   color: theme.palette.primary.contrastText,
+                  width: {xs: 130 ,sm: 140, md: 150, lg: 160},
                   py: 2,
                   borderBottom: `2px solid ${theme.palette.primary.dark}`,
                 }}
@@ -164,7 +165,7 @@ const HorarioTable = ({
                   border: `1px solid ${theme.palette.divider}`,
                   fontWeight: "bold",
                   backgroundColor: theme.palette.background.default,
-                  width: 120,
+                  width: {xs: 130 ,sm: 140, md: 150, lg: 160},
                 }}
               >
                 <Box
@@ -187,6 +188,7 @@ const HorarioTable = ({
                     border: `1px solid ${theme.palette.divider}`,
                     backgroundColor: theme.palette.background.default,
                     fontWeight: "bold",
+                    width: {xs: 130 ,sm: 140, md: 150, lg: 160},
                     textTransform: "capitalize",
                   }}
                 >
@@ -208,6 +210,7 @@ const HorarioTable = ({
                     backgroundColor: theme.palette.grey[50],
                     border: `1px solid ${theme.palette.divider}`,
                     whiteSpace: "nowrap",
+                    width: {xs: 130 ,sm: 140, md: 150, lg: 160},
                     fontWeight: "medium",
                     position: "sticky",
                     left: 0,
@@ -216,7 +219,7 @@ const HorarioTable = ({
                   }}
                 >
                   <Typography variant="body2" color="text.primary">
-                    {UTILS.formatearHora(hora)}
+                    {UTILS.formatearHora(hora)} - {UTILS.formatearHora(hora)}
                   </Typography>
                 </TableCell>
 
@@ -237,6 +240,7 @@ const HorarioTable = ({
                       key={cellKey}
                       rowSpan={celda?.ocupado ? celda.bloques_totales : 1}
                       sx={{
+                        width: {xs: 130 ,sm: 140, md: 150, lg: 160},
                         padding: 0,
                         verticalAlign: "top",
                         height: celda?.ocupado
@@ -248,7 +252,6 @@ const HorarioTable = ({
                           celda,
                           disponible
                         )}`,
-                        minWidth: 140,
                         backgroundColor: getCellBackgroundColor(
                           dia_index,
                           hora,

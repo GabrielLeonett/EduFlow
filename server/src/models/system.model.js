@@ -65,46 +65,66 @@ export default class SystemModel {
    */
   static async obtenerMetricasAcademicas() {
     try {
-      const [seccionesTotalesResult, cargaPlanificadaResult, cargaRealResult] =
-        await Promise.all([
-          pg.query(`SELECT
-            p.nombre_pnf,    
-            tr.valor_trayecto,
-            COUNT(s.*)::INTEGER  AS total_secciones
-        FROM
-            secciones s
-        INNER JOIN
-            trayectos tr ON s.id_trayecto = tr.id_trayecto
-        INNER JOIN
-            pnfs p ON tr.id_pnf = p.id_pnf
-        GROUP BY
-            p.nombre_pnf,
-            tr.valor_trayecto
-        ORDER BY
-            p.nombre_pnf,
-    tr.valor_trayecto`),
-          pg.query(
-            "SELECT SUM(horas_clase)::INTEGER as total FROM unidades_curriculares"
-          ),
-          pg.query(`
-            SELECT 
-SUM(EXTRACT(EPOCH FROM horas_disponibles) / 3600)::INTEGER as total 
-            FROM public.profesores_informacion_completa
-          `),
-        ]);
+      const [
+        seccionesTotalesResult,
+        cargaUnidadesCurriculares,
+        totalSecciones,
+        cargaRealResult,
+      ] = await Promise.all([
+        pg.query(`SELECT
+          p.nombre_pnf,    
+          tr.valor_trayecto,
+          COUNT(s.*)::INTEGER AS total_secciones
+      FROM
+          secciones s
+      INNER JOIN
+          trayectos tr ON s.id_trayecto = tr.id_trayecto
+      INNER JOIN
+          pnfs p ON tr.id_pnf = p.id_pnf
+      GROUP BY
+          p.nombre_pnf,
+          tr.valor_trayecto
+      ORDER BY
+          p.nombre_pnf,
+          tr.valor_trayecto`),
+        pg.query(`
+          SELECT SUM(horas_clase)::INTEGER as total 
+          FROM unidades_curriculares
+        `),
+        pg.query(`
+          SELECT COUNT(*)::INTEGER as total 
+          FROM secciones
+        `),
+        pg.query(`
+          SELECT 
+            SUM(EXTRACT(EPOCH FROM horas_disponibles) / 3600)::INTEGER as total 
+          FROM public.profesores_informacion_completa
+        `),
+      ]);
 
-      const cargaPlanificada = parseInt(cargaPlanificadaResult.rows[0].total);
-      const cargaReal = parseFloat(cargaRealResult.rows[0].total);
+      // Corregir los nombres de las propiedades según lo que devuelve PostgreSQL
+      const totalHorasUnidades = parseInt(
+        cargaUnidadesCurriculares.rows[0]?.total || 0
+      );
+      const totalSeccionesCount = parseInt(totalSecciones.rows[0]?.total || 0);
+      const cargaReal = parseFloat(cargaRealResult.rows[0]?.total || 0);
+
+      // Calcular carga planificada (horas totales * número de secciones)
+      const cargaPlanificada = totalHorasUnidades * totalSeccionesCount;
 
       const data = {
         seccionesTotales: seccionesTotalesResult.rows,
         cargaPlanificada: cargaPlanificada,
         cargaReal: cargaReal,
-        diferenciaCarga:  cargaReal - cargaPlanificada,
+        diferenciaCarga: cargaReal - cargaPlanificada,
         eficienciaAsignacion:
-          cargaPlanificada > 0
+          cargaReal > 0
             ? parseFloat(((cargaPlanificada / cargaReal) * 100).toFixed(2))
             : 0,
+        metricasDetalladas: {
+          totalHorasUnidades: totalHorasUnidades,
+          totalSecciones: totalSeccionesCount,
+        },
       };
 
       // Si respuestaPostgres NO es async, no usar await

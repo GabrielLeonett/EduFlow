@@ -512,6 +512,7 @@ export default class CurricularModel {
    * @param {boolean} filters.activo - Filtrar por estado activo/inactivo
    * @param {boolean} filters.tiene_coordinador - Filtrar por PNFs con coordinador
    * @param {string} filters.search - Búsqueda por nombre o código
+   * @param {string} filters.searchID - Búsqueda por id_pnf
    * @returns {Promise<Object>} Resultado de la consulta
    */
   static async mostrarPNF(filters = {}) {
@@ -520,7 +521,7 @@ export default class CurricularModel {
       let queryParams = [];
       let paramCount = 0;
 
-      // Construir condiciones WHERE dinámicamente
+      // Construir condiciones WHERE dinámicamente con parámetros preparados
       if (filters.id_sede) {
         paramCount++;
         whereConditions.push(`id_sede = $${paramCount}`);
@@ -534,11 +535,16 @@ export default class CurricularModel {
       }
 
       if (filters.tiene_coordinador !== undefined) {
-        paramCount++;
-        whereConditions.push(
-          `(EXISTS (SELECT 1 FROM coordinadores WHERE id_pnf = id_pnf)) = $${paramCount}`
-        );
-        queryParams.push(filters.tiene_coordinador);
+        // Corrección: usar alias para evitar conflicto de nombres
+        if (filters.tiene_coordinador) {
+          whereConditions.push(
+            `EXISTS (SELECT 1 FROM coordinadores c WHERE c.id_pnf = vista_pnfs.id_pnf)`
+          );
+        } else {
+          whereConditions.push(
+            `NOT EXISTS (SELECT 1 FROM coordinadores c WHERE c.id_pnf = vista_pnfs.id_pnf)`
+          );
+        }
       }
 
       if (filters.search) {
@@ -549,6 +555,12 @@ export default class CurricularModel {
         queryParams.push(`%${filters.search}%`);
       }
 
+      if (filters.searchID) {
+        paramCount++;
+        whereConditions.push(`id_pnf = $${paramCount}`);
+        queryParams.push(filters.searchID); // Sin % porque es búsqueda exacta de ID
+      }
+
       // Construir la consulta final
       const whereClause =
         whereConditions.length > 0
@@ -556,10 +568,10 @@ export default class CurricularModel {
           : "";
 
       const query = `
-        SELECT * FROM public.vista_pnfs
-        ${whereClause}
-        ORDER BY nombre_pnf ASC
-      `;
+      SELECT * FROM public.vista_pnfs
+      ${whereClause}
+      ORDER BY nombre_pnf ASC
+    `;
 
       console.log("🔍 Query ejecutada:", query);
       console.log("📊 Parámetros:", queryParams);
@@ -903,6 +915,74 @@ export default class CurricularModel {
       );
     }
   }
+
+  /**
+   * @static
+   * @async
+   * @method eliminarPnf
+   * @description Elimina físicamente un PNF y todos sus registros relacionados
+   * @param {number} id_usuario - ID del usuario que ejecuta la acción
+   * @param {number} id_pnf - ID del PNF a eliminar
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async eliminarPnf(id_usuario, id_pnf) {
+    try {
+      const query = `
+      CALL eliminar_pnf($1, $2, NULL);
+    `;
+
+      const { rows } = await pg.query(query, [id_usuario, id_pnf]);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "PNF eliminado correctamente."
+      );
+    } catch (error) {
+      error.details = {
+        path: "CurricularModel.eliminarPnf",
+        id_usuario: id_usuario,
+        id_pnf: id_pnf,
+      };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al eliminar el PNF"
+      );
+    }
+  }
+
+  /**
+ * @static
+ * @async
+ * @method reactivarPnf
+ * @description Reactiva un PNF y sus trayectos relacionados
+ * @param {number} id_usuario - ID del usuario que ejecuta la acción
+ * @param {number} id_pnf - ID del PNF a reactivar
+ * @returns {Promise<Object>} Resultado de la operación
+ */
+static async reactivarPnf(id_usuario, id_pnf) {
+  try {
+    const query = `
+      CALL reactivar_pnf($1, $2, NULL);
+    `;
+
+    const { rows } = await pg.query(query, [id_usuario, id_pnf]);
+
+    return FormatterResponseModel.respuestaPostgres(
+      rows,
+      "PNF reactivado correctamente."
+    );
+  } catch (error) {
+    error.details = {
+      path: "CurricularModel.reactivarPnf",
+      id_usuario: id_usuario,
+      id_pnf: id_pnf,
+    };
+    throw FormatterResponseModel.respuestaError(
+      error,
+      "Error al reactivar el PNF"
+    );
+  }
+}
 
   // ===========================================================
   // MÉTODOS DE ASIGNACIÓN Y GESTIÓN
