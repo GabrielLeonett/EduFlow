@@ -93,7 +93,7 @@ export default class CoordinadorService {
           fecha_asignacion: new Date().toISOString(),
         },
         roles_ids: [7, 8, 9, 10], // IDs de roles administrativos
-        users_ids: [user_action.id, datos.cedula],
+        users_ids: [user_action.id],
       });
 
       console.log("🎉 Coordinador asignado exitosamente");

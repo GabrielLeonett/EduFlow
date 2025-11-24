@@ -163,7 +163,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
 
   // Fetch de profesores CON useCallback
   const fetchProfesores = useCallback(
-    async (unidadCurricular) => {
+    async (unidadCurricular, search = null) => {
       if (!Custom) {
         console.warn("Custom no está disponible");
         return;
@@ -194,9 +194,9 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
           {
             horas_necesarias: unidadCurricular.horas_clase,
             id_unidad_curricular: unidadCurricular.id_unidad_curricular,
+            ...(search && { search: search }),
           }
         );
-        console.log(profesores);
         if (profesores && Array.isArray(profesores) && profesores.length > 0) {
           setProfesores(profesores);
         } else {
@@ -209,6 +209,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
               `/profesores/to/seccion/${seccion.id_seccion}`,
               {
                 horas_necesarias: unidadCurricular.horas_clase,
+                ...(search && { search: search }),
               }
             );
             if (
@@ -657,6 +658,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     id_aula: datos_clase.id_aula,
                     dia_semana: datos_clase.dia_semana,
                     hora_inicio: datos_clase.hora_inicio,
+                    horas_clase: datos_clase.horas_clase
                   };
 
                   const respuesta = await axios.post(
@@ -720,7 +722,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     success: false,
                     error: errorData,
                   });
-                  console.log(errorData)
+                  console.log(errorData);
                   if (errorData.conflictos) {
                     datos_clase.conflictos = errorData.conflictos;
                     hayConflictos = true;

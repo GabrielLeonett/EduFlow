@@ -6,7 +6,7 @@ import {
   Fade,
   Backdrop,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel.jsx";

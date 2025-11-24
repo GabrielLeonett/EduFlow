@@ -24,7 +24,7 @@ const horarioSchema = z.object({
 
   dia_semana: z.enum(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'], {
     required_error: "El día de la semana es obligatorio",
-    invalid_type_error:"El dia tiene que ser Lunes, Martes, Miércoles, Jueves, Viernes, Sabado."
+    invalid_type_error: "El día tiene que ser Lunes, Martes, Miércoles, Jueves, Viernes, Sábado."
   }),
 
   hora_inicio: z
@@ -40,6 +40,15 @@ const horarioSchema = z.object({
       required_error: "El id del aula es obligatorio",
     })
     .positive("El id del aula debe ser positivo"),
+
+  horas_clase: z
+    .number({
+      invalid_type_error: "Las horas de clase deben ser un número",
+      required_error: "Las horas de clase son obligatorias",
+    })
+    .int("Las horas de clase deben ser un número entero")
+    .min(1, "Las horas de clase deben ser al menos 1")
+    .max(12, "Las horas de clase no pueden exceder 12") // Ajusta el máximo según tu necesidad
 });
 
 export default horarioSchema;

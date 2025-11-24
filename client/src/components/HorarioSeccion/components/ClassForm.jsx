@@ -4,13 +4,11 @@ import {
   CardContent,
   Typography,
   Grid,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Divider,
   useTheme,
   Stack,
+  InputAdornment,
 } from "@mui/material";
 import {
   School as SchoolIcon,
@@ -19,8 +17,11 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
   Logout as LogoutIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import CustomButton from "../../customButton";
+import CustomAutocomplete from "../../CustomAutocomplete";
+import CustomLabel from "../../customLabel";
 
 // Formulario para crear nueva clase
 const ClassForm = ({
@@ -77,170 +78,257 @@ const ClassForm = ({
         {/* Campos del formulario */}
         <Grid container spacing={3}>
           {/* Unidad Curricular */}
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth variant="outlined" error={!!errors.unidad}>
-              <InputLabel id="unidad-curricular-label">
-                Unidad Curricular
-              </InputLabel>
-              <Select
-                labelId="unidad-curricular-label"
-                value={unidadCurricularSelected?.id_unidad_curricular || ""}
-                onChange={(e) => onUnidadChange(e.target.value)}
-                label="Unidad Curricular"
-                startAdornment={
-                  <SchoolIcon sx={{ mr: 1, color: "text.secondary" }} />
-                }
-                disabled={loading}
-              >
-                {unidadesCurriculares.length > 0 ? (
-                  unidadesCurriculares
-                    .filter((unidad) => unidad.esVista !== true)
-                    .map((unidad) => (
-                      <MenuItem
-                        key={unidad.id_unidad_curricular}
-                        value={unidad.id_unidad_curricular}
-                      >
-                        <Box>
-                          <Typography variant="body1">
-                            {unidad.nombre_unidad_curricular}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {unidad.horas_clase} horas •{" "}
-                            {unidad.codigo_unidad}
-                          </Typography>
-                        </Box>
-                      </MenuItem>
-                    ))
-                ) : (
-                  <MenuItem disabled>
-                    <Typography variant="body2" color="text.secondary">
-                      {loading
-                        ? "Cargando unidades..."
-                        : "No hay unidades disponibles"}
-                    </Typography>
-                  </MenuItem>
-                )}
-              </Select>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mt: 1, display: "block" }}
-              >
-                Seleccione la unidad curricular a programar
-              </Typography>
-            </FormControl>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <CustomLabel
+              select
+              fullWidth
+              value={unidadCurricularSelected?.id_unidad_curricular || ""}
+              label="Seleccionar la unidad curricular"
+              onChange={(e) => {
+                onUnidadChange(e.target.value);
+              }}
+              disabled={loading}
+              error={!!errors.unidad}
+              helperText={errors.unidad || "Seleccione la unidad curricular"}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SchoolIcon sx={{ color: "text.secondary" }} />
+                  </InputAdornment>
+                ),
+              }}
+            >
+              {unidadesCurriculares.length > 0 ? (
+                unidadesCurriculares
+                  .filter((unidad) => unidad.esVista !== true)
+                  .map((unidad) => (
+                    <MenuItem
+                      key={unidad.id_unidad_curricular}
+                      value={unidad.id_unidad_curricular}
+                    >
+                      <Grid container direction={"column"}>
+                        <Typography variant="caption" fontWeight="medium">
+                          {unidad.nombre_unidad_curricular}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {unidad.horas_clase} horas • {unidad.codigo_unidad}
+                        </Typography>
+                      </Grid>
+                    </MenuItem>
+                  ))
+              ) : (
+                <MenuItem disabled>
+                  <Typography variant="body2" color="text.secondary">
+                    {loading
+                      ? "Cargando unidades..."
+                      : "No hay unidades disponibles"}
+                  </Typography>
+                </MenuItem>
+              )}
+            </CustomLabel>
           </Grid>
 
           {/* Profesor - Solo se muestra si hay unidad seleccionada */}
           {unidadCurricularSelected && (
-            <Grid item xs={12} md={4}>
-              <FormControl
-                fullWidth
-                variant="outlined"
-                error={!!errors.profesor}
-              >
-                <InputLabel id="profesor-label">Profesor</InputLabel>
-                <Select
-                  labelId="profesor-label"
-                  value={profesorSelected?.id_profesor || ""}
-                  onChange={(e) => onProfesorChange(e.target.value)}
-                  label="Profesor"
-                  startAdornment={
-                    <PersonIcon sx={{ mr: 1, color: "text.secondary" }} />
+            <Grid size={{ xs: 12, lg: 6 }}>
+              <CustomAutocomplete
+                freeSolo
+                options={profesores || []} // ← Asegurar que siempre sea un array
+                getOptionLabel={(profesor) =>
+                  typeof profesor === "string"
+                    ? profesor
+                    : profesor
+                    ? `${profesor.nombres || ""} ${
+                        profesor.apellidos || ""
+                      } - ${profesor.cedula || ""}`
+                    : ""
+                }
+                value={profesorSelected}
+                onChange={(event, newValue) => {
+                  onProfesorChange(newValue);
+                }}
+                onInputChange={(event, newInputValue, reason) => {
+                  // Búsqueda en tiempo real opcional
+                  if (reason === "input" && newInputValue.length >= 3) {
+                    // Puedes implementar debounced search aquí si necesitas
                   }
-                  disabled={loading}
-                >
-                  {profesores.length > 0 ? (
-                    profesores.map((profesor) => (
-                      <MenuItem
-                        key={profesor.id_profesor}
-                        value={profesor.id_profesor}
-                      >
-                        <Box>
-                          <Typography variant="body1">
-                            {profesor.nombres.split(" ")[0]}{" "}
-                            {profesor.apellidos.split(" ")[0]}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {profesor.especialidad}
+                }}
+                disabled={loading}
+                renderInput={(params) => (
+                  <CustomLabel
+                    {...params}
+                    label="Seleccionar Profesor"
+                    placeholder="Buscar por nombre, apellido, cédula o escribir manualmente"
+                    error={!!errors.profesor}
+                    helperText={
+                      errors.profesor ||
+                      "Busque, seleccione un profesor o escriba manualmente"
+                    }
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon sx={{ color: "text.secondary" }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+                isOptionEqualToValue={(option, value) =>
+                  option?.id_profesor === value?.id_profesor
+                }
+                noOptionsText={
+                  loading
+                    ? "Cargando profesores..."
+                    : "No se encontraron profesores - Escriba para buscar manualmente"
+                }
+                loading={loading}
+                loadingText="Cargando profesores..."
+                clearOnBlur={false}
+                clearOnEscape={true}
+                disableClearable={false}
+                filterOptions={(options, state) => {
+                  // Asegurar que options sea un array
+                  const safeOptions = options || [];
+                  const inputValue = state.inputValue.trim().toLowerCase();
+
+                  if (!inputValue) return safeOptions;
+
+                  const filtered = safeOptions.filter((option) => {
+                    // Validar que option sea un objeto válido
+                    if (typeof option === "string") return false;
+                    if (!option) return false;
+
+                    const nombres = option.nombres || "";
+                    const apellidos = option.apellidos || "";
+                    const cedula = option.cedula || "";
+
+                    const searchString = `${nombres} ${apellidos} ${cedula}`
+                      .toLowerCase()
+                      .replace(/\s+/g, " ")
+                      .trim();
+
+                    return searchString.includes(inputValue);
+                  });
+
+                  // Agregar opción de búsqueda libre si no hay coincidencia exacta
+                  if (
+                    inputValue &&
+                    !filtered.some((opt) => {
+                      if (typeof opt === "string") return false;
+                      const label = `${opt.nombres || ""} ${
+                        opt.apellidos || ""
+                      } - ${opt.cedula || ""}`
+                        .toLowerCase()
+                        .trim();
+                      return label === inputValue;
+                    })
+                  ) {
+                    return [inputValue, ...filtered];
+                  }
+
+                  return filtered;
+                }}
+                renderOption={(props, option) => {
+                  if (typeof option === "string") {
+                    return (
+                      <li {...props}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            color: "primary.main",
+                          }}
+                        >
+                          <SearchIcon fontSize="small" />
+                          <Typography variant="body2">
+                            <strong>Buscar:</strong> "{option}"
                           </Typography>
                         </Box>
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>
-                      <Typography variant="body2" color="text.secondary">
-                        {loading
-                          ? "Cargando profesores..."
-                          : "No hay profesores disponibles"}
+                      </li>
+                    );
+                  }
+
+                  // Validar que option sea un objeto válido
+                  if (!option) {
+                    return (
+                      <li {...props}>
+                        <Typography variant="body2" color="text.secondary">
+                          Opción inválida
+                        </Typography>
+                      </li>
+                    );
+                  }
+
+                  return (
+                    <li {...props}>
+                      <Typography variant="body2">
+                        {option.nombres || ""} {option.apellidos || ""} -{" "}
+                        {option.cedula || ""}
                       </Typography>
-                    </MenuItem>
-                  )}
-                </Select>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ mt: 1, display: "block" }}
-                >
-                  Seleccione el profesor asignado
-                </Typography>
-              </FormControl>
+                    </li>
+                  );
+                }}
+              />
             </Grid>
           )}
 
           {/* Aula - Solo se muestra si hay profesor seleccionado */}
           {profesorSelected && (
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth variant="outlined" error={!!errors.aula}>
-                <InputLabel id="aula-label">Aula</InputLabel>
-                <Select
-                  labelId="aula-label"
-                  value={aulaSelected?.id_aula || ""}
-                  onChange={(e) => onAulaChange(e.target.value)}
-                  label="Aula"
-                  startAdornment={
-                    <RoomIcon sx={{ mr: 1, color: "text.secondary" }} />
-                  }
-                  disabled={loading}
-                >
-                  {aulas.length > 0 ? (
-                    aulas.map((aula) => (
-                      <MenuItem key={aula.id_aula} value={aula.id_aula}>
-                        <Box>
-                          <Typography variant="body1">
-                            {aula.codigo_aula}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Capacidad: {aula.capacidad_aula} • {aula.tipo_aula}
-                          </Typography>
-                        </Box>
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>
-                      <Typography variant="body2" color="text.secondary">
-                        {loading
-                          ? "Cargando aulas..."
-                          : "No hay aulas disponibles"}
-                      </Typography>
+            <Grid size={12}>
+              <CustomLabel
+                select
+                fullWidth
+                value={aulaSelected?.id_aula || ""}
+                label="Seleccionar Aula"
+                onChange={(e) => onAulaChange(e.target.value)}
+                disabled={loading}
+                error={!!errors.aula}
+                helperText={errors.aula || "Seleccione el aula para la clase"}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <RoomIcon sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  ),
+                }}
+              >
+                {aulas.length > 0 ? (
+                  aulas.map((aula) => (
+                    <MenuItem key={aula.id_aula} value={aula.id_aula}>
+                      <Grid container direction={"column"}>
+                        <Typography variant="caption" fontWeight="medium">
+                          {aula.codigo_aula}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Capacidad: {aula.capacidad_aula} • {aula.tipo_aula}
+                        </Typography>
+                      </Grid>
                     </MenuItem>
-                  )}
-                </Select>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ mt: 1, display: "block" }}
-                >
-                  Seleccione el aula para la clase
-                </Typography>
-              </FormControl>
+                  ))
+                ) : (
+                  <MenuItem disabled>
+                    <Typography variant="body2" color="text.secondary">
+                      {loading
+                        ? "Cargando aulas..."
+                        : "No hay aulas disponibles"}
+                    </Typography>
+                  </MenuItem>
+                )}
+              </CustomLabel>
             </Grid>
           )}
         </Grid>
 
         {/* Botones de acción */}
         <Box sx={{ mt: 3 }}>
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            flexWrap="wrap"
+          >
             {/* Botones de Guardar/Cancelar - Solo se muestran si hay cambios */}
             {HayCambios && (
               <>
@@ -248,13 +336,15 @@ const ClassForm = ({
                   tipo="success"
                   onClick={ButtonSave}
                   startIcon={<SaveIcon />}
+                  disabled={loading}
                 >
-                  Guardar Cambios
+                  {loading ? "Guardando..." : "Guardar Cambios"}
                 </CustomButton>
                 <CustomButton
                   tipo="error"
                   onClick={ButtonCancel}
                   startIcon={<CancelIcon />}
+                  disabled={loading}
                 >
                   Cancelar Cambios
                 </CustomButton>
@@ -263,15 +353,25 @@ const ClassForm = ({
 
             {/* Botón para salir del modo custom - Siempre visible */}
             <CustomButton
-              tipo="error"
+              tipo="secondary"
               onClick={ButtonExitModeCustom}
               startIcon={<LogoutIcon />}
               variant="outlined"
+              disabled={loading}
             >
               Salir del Modo Custom
             </CustomButton>
           </Stack>
         </Box>
+
+        {/* Mensajes de error general */}
+        {errors.general && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" color="error">
+              {errors.general}
+            </Typography>
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

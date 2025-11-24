@@ -13,6 +13,12 @@ const useHorarioState = () => {
   const [hayCambios, setHayCambios] = useState(false);
   //Estado para los horarios eliminados
   const [horariosEliminados, setHorariosEliminados] = useState([]);
+  //Estado para la creacion de multiples clases al mismo tiempo
+  const [procesoClases, setProcesoClases] = useState({
+    enProgreso: false,
+    clasesPendientes: [],
+    claseActualIndex: -1,
+  });
   // Estado para las unidades curriculares
   const [unidadesCurriculares, setUnidadesCurriculares] = useState([]);
   // Estado para los profesores
@@ -71,10 +77,12 @@ const useHorarioState = () => {
     setAulaHorario,
     setTableHorarioOriginal,
     setCustom,
+    setProcesoClases,
   };
 
   // Agrupar todos los estados para facilitar el acceso
   const state = {
+    procesoClases,
     horariosEliminados,
     hayCambios,
     tableHorario,

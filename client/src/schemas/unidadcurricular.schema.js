@@ -58,8 +58,8 @@ export const unidadcurricularSchema = z.object({
         required_error: "La carga de horas académicas es obligatoria.",
     })
     .min(1, "Lo mínimo es 1 (45min).")
-    .max(4, "Lo máximo es 4 (3h).")
-    .int("Debe ser un número entero (1, 2, 3 o 4)"),
+    .max(6, "Lo máximo es 6 (4h 30min).")
+    .int("Debe ser un número entero (1, 2, 3, 4, 5 o 6)"),
 
     creditos: z.number({
         invalid_type_error: "Los créditos deben ser un número.",

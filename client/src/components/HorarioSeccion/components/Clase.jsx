@@ -15,7 +15,7 @@ export default function Clase({
   const [modalConflictosOpen, setModalConflictosOpen] = useState(false);
 
   // Extraer primer nombre y apellido de forma segura
-  const nombre = clase.nombres_profesor?.split(" ")[0] || "";
+  const nombre = clase.nombre_profesor?.split(" ")[0] || "";
   const apellido = clase.apellido_profesor?.split(" ")[0] || "";
 
   // Función memorizada para convertir a minutos

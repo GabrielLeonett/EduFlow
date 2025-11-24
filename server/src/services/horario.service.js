@@ -337,7 +337,8 @@ export default class HorarioService {
   static async mostrarProfesoresParaHorario(
     id_seccion,
     horas_necesarias,
-    id_unidad_curricular = null
+    id_unidad_curricular = null,
+    search = null
   ) {
     try {
       const validationidSeccion = validationService.validateId(
@@ -377,7 +378,8 @@ export default class HorarioService {
       const dbResponse = await HorarioModel.obtenerProfesoresDisponibles(
         id_seccion,
         horas_necesarias,
-        id_unidad_curricular
+        id_unidad_curricular,
+        search
       );
 
       if (dbResponse && dbResponse.state === "error") {
@@ -494,14 +496,29 @@ export default class HorarioService {
   /**
    * Mostrar aulas disponibles para una seccion y un profesor
    * @param {number} id_seccion - id de la seccion
+   * @param {number} id_profesor - id del profesor
+   * @param {number} horas_necesarias - horas necesarias
+   * @param {number} id_unidad_curricular - id de la unidad curricular (opcional)
+   * @param {string} busqueda_aula - término de búsqueda (opcional)
    * @returns {Object} Respuesta formateada con aulas disponibles
    */
   static async mostrarAulasParaHorario(
     id_seccion,
+    id_profesor,
     horas_necesarias,
-    id_profesor
+    id_unidad_curricular = null,
+    busqueda_aula = null
   ) {
     try {
+      console.log("🎯 Servicio: Buscando aulas disponibles", {
+        id_seccion,
+        id_profesor,
+        horas_necesarias,
+        id_unidad_curricular,
+        busqueda_aula,
+      });
+
+      // Validaciones
       const validationidSeccion = validationService.validateId(
         id_seccion,
         "id seccion"
@@ -510,17 +527,6 @@ export default class HorarioService {
         return FormatterResponseService.validationError(
           validationidSeccion.errors,
           "Id de la seccion inválido"
-        );
-      }
-
-      const validation = validationService.validateId(
-        horas_necesarias,
-        "horas necesarias"
-      );
-      if (!validation.isValid) {
-        return FormatterResponseService.validationError(
-          validation.errors,
-          "Horas necesarias inválidas"
         );
       }
 
@@ -534,11 +540,28 @@ export default class HorarioService {
           "Id del profesor inválido"
         );
       }
-      const dbResponse = await HorarioModel.obtenerAulasDisponibles(
-        id_seccion,
+
+      const validationHoras = validationService.validateId(
         horas_necesarias,
-        id_profesor
+        "horas necesarias"
       );
+      if (!validationHoras.isValid) {
+        return FormatterResponseService.validationError(
+          validationHoras.errors,
+          "Horas necesarias inválidas"
+        );
+      }
+
+      // ✅ LLAMADA CORREGIDA: Orden correcto que coincide con el modelo
+      const dbResponse = await HorarioModel.obtenerAulasDisponibles(
+        id_seccion, // 1ro: id_seccion
+        horas_necesarias, // 2do: horas_necesarias
+        id_profesor, // 3ro: id_profesor
+        id_unidad_curricular, // 4to: opcional
+        busqueda_aula // 5to: opcional
+      );
+
+      console.log("📥 Respuesta del modelo:", dbResponse);
 
       if (dbResponse && dbResponse.state === "error") {
         return FormatterResponseService.fromDatabaseResponse(dbResponse);
@@ -551,6 +574,7 @@ export default class HorarioService {
         "Aulas disponibles obtenidas exitosamente"
       );
     } catch (error) {
+      console.error("💥 Error en servicio aulas:", error);
       if (error.success === false) {
         throw error;
       }

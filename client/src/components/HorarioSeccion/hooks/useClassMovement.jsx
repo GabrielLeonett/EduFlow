@@ -296,12 +296,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         return;
       }
 
-      console.log("Moviendo clase:", classToMove);
-      console.log("Desde:", originalSlot);
-      console.log("Hacia:", nuevoSlot);
-
       setTableHorario((prev) => {
-        console.log("Horario antes de modificar:", prev);
 
         let nuevaMatriz = [...prev];
 
@@ -313,7 +308,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
 
         // Ocupar el nuevo slot
         nuevaMatriz = ocuparNuevoSlot(nuevoSlot, classToMove, nuevaMatriz);
-        console.log("Horario después de ocupar:", nuevaMatriz);
 
         return nuevaMatriz;
       });

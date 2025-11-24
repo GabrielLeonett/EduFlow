@@ -62,7 +62,6 @@ export default function RegistrarUnidadCurricular() {
     handleSubmit,
     reset,
     control,
-    watch,
     formState: { errors, isValid },
   } = useForm({
     resolver: zodResolver(UnidadCurricularSchema),
@@ -290,10 +289,12 @@ export default function RegistrarUnidadCurricular() {
                             error?.message || "Seleccione las horas academicas"
                           }
                         >
-                          <MenuItem value={1}>"{"45min"}"</MenuItem>
-                          <MenuItem value={2}>"{"1h 30min"}"</MenuItem>
-                          <MenuItem value={3}>"{"2h 15min"}"</MenuItem>
-                          <MenuItem value={4}>"{"3h"}"</MenuItem>
+                          <MenuItem value={1}>45min</MenuItem>
+                          <MenuItem value={2}>1h 30min</MenuItem>
+                          <MenuItem value={3}>2h 15min</MenuItem>
+                          <MenuItem value={4}>3h</MenuItem>
+                          <MenuItem value={5}>3h 45min</MenuItem>
+                          <MenuItem value={6}>4h 30min</MenuItem>
                         </CustomLabel>
                       )}
                     />

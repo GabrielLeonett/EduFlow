@@ -85,8 +85,6 @@ export const useApi = () => {
 
       // --- INTERCEPTOR DE ERROR ---
       (error) => {
-        console.error("💥 Error de axios:", error);
-
         let formattedError = {
           type: RESPONSE_TYPES.ERROR,
           status: error.response?.status || 500,
@@ -106,6 +104,7 @@ export const useApi = () => {
         // Respuesta con error HTTP
         else if (error.response) {
           const backendError = error.response.data;
+          console.error("💥 Error de axios:", backendError);
 
           if (backendError && backendError.success === false) {
             formattedError.type =
@@ -152,7 +151,8 @@ export const useApi = () => {
     };
 
     instance.handleImageResponse = async (response, filename = "image") => {
-      if (!instance.isBinary(response)) throw new Error("No es respuesta binaria");
+      if (!instance.isBinary(response))
+        throw new Error("No es respuesta binaria");
 
       const blob = new Blob([response.data], {
         type: response.headers["content-type"],

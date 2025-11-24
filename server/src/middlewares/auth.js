@@ -30,7 +30,7 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
   return (req, res, next) => {
     // 1. Verificación de token presente
     // Nota: 'autorization' parece typo, debería ser 'authorization'
-    const token = req.cookies?.autorization; 
+    const token = req.cookies?.autorization;
 
     // Si no es requerido y no hay token, continuar sin autenticación
     if (!required && !token) {
@@ -40,6 +40,7 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
     // Si es requerido y no hay token, denegar acceso
     if (!token) {
       return res.status(401).json({
+        success: false,
         title: "Acceso Denegado",
         message: "Se requiere autenticación para acceder a este recurso.",
       });
@@ -56,11 +57,14 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
         // Manejo específico de errores de token con formato {title, message}
         if (error.name === "TokenExpiredError") {
           return res.status(403).json({
+            success: false,
             title: "Sesión Expirada",
-            message: "Su sesión ha expirado, por favor inicie sesión nuevamente.",
+            message:
+              "Su sesión ha expirado, por favor inicie sesión nuevamente.",
           });
         } else {
           return res.status(403).json({
+            success: false,
             title: "Token Inválido",
             message: "El token de autenticación es inválido o corrupto.",
           });
@@ -75,6 +79,7 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
         // Verificar que el usuario tenga roles
         if (!req.user.roles || !Array.isArray(req.user.roles)) {
           return res.status(403).json({
+            success: false,
             title: "Acceso Denegado",
             message: "Información de roles incompleta en el token.",
           });
@@ -87,6 +92,7 @@ export const middlewareAuth = (requiredRoles = [], options = {}) => {
 
         if (!hasPermission) {
           return res.status(403).json({
+            success: false,
             title: "Acceso Denegado",
             message: "Privilegios insuficientes para acceder a este recurso.",
           });
@@ -165,14 +171,14 @@ function validateRoles(socket, requiredRoles, next) {
   // Solo validar si se especificaron roles requeridos
   if (requiredRoles && requiredRoles.length > 0 && socket.user) {
     if (!socket.user.roles || !Array.isArray(socket.user.roles)) {
-        return next(
-            new Error(
-                JSON.stringify({
-                    title: "Acceso Denegado (Socket)",
-                    message: "Información de roles incompleta para la conexión.",
-                })
-            )
-        );
+      return next(
+        new Error(
+          JSON.stringify({
+            title: "Acceso Denegado (Socket)",
+            message: "Información de roles incompleta para la conexión.",
+          })
+        )
+      );
     }
 
     const hasRequiredRole = socket.user.roles.some(

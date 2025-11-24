@@ -204,12 +204,27 @@ export default class HorarioModel {
   static async obtenerProfesoresDisponibles(
     id_seccion,
     horasNecesarias,
-    id_unidad_curricular
+    id_unidad_curricular,
+    search
   ) {
     try {
+      console.log(
+        `SELECT * FROM buscar_profesores_disponibles($1, $2, $3, $4) AS p_resultado;`,
+        [
+          id_seccion,
+          horasNecesarias,
+          id_unidad_curricular || null,
+          search || null,
+        ]
+      );
       const { rows } = await pg.query(
-        `SELECT * FROM buscar_profesores_disponibles($1, $2, $3) AS p_resultado;`,
-        [id_seccion, horasNecesarias, id_unidad_curricular || null]
+        `SELECT * FROM buscar_profesores_disponibles($1, $2, $3, $4) AS p_resultado;`,
+        [
+          id_seccion,
+          horasNecesarias,
+          id_unidad_curricular || null,
+          search || null,
+        ]
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -222,39 +237,49 @@ export default class HorarioModel {
       );
     }
   }
-
   /**
    * @name obtenerAulasDisponibles
    * @description Obtener aulas disponibles por PNF
    * @param {number} id_seccion - id de la seccion
    * @param {number} horasNecesarias - horas necesarias
    * @param {number} id_profesor - id de la profesor
+   * @param {number} id_unidad_curricular - id de la unidad curricular (opcional)
+   * @param {string} busqueda_aula - término de búsqueda (opcional)
    * @returns {Object} Respuesta formateada con aulas disponibles
    */
   static async obtenerAulasDisponibles(
     id_seccion,
+    id_profesor,
     horasNecesarias,
-    id_profesor
+    id_unidad_curricular = null,
+    busqueda_aula = null
   ) {
     try {
-      console.log(id_seccion, horasNecesarias, id_profesor);
+
       const { rows } = await pg.query(
-        "SELECT * FROM buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
-        [id_seccion, id_profesor, horasNecesarias]
+        "SELECT * FROM buscar_aulas_disponibles($1, $2, $3, $4, $5) AS p_resultado;",
+        [
+          id_seccion,
+          id_profesor,
+          horasNecesarias,
+          id_unidad_curricular,
+          busqueda_aula,
+        ]
       );
-      console.log(rows);
+
+      console.log("✅ Resultado de aulas:", rows);
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Aulas disponibles obtenidas exitosamente"
       );
     } catch (error) {
+      console.error("❌ Error al obtener aulas:", error);
       throw FormatResponseModel.respuestaError(
         error,
         "Error al obtener aulas disponibles"
       );
     }
   }
-
   /**
    * @name crear
    * @description Crear un nuevo horario
@@ -276,11 +301,12 @@ export default class HorarioModel {
         id_unidad_curricular,
         id_aula,
         dia_semana,
+        horas_clase,
         hora_inicio,
       } = datos;
 
       const { rows } = await pg.query(
-        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, TRUE, NULL)",
+        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, TRUE, $8, NULL)",
         [
           usuarioId,
           id_seccion,
@@ -289,8 +315,10 @@ export default class HorarioModel {
           id_aula,
           dia_semana,
           hora_inicio,
+          horas_clase
         ]
       );
+      console.log(rows)
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Horario creado exitosamente"

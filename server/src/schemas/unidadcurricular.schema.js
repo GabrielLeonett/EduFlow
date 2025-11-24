@@ -58,8 +58,8 @@ export const unidadcurricularSchema = z.object({
         required_error: "La carga de horas académicas es obligatoria.",
     })
     .min(1, "Lo mínimo es 1 (45min).")
-    .max(4, "Lo máximo es 4 (3h).")
-    .int("Debe ser un número entero (1, 2, 3 o 4)"),
+    .max(6, "Lo máximo es 6 (4h 30min).")
+    .int("Debe ser un número entero (1, 2, 3, 4, 5 o 6)"),
 
     creditos: z.number({
         invalid_type_error: "Los créditos deben ser un número.",
@@ -98,13 +98,6 @@ export const unidadcurricularSchema = z.object({
     hti: hourSchema, // Horas Tutoría/Taller
     hsi: hourSchema, // Horas Seminario Investigación
 
-}).refine((data) => {
-    // Validación de consistencia: La suma total de horas detalladas debe ser mayor que cero.
-    const totalHours = data.hte + data.hse + data.hta + data.hsa + data.hti + data.hsi;
-    return totalHours > 0;
-}, {
-    message: "La suma total de todas las categorías de horas (HTE, HSE, etc.) debe ser mayor a 0.",
-    path: ["hte"],
-});
+})
 
 export default unidadcurricularSchema;
