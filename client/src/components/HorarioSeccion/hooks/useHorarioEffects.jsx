@@ -83,18 +83,49 @@ const useHorarioInitialization = (props, stateSetters) => {
   }, [horario, turno, obtenerClases]);
 };
 
-const dividirUnidadCurricular = (unidadCurricular) => {
+const dividirUnidadCurricular = (unidadCurricular, maxHorasPorClase = 3) => {
   const horasTotales = unidadCurricular.horas_clase;
+  const horasFaltantes = unidadCurricular.faltan_horas_clase || horasTotales;
 
-  if (horasTotales >= 4 && horasTotales <= 6) {
-    // Dividir en dos clases
-    const primeraClase = Math.round(horasTotales / 2);
-    const segundaClase = horasTotales - primeraClase;
-
-    return [primeraClase, segundaClase];
-  } else {
-    return [horasTotales];
+  // Validaciones
+  if (horasFaltantes <= 0) {
+    console.log(
+      `✅ "${unidadCurricular.nombre_unidad_curricular}" ya está completa`
+    );
+    return [];
   }
+
+  if (horasFaltantes > horasTotales) {
+    console.warn(
+      `⚠️ Horas faltantes (${horasFaltantes}) exceden horas totales (${horasTotales})`
+    );
+    return [horasFaltantes];
+  }
+
+  // Estrategias de división
+  if (horasFaltantes <= maxHorasPorClase) {
+    // Una sola clase con todas las horas faltantes
+    return [horasFaltantes];
+  }
+
+  if (horasFaltantes <= 6) {
+    // Dividir en dos clases balanceadas
+    const primeraClase = Math.ceil(horasFaltantes / 2);
+    const segundaClase = horasFaltantes - primeraClase;
+    return [primeraClase, segundaClase];
+  }
+
+  // Dividir en múltiples clases de máximo 3 horas
+  const divisiones = [];
+  let horasRestantes = horasFaltantes;
+
+  while (horasRestantes > 0) {
+    const horasClase = Math.min(horasRestantes, maxHorasPorClase);
+    divisiones.push(horasClase);
+    horasRestantes -= horasClase;
+  }
+
+  return divisiones;
 };
 
 // Efecto para nueva clase completa - VERSIÓN CORREGIDA
@@ -153,6 +184,7 @@ const useNewClassEffect = (state, actions, stateSetters) => {
             await calcularHorariosDisponibles({
               id_profesor: profesorSelected.id_profesor,
               horas_clase: horasClase,
+              id_unidad_curricular: unidadCurricularSelected.id_unidad_curricular
             });
 
             // 3. Crear la clase

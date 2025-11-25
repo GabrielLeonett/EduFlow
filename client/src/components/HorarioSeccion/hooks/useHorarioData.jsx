@@ -1,9 +1,4 @@
 import { useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  setProfesorHorarioCache,
-  setAulaHorarioCache,
-} from "../../../cache/cacheSlice";
 
 // Función auxiliar para verificar unidades curriculares existentes (fuera del hook)
 const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
@@ -28,10 +23,28 @@ const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
             hora_actual.datos_clase.id_unidad_curricular
           )
         ) {
-          unidadesExistentes.push({
-            ...existeUnidad,
-            esVista: true,
-          });
+          // Calcular horas asignadas vs horas requeridas
+          const horasAsignadas = calcularHorasAsignadas(
+            tableHorario,
+            hora_actual.datos_clase.id_unidad_curricular
+          );
+          const horasRequeridas = existeUnidad.horas_clase;
+
+          if (horasAsignadas < horasRequeridas) {
+            unidadesExistentes.push({
+              ...existeUnidad,
+              faltan_horas_clase: horasRequeridas - horasAsignadas,
+              horas_asignadas: horasAsignadas,
+              esVista: true,
+            });
+          } else {
+            unidadesExistentes.push({
+              ...existeUnidad,
+              horas_asignadas: horasAsignadas,
+              esVista: true,
+            });
+          }
+
           idsUnidadesExistentes.add(
             hora_actual.datos_clase.id_unidad_curricular
           );
@@ -42,14 +55,66 @@ const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
 
   // Actualizar todas las unidades con la propiedad esVista
   return unidades.map((unidad) => {
-    const existe = unidadesExistentes.some(
+    const unidadExistente = unidadesExistentes.find(
       (u) => u.id_unidad_curricular === unidad.id_unidad_curricular
     );
+
+    if (unidadExistente) {
+      return {
+        ...unidad,
+        ...unidadExistente, // Incluye faltan_horas_clase y horas_asignadas si existen
+        esVista: true,
+      };
+    }
+
     return {
       ...unidad,
-      esVista: existe,
+      esVista: false,
     };
   });
+};
+
+// Función auxiliar para calcular horas asignadas de una unidad curricular
+const calcularHorasAsignadas = (tableHorario, idUnidadCurricular) => {
+  let totalHoras = 0;
+
+  tableHorario.forEach((dia) => {
+    Object.values(dia.horas).forEach((hora_actual) => {
+      if (
+        hora_actual?.datos_clase?.id_unidad_curricular === idUnidadCurricular
+      ) {
+        // Sumar la duración de esta clase (en horas académicas de 45 min)
+        const duracion = hora_actual.datos_clase.duracion_horas || 1;
+        totalHoras += duracion;
+      }
+    });
+  });
+
+  return totalHoras;
+};
+
+// Función para verificar si un profesor ya está asignado a otra unidad curricular
+const verificarProfesorEnOtraUnidad = (
+  profesor,
+  tableHorario,
+  unidadCurricularActual
+) => {
+  // Verificar si el profesor ya está asignado en el horario a una unidad curricular diferente
+  for (const dia of tableHorario) {
+    for (const hora of Object.values(dia.horas)) {
+      if (
+        hora?.datos_clase?.id_profesor === profesor.id_profesor &&
+        hora.datos_clase.id_unidad_curricular !==
+          unidadCurricularActual.id_unidad_curricular
+      ) {
+        return {
+          estaAsignado: true,
+          unidadCurricularAsignada: hora.datos_clase.id_unidad_curricular,
+        };
+      }
+    }
+  }
+  return { estaAsignado: false, unidadCurricularAsignada: null };
 };
 
 // Función para validar si las unidades curriculares están inicializadas
@@ -70,11 +135,6 @@ const validarUnidadesCurricularesInicializadas = (unidades) => {
 
 // Hook principal de datos
 const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
-  const dispatch = useDispatch();
-
-  // Selector para acceder al cache
-  const cache = useSelector((state) => state.cache);
-
   const {
     setUnidadesCurriculares,
     setAulas,
@@ -95,14 +155,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   } = state;
 
   const { trayecto, seccion } = props;
-
-  // Función auxiliar para verificar cache válido
-  const isCacheValid = useCallback(
-    (timestamp) => {
-      return Date.now() - timestamp < cache.cacheDuration;
-    },
-    [cache.cacheDuration]
-  );
 
   // Fetch de unidades curriculares CON useCallback
   const fetchUnidadesCurriculares = useCallback(
@@ -197,13 +249,42 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
             ...(search && { search: search }),
           }
         );
+
         if (profesores && Array.isArray(profesores) && profesores.length > 0) {
-          setProfesores(profesores);
+          // Verificar cada profesor para ver si ya está asignado a otra unidad curricular
+          const profesoresVerificados = profesores.map((profesor) => {
+            const verificacion = verificarProfesorEnOtraUnidad(
+              profesor,
+              tableHorario,
+              unidadCurricular
+            );
+
+            if (verificacion.estaAsignado) {
+              // Marcar como no válido si ya está asignado a otra unidad
+              return {
+                ...profesor,
+                es_valido: false,
+                razon_invalidez: `Ya está asignado a otra unidad curricular (ID: ${verificacion.unidadCurricularAsignada})`,
+                disponibilidades: profesor.disponibilidades || [],
+                dedicacion_actual: profesor.dedicacion_actual || null,
+                areas_coincidentes: profesor.areas_coincidentes || null,
+                areas_conocimiento: profesor.areas_conocimiento || null,
+                horas_disponibles_semanales:
+                  profesor.horas_disponibles_semanales || null,
+              };
+            }
+
+            // Mantener el profesor como está si no está asignado a otra unidad
+            return profesor;
+          });
+
+          setProfesores(profesoresVerificados);
         } else {
-          const confirm = alert.confirm(
+          const confirm = await alert.confirm(
             "¿Seguir Buscando?",
             "No se encontraron profesores con las areas de conocimiento de la unidad curricular, ¿Desea seguir buscando?"
           );
+
           if (confirm) {
             const profesores = await axios.post(
               `/profesores/to/seccion/${seccion.id_seccion}`,
@@ -212,17 +293,48 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                 ...(search && { search: search }),
               }
             );
+
             if (
               profesores &&
               Array.isArray(profesores) &&
               profesores.length > 0
             ) {
-              setProfesores(profesores);
+              // Verificar cada profesor para ver si ya está asignado a otra unidad curricular
+              const profesoresVerificados = profesores.map((profesor) => {
+                const verificacion = verificarProfesorEnOtraUnidad(
+                  profesor,
+                  tableHorario,
+                  unidadCurricular
+                );
+
+                if (verificacion.estaAsignado) {
+                  // Marcar como no válido si ya está asignado a otra unidad
+                  return {
+                    ...profesor,
+                    es_valido: false,
+                    razon_invalidez: `Ya está asignado a otra unidad curricular (ID: ${verificacion.unidadCurricularAsignada})`,
+                    disponibilidades: profesor.disponibilidades || [],
+                    dedicacion_actual: profesor.dedicacion_actual || null,
+                    areas_coincidentes: profesor.areas_coincidentes || null,
+                    areas_conocimiento: profesor.areas_conocimiento || null,
+                    horas_disponibles_semanales:
+                      profesor.horas_disponibles_semanales || null,
+                  };
+                }
+
+                // Mantener el profesor como está si no está asignado a otra unidad
+                return profesor;
+              });
+
+              setProfesores(profesoresVerificados);
             } else {
               alert.warning(
                 "No se encontraron profesores disponibles para asignar este horario"
               );
+              setProfesores([]);
             }
+          } else {
+            setProfesores([]);
           }
         }
       } catch (error) {
@@ -230,7 +342,15 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         setProfesores([]);
       }
     },
-    [Custom, unidadesCurriculares, seccion?.id_seccion, axios, setProfesores]
+    [
+      Custom,
+      unidadesCurriculares,
+      seccion?.id_seccion,
+      axios,
+      setProfesores,
+      tableHorario,
+      alert,
+    ]
   );
 
   // Fetch de aulas CON useCallback
@@ -318,28 +438,12 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         return;
       }
 
-      // Verificar si existe en cache y es válido
-      const cachedHorario = cache.profesorHorarios[id_profesor];
-      if (cachedHorario && isCacheValid(cachedHorario.timestamp)) {
-        console.log("✅ Usando horario de profesor desde cache");
-        setProfesorHorario(cachedHorario.data);
-        return;
-      }
-
       try {
         setLoading(true);
 
         const horario = await axios.get(`/horarios/profesor/${id_profesor}`);
 
         if (horario) {
-          // Guardar en cache
-          dispatch(
-            setProfesorHorarioCache({
-              id_profesor: id_profesor,
-              data: horario,
-            })
-          );
-
           setProfesorHorario(horario);
         } else {
           console.error("Respuesta de horario del profesor inválida:", horario);
@@ -352,15 +456,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         setLoading(false);
       }
     },
-    [
-      Custom,
-      axios,
-      setProfesorHorario,
-      setLoading,
-      cache.profesorHorarios,
-      isCacheValid,
-      dispatch,
-    ]
+    [Custom, axios, setProfesorHorario, setLoading]
   );
 
   // Fetch del horario del aula CON CACHE
@@ -384,28 +480,12 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         return;
       }
 
-      // Verificar si existe en cache y es válido
-      const cachedHorario = cache.aulaHorarios[idAula];
-      if (cachedHorario && isCacheValid(cachedHorario.timestamp)) {
-        console.log("✅ Usando horario de aula desde cache");
-        setAulaHorario(cachedHorario.data);
-        return;
-      }
-
       try {
         setLoading(true);
 
         const horario = await axios.get(`/horarios/aula/${idAula}`);
 
         if (horario) {
-          // Guardar en cache
-          dispatch(
-            setAulaHorarioCache({
-              idAula: idAula,
-              data: horario,
-            })
-          );
-
           setAulaHorario(horario);
         } else {
           console.error("Respuesta de horario del aula inválida:", horario);
@@ -418,15 +498,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         setLoading(false);
       }
     },
-    [
-      Custom,
-      axios,
-      setAulaHorario,
-      setLoading,
-      cache.aulaHorarios,
-      isCacheValid,
-      dispatch,
-    ]
+    [Custom, axios, setAulaHorario, setLoading]
   );
 
   // Fetch del info del profesor CON CACHE
@@ -509,17 +581,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   // Función para forzar actualización (ignorar cache)
   const forceRefreshProfesorHorario = useCallback(
     async (profesor) => {
-      const cedulaProfesor = profesor.cedula || profesor.cedula_profesor;
-
-      // Limpiar cache específico
-      if (cedulaProfesor && cache.profesorHorarios[cedulaProfesor]) {
-        // Podrías dispatch una acción para limpiar solo este cache si lo necesitas
-      }
-
       // Llamar sin usar cache
       await fetchProfesoresHorario(profesor);
     },
-    [fetchProfesoresHorario, cache.profesorHorarios]
+    [fetchProfesoresHorario]
   );
   // Efecto para cargar unidades curriculares automáticamente al inicio
   useEffect(() => {
@@ -530,17 +595,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
 
   const forceRefreshAulaHorario = useCallback(
     async (aula) => {
-      const idAula = aula.id_aula || aula.idAula;
-
-      // Limpiar cache específico
-      if (idAula && cache.aulaHorarios[idAula]) {
-        // Podrías dispatch una acción para limpiar solo este cache si lo necesitas
-      }
-
       // Llamar sin usar cache
       await fetchAulaHorario(aula);
     },
-    [fetchAulaHorario, cache.aulaHorarios]
+    [fetchAulaHorario]
   );
 
   const fetchCambiosTableHorario = useCallback(
@@ -658,7 +716,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     id_aula: datos_clase.id_aula,
                     dia_semana: datos_clase.dia_semana,
                     hora_inicio: datos_clase.hora_inicio,
-                    horas_clase: datos_clase.horas_clase
+                    horas_clase: datos_clase.horas_clase,
                   };
 
                   const respuesta = await axios.post(
@@ -666,22 +724,14 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     datosNewHorario
                   );
 
-                  console.log(respuesta);
 
-                  if (respuesta.data && respuesta.success) {
+                  if (respuesta && respuesta.horario) {
                     // Limpiar flags y actualizar con ID del servidor
-                    datos_clase.nueva_clase = false;
-                    datos_clase.clase_move = false;
-
-                    if (respuesta.data && respuesta.data.id) {
-                      datos_clase.id = respuesta.data.id;
-                      datos_clase.id_horario = respuesta.data.id;
-                    }
-
+ 
                     resultados.push({
                       tipo: "creacion",
                       success: true,
-                      data: respuesta.data,
+                      data: respuesta.horario,
                     });
                     alert.success(respuesta.title, respuesta.message);
                   } else {

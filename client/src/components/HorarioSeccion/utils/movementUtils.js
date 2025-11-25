@@ -2,7 +2,6 @@ import { UTILS } from "../../../utils/utils";
 
 // Función para encontrar slot original
 export const findOriginalSlot = (clase, tableHorario) => {
-  console.log("Buscando slot original para clase:", clase.id);
   for (let dia_index = 0; dia_index < tableHorario.length; dia_index++) {
     const dia = tableHorario[dia_index];
     const horas = Object.keys(dia.horas);
@@ -10,10 +9,7 @@ export const findOriginalSlot = (clase, tableHorario) => {
     for (const hora of horas) {
       const celda = dia.horas[hora];
       if (celda?.ocupado && celda.datos_clase.id === clase.id) {
-        console.log("Slot encontrado:", {
-          dia_index,
-          hora_inicio: parseInt(hora),
-        });
+
         const bloques_necesarios = celda.bloques_totales;
         return {
           dia_index,
@@ -23,7 +19,6 @@ export const findOriginalSlot = (clase, tableHorario) => {
       }
     }
   }
-  console.log("Slot NO encontrado");
   return null;
 };
 
@@ -73,10 +68,6 @@ export const ocuparNuevoSlot = (nuevoSlot, classToMove, tableHorario) => {
 
         if (horaNum >= hora_inicio && horaNum < hora_fin) {
           const bloqueIndex = Math.floor((horaNum - hora_inicio) / 45);
-          console.log(
-            UTILS.sumar45MinutosHHMM(hora_inicio, 0),
-            UTILS.sumar45MinutosHHMM(hora_inicio, bloques_necesarios)
-          );
           acc[hora] = {
             ocupado: true,
             datos_clase: {

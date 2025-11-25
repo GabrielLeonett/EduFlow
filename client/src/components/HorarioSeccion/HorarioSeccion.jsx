@@ -120,14 +120,8 @@ const HorarioSeccion = ({
       // Luego el usuario deberá seleccionar de la lista actualizada
       dataActions
         .fetchProfesores(state.unidadCurricularSelected, textoBusqueda)
-        .then((profes) => {
-          stateSetters.setProfesores(profes);
-        })
-        .catch((error) => {
-          console.error("❌ Error en búsqueda:", error);
-        });
     },
-    [dataActions.fetchProfesores, state.unidadCurricularSelected, stateSetters]
+    [dataActions, state.unidadCurricularSelected, alert]
   );
   
   const handleProfesorChange = useCallback(
@@ -192,10 +186,11 @@ const HorarioSeccion = ({
       }
     },
     [
-      profesores, // ← Esta dependencia podría ser undefined
+      profesores,
       stateSetters,
-      dataActions.fetchAulas,
       handleBusquedaLibreProfesor,
+      alert,
+      dataActions
     ]
   );
 
@@ -210,7 +205,7 @@ const HorarioSeccion = ({
       stateSetters.setProfesores([]); // ← Limpiar lista de profesores
       dataActions.fetchProfesores(unidad);
     },
-    [unidadesCurriculares, stateSetters, dataActions.fetchProfesores]
+    [unidadesCurriculares, stateSetters, dataActions]
   );
 
   const handleAulaChange = useCallback(
@@ -262,7 +257,7 @@ const HorarioSeccion = ({
     } finally {
       stateSetters.setLoading(false);
     }
-  }, [stateSetters, alert, dataActions.fetchCambiosTableHorario]);
+  }, [stateSetters, alert, dataActions]);
 
   const handleCloseOverlay = useCallback(() => {
     setOverlayVisible(false);
@@ -322,6 +317,7 @@ const HorarioSeccion = ({
       );
     }
   }, [axios, seccion, setOverlayVisible, alert, horarioTitle]);
+  
   // Configuración de la tabla
   const tableConfig = useMemo(
     () => ({
