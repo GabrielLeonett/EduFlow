@@ -390,7 +390,7 @@ export default function RegistrarUnidadCurricular() {
                             type="number"
                             inputProps={{
                               min: 0,
-                              max: 16,
+                              max: 50,
                               step: 0.5,
                             }}
                             onChange={(e) => {
@@ -403,7 +403,7 @@ export default function RegistrarUnidadCurricular() {
                             value={field.value || ""}
                             error={!!error}
                             helperText={
-                              error?.message || "Duración en semanas (1-16)"
+                              error?.message || "Duración en semanas (1-50)"
                             }
                           />
                         )}

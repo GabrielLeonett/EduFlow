@@ -96,25 +96,50 @@ export default class ProfesorModel {
    * @static
    * @async
    * @method obtenerTodos
-   * @description Obtener profesores con paginación, ordenamiento y búsqueda
+   * @description Obtener profesores con paginación, ordenamiento y búsqueda, o un profesor específico por ID
    * @param {Object} queryParams - Parámetros de consulta
    * @param {number} queryParams.page - Página actual (default: 1)
    * @param {number} queryParams.limit - Límite por página (default: 20)
    * @param {string} queryParams.sort_order - Campo para ordenar (default: nombres)
    * @param {string} queryParams.search - Término de búsqueda
-   * @returns {Promise<Object>} Lista de profesores paginada
+   * @param {string} queryParams.id_profesor - ID específico del profesor a buscar
+   * @returns {Promise<Object>} Lista de profesores paginada o profesor específico
    */
   static async obtenerTodos(queryParams = {}) {
-
     try {
       const {
         page = 1,
         limit = 20,
         sort_order = "nombres",
         search = "",
+        id_profesor = null,
       } = queryParams;
 
-      // Calcular offset
+      // Si se proporciona un ID específico, buscar solo ese profesor
+      if (id_profesor) {
+        const specificQuery = `
+        SELECT * FROM profesores_informacion_completa 
+        WHERE id_profesor = $1
+      `;
+
+        const specificResult = await client.query(specificQuery, [id_profesor]);
+
+        if (specificResult.rows.length === 0) {
+          return FormatResponseModel.respuestaPostgres(
+            { profesor: null },
+            "Profesor no encontrado"
+          );
+        }
+
+        return FormatResponseModel.respuestaPostgres(
+          {
+            profesor: specificResult.rows[0],
+          },
+          "Profesor obtenido exitosamente"
+        );
+      }
+
+      // Calcular offset para paginación normal
       const offset = (page - 1) * limit;
 
       // Validar y mapear campos de ordenamiento
@@ -157,7 +182,7 @@ export default class ProfesorModel {
       const countQuery = `
       SELECT COUNT(*) as total FROM profesores_informacion_completa 
       ${whereClause}
-      `;
+    `;
 
       // Parámetros para las consultas
       const dataParams = whereClause
@@ -630,7 +655,8 @@ export default class ProfesorModel {
       const values = [usuarioId, idProfesor, dia_semana, hora_inicio, hora_fin];
       console.log(values);
       const { rows } = await client.query(query, values);
-
+      
+      console.log(rows);
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Disponibilidad creada exitosamente"

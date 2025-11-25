@@ -29,7 +29,8 @@ const HorarioSeccion = ({
   const theme = useTheme();
   const axios = useApi();
   const alert = useSweetAlert();
-  const { isCustom } = useCoordinador(pnf?.id_pnf);
+  //const { isCustom } = useCoordinador(pnf?.id_pnf);
+  const  isCustom  = true;
 
   // Props consolidados
   const componentProps = useMemo(

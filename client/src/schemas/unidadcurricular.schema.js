@@ -75,7 +75,7 @@ export const unidadcurricularSchema = z.object({
     })
     .int("Las semanas deben ser un número entero.")
     .min(1, "La duración mínima es 1 semana.")
-    .max(16, "La duración máxima es de 16 semanas."),
+    .max(50, "La duración máxima es de 50 semanas."),
 
     // --- RELACIONES ---
     areas_conocimiento: z.array(areaConocimientoSchema, {

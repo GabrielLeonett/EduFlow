@@ -11,6 +11,55 @@ export const UTILS = {
     return dias.indexOf(dia.toLowerCase());
   },
 
+  /**
+   * Convierte una duración en formato HH:MM:SS a minutos totales y segundos totales
+   * @param {string} duracionString - Duración en formato "HH:MM:SS" o "MM:SS" o "HH:MM"
+   * @returns {Object} Objeto con minutosTotales y segundosTotales
+   */
+  convertirDuracion: (duracionString) => {
+    if (typeof duracionString !== "string") {
+      throw new Error('El parámetro debe ser un string en formato "HH:MM:SS"');
+    }
+
+    const partes = duracionString.split(":");
+
+    let horas = 0;
+    let minutos = 0;
+    let segundos = 0;
+
+    // Manejar diferentes formatos: HH:MM:SS, MM:SS, HH:MM
+    if (partes.length === 3) {
+      // Formato HH:MM:SS
+      [horas, minutos, segundos] = partes.map(Number);
+    } else if (partes.length === 2) {
+      // Formato MM:SS o HH:MM (asumimos MM:SS si el primer número es < 60)
+      const primerValor = parseInt(partes[0]);
+      if (primerValor < 60) {
+        // Formato MM:SS
+        [minutos, segundos] = partes.map(Number);
+      } else {
+        // Formato HH:MM
+        [horas, minutos] = partes.map(Number);
+      }
+    } else {
+      throw new Error('Formato inválido. Use "HH:MM:SS", "MM:SS" o "HH:MM"');
+    }
+
+    // Validar valores
+    if ([horas, minutos, segundos].some(isNaN)) {
+      throw new Error("Todos los valores deben ser números válidos");
+    }
+
+    // Calcular totales
+    const minutosTotales = horas * 60 + minutos;
+    const segundosTotales = horas * 3600 + minutos * 60 + segundos;
+
+    return {
+      minutosTotales,
+      segundosTotales,
+    };
+  },
+
   obtenerDiaNombre: (id) => {
     const dias = [
       "Lunes",

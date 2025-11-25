@@ -396,7 +396,7 @@ const HorarioTable = ({
                   }}
                 >
                   <Typography variant="body2" color="text.primary">
-                    {UTILS.formatearHora(hora)} -
+                    {UTILS.formatearHora(hora)} - {" "}
                     {UTILS.formatearHora(
                       Object.keys(UTILS.initialHours)[index + 1]
                     )}

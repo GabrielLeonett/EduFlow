@@ -284,18 +284,14 @@ export default class HorarioModel {
     id_seccion,
     id_profesor,
     horasNecesarias,
-    id_unidad_curricular = null,
-    busqueda_aula = null
   ) {
     try {
       const { rows } = await pg.query(
-        "SELECT * FROM buscar_aulas_disponibles($1, $2, $3, $4, $5) AS p_resultado;",
+        "SELECT * FROM public.buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
         [
           id_seccion,
           id_profesor,
           horasNecesarias,
-          id_unidad_curricular,
-          busqueda_aula,
         ]
       );
 

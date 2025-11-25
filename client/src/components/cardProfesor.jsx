@@ -416,6 +416,15 @@ export default function CardProfesor({ profesor }) {
             <Typography variant="h6" color="primary" fontWeight="bold">
               Disponibilidad
             </Typography>
+            <Typography variant="body2">
+              horas disponibles:
+              {profesor.horas_disponibles?.hours
+                ? `${profesor.horas_disponibles.hours}h`
+                : null} {profesor.horas_disponibles?.minutes
+                ? `${profesor.horas_disponibles.minutes}min`
+                : null}
+            </Typography>
+
             <List dense>
               {profesor.disponibilidad && profesor.disponibilidad.length > 0 ? (
                 profesor.disponibilidad.map((dis, index) => (

@@ -36,7 +36,9 @@ export default function DisponibilidadProfesor() {
 
   // Estados
   const [selectedBlocks, setSelectedBlocks] = useState({});
+  const [profesor, setProfesor] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [existingDisponibilidades, setExistingDisponibilidades] = useState([]); // 🔥 NUEVO ESTADO
   const timeBlocks = UTILS.initialHours;
 
   // Efecto para validar id_profesor
@@ -48,6 +50,8 @@ export default function DisponibilidadProfesor() {
         },
       });
     }
+    console.log();
+    setProfesor;
   }, [id_profesor, alert, navigate]);
 
   // Función para cargar la disponibilidad existente
@@ -61,6 +65,9 @@ export default function DisponibilidadProfesor() {
       console.log("Respuesta completa:", response);
       const disponibilidades =
         response.disponibilidades || response.data?.disponibilidades || [];
+      console.log(disponibilidades);
+      // 🔥 GUARDAR LAS DISPONIBILIDADES EXISTENTES CON SUS IDs
+      setExistingDisponibilidades(disponibilidades);
 
       // Inicializar selectedBlocks con arrays vacíos para cada día
       const nuevosBloques = {};
@@ -170,8 +177,6 @@ export default function DisponibilidadProfesor() {
       return horaA - horaB;
     });
 
-    console.log("🔍 Bloques ordenados para agrupar:", bloquesOrdenados);
-
     const rangos = [];
     let inicio = bloquesOrdenados[0];
     let fin = bloquesOrdenados[0];
@@ -195,7 +200,6 @@ export default function DisponibilidadProfesor() {
     // Guardar el último rango
     rangos.push({ inicio });
 
-    console.log("📊 Rangos agrupados:", rangos);
     return rangos;
   };
 
@@ -214,17 +218,26 @@ export default function DisponibilidadProfesor() {
       }
     });
 
-    console.log("📋 Resumen por días:", resumen);
     return resumen;
   };
 
-  // Función para contar total de horas seleccionadas
-  const getTotalHoras = () => {
-    let total = 0;
-    Object.values(selectedBlocks).forEach((bloques) => {
-      total += bloques.length;
-    });
-    return total;
+  // 🔥 NUEVA FUNCIÓN: Buscar disponibilidad existente por día y horario
+  const findExistingDisponibilidad = (dia, horaInicio, horaFin) => {
+    console.log("Estos son los datos que existen: ", existingDisponibilidades);
+    console.log(
+      "Estos son los datos datos de busqueda: ",
+      dia,
+      horaInicio,
+      horaFin
+    );
+    return existingDisponibilidades.find(
+      (disp) =>
+        disp.dia_semana === dia &&
+        UTILS.convertirDuracion(disp.hora_inicio) >=
+          UTILS.convertirDuracion(horaInicio) &&
+        UTILS.convertirDuracion(disp.hora_fin) <=
+          UTILS.convertirDuracion(horaFin)
+    );
   };
 
   const guardarDisponibilidad = async () => {
@@ -245,12 +258,19 @@ export default function DisponibilidadProfesor() {
 
     Object.entries(resumen).forEach(([dia, rangos]) => {
       const totalRangos = rangos.length;
+      const horaInicio = `${UTILS.formatearHoraMilitar(rangos[0].inicio)}`;
+      const horaFin = `${UTILS.formatearHoraMilitar(
+        rangos[totalRangos - 1].inicio
+      )}`;
+
+      // 🔥 VERIFICAR SI YA EXISTE ESTA DISPONIBILIDAD
+      const existing = findExistingDisponibilidad(dia, horaInicio, horaFin);
+
       disponibilidadData.push({
+        id_disponibilidad: existing?.id_disponibilidad || null, // 🔥 INCLUIR ID SI EXISTE
         dia_semana: dia,
-        hora_inicio: `${UTILS.formatearHoraMilitar(rangos[0].inicio)}`, // Formato: "8", "14:00"
-        hora_fin: `${UTILS.formatearHoraMilitar(
-          rangos[totalRangos - 1].inicio
-        )}`, // Formato: "8", "14:00"
+        hora_inicio: horaInicio,
+        hora_fin: horaFin,
         disponibilidad_activa: true,
       });
     });
@@ -269,30 +289,41 @@ export default function DisponibilidadProfesor() {
 
     setLoading(true);
 
-    disponibilidadData.map(async (item) => {
-      try {
-        // 🔹 Enviar todo en un solo POST agrupado por día
-        const response = await axios.post(
-          `/profesores/${id_profesor}/disponibilidad`,
-          item
-        );
+    try {
+      // 🔥 ENVIAR TODAS LAS DISPONIBILIDADES EN UNA SOLA OPERACIÓN
+      const operations = disponibilidadData.map(async (item) => {
+        console.log(item);
+        if (!item.id_disponibilidad) {
+          // 🔥 CREAR NUEVA (POST)
+          console.log(`🆕 Creando nueva disponibilidad`);
+          return await axios.post(
+            `/profesores/${id_profesor}/disponibilidad`,
+            item
+          );
+        }
+      });
 
-        await alert.confirm({
-          icon: "success",
-          title: "¡Éxito!",
-          text: `Disponibilidad guardada correctamente (${disponibilidadData.length} rangos registrados)`,
+      // Esperar a que todas las operaciones terminen
+      await Promise.all(operations);
+      const result = alert.confirm(
+        "¡Éxito!",
+        `Disponibilidad guardada correctamente)`,
+        {
           timer: 2000,
+          icon: "success",
           showConfirmButton: false,
-        });
-
-        console.log("✅ Respuesta del backend:", response);
-      } catch (error) {
-        console.error("❌ Error al guardar disponibilidad:", error);
-        alert.error(error.title, error.message);
-      } finally {
-        setLoading(false);
+        }
+      );
+      if (result) {
+        // 🔥 RECARGAR LOS DATOS ACTUALIZADOS
+        await cargarDisponibilidadExistente();
       }
-    });
+    } catch (error) {
+      console.error("❌ Error al guardar disponibilidad:", error);
+      alert.error(error.title, error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Obtener resumen para mostrar en UI
@@ -419,7 +450,7 @@ export default function DisponibilidadProfesor() {
 
   return (
     <>
-      <ResponsiveAppBar pages={[]} backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <Box
         sx={{
@@ -476,11 +507,6 @@ export default function DisponibilidadProfesor() {
                 >
                   Resumen de disponibilidad:
                 </Typography>
-                <Chip
-                  label={`${getTotalHoras()} horas totales`}
-                  color="primary"
-                  variant="outlined"
-                />
               </Box>
 
               {Object.keys(resumen).length === 0 ? (
