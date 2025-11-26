@@ -282,7 +282,7 @@ export default function PanelAdministracion() {
         ) : (
           <Grid container spacing={3}>
             {/* Información de Node.js */}
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Card sx={{ bgcolor: "#f3e5f5", boxShadow: 3 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -315,7 +315,7 @@ export default function PanelAdministracion() {
             </Grid>
 
             {/* Tarjetas de métricas rápidas - SISTEMA */}
-            <Grid item xs={12} md={6} lg={3}>
+            <Grid xs={12} md={6} lg={3}>
               <Card sx={{ bgcolor: "#e3f2fd", height: "100%", boxShadow: 3 }}>
                 <CardContent>
                   <Typography color="text.secondary" gutterBottom>
@@ -334,7 +334,7 @@ export default function PanelAdministracion() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6} lg={3}>
+            <Grid xs={12} md={6} lg={3}>
               <Card sx={{ bgcolor: "#e8f5e8", height: "100%", boxShadow: 3 }}>
                 <CardContent>
                   <Typography color="text.secondary" gutterBottom>
@@ -351,7 +351,7 @@ export default function PanelAdministracion() {
             </Grid>
 
             {/* Tarjetas de métricas rápidas - NODE.JS */}
-            <Grid item xs={12} md={6} lg={3}>
+            <Grid xs={12} md={6} lg={3}>
               <Card sx={{ bgcolor: "#fff3e0", height: "100%", boxShadow: 3 }}>
                 <CardContent>
                   <Typography color="text.secondary" gutterBottom>
@@ -367,7 +367,7 @@ export default function PanelAdministracion() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6} lg={3}>
+            <Grid xs={12} md={6} lg={3}>
               <Card sx={{ bgcolor: "#fce4ec", height: "100%", boxShadow: 3 }}>
                 <CardContent>
                   <Typography color="text.secondary" gutterBottom>
@@ -384,14 +384,14 @@ export default function PanelAdministracion() {
             </Grid>
 
             {/* Memoria Detallada de Node.js */}
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Card sx={{ boxShadow: 3 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                     📋 Memoria Detallada de Node.js
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={2}>
+                    <Grid xs={12} sm={6} md={2}>
                       <Typography variant="body2" color="text.secondary">
                         RSS
                       </Typography>
@@ -399,7 +399,7 @@ export default function PanelAdministracion() {
                         {performanceData.memory?.nodejs?.rss} MB
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
+                    <Grid xs={12} sm={6} md={2}>
                       <Typography variant="body2" color="text.secondary">
                         Heap Total
                       </Typography>
@@ -407,7 +407,7 @@ export default function PanelAdministracion() {
                         {performanceData.memory?.nodejs?.heapTotal} MB
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
+                    <Grid xs={12} sm={6} md={2}>
                       <Typography variant="body2" color="text.secondary">
                         Heap Usado
                       </Typography>
@@ -415,7 +415,7 @@ export default function PanelAdministracion() {
                         {performanceData.memory?.nodejs?.heapUsed} MB
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
+                    <Grid xs={12} sm={6} md={2}>
                       <Typography variant="body2" color="text.secondary">
                         External
                       </Typography>
@@ -423,7 +423,7 @@ export default function PanelAdministracion() {
                         {performanceData.memory?.nodejs?.external} MB
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
+                    <Grid xs={12} sm={6} md={2}>
                       <Typography variant="body2" color="text.secondary">
                         ArrayBuffers
                       </Typography>
@@ -431,7 +431,7 @@ export default function PanelAdministracion() {
                         {performanceData.memory?.nodejs?.arrayBuffers} MB
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
+                    <Grid xs={12} sm={6} md={2}>
                       <Typography variant="body2" color="text.secondary">
                         % del Sistema
                       </Typography>
@@ -445,7 +445,7 @@ export default function PanelAdministracion() {
             </Grid>
 
             {/* Gráficos con Chart.js */}
-            <Grid item xs={12} lg={6}>
+            <Grid xs={12} lg={6}>
               <Card sx={{ boxShadow: 3 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -466,7 +466,7 @@ export default function PanelAdministracion() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} lg={6}>
+            <Grid xs={12} lg={6}>
               <Card sx={{ boxShadow: 3 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -487,7 +487,7 @@ export default function PanelAdministracion() {
               </Card>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Card sx={{ boxShadow: 3 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>

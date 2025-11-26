@@ -275,7 +275,7 @@ export default function GestionAulas() {
                   sx={{ width: "100%", margin: 0 }}
                 >
                   {aulas.map((aula) => (
-                    <Grid item key={aula.id_aula} xs={12} sm={6} md={4} lg={3}>
+                    <Grid key={aula.id_aula} xs={12} sm={6} md={4} lg={3}>
                       <CardAula aula={aula} />
                     </Grid>
                   ))}

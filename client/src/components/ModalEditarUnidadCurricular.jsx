@@ -387,7 +387,7 @@ export default function ModalEditarUnidadCurricular({
                 Información Básica
               </Typography>
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                <Grid xs={12} md={6}>
                   <CustomLabel
                     fullWidth
                     label="Nombre de la Unidad Curricular *"
@@ -400,7 +400,7 @@ export default function ModalEditarUnidadCurricular({
                     }
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid xs={12} md={6}>
                   <CustomLabel
                     fullWidth
                     label="Código de la Unidad *"
@@ -413,7 +413,7 @@ export default function ModalEditarUnidadCurricular({
                     }
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid xs={12} md={6}>
                   <Controller
                     name="carga_horas_academicas"
                     control={control}
@@ -440,7 +440,7 @@ export default function ModalEditarUnidadCurricular({
                     )}
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid xs={12} md={6}>
                   <Controller
                     name="tipo_unidad"
                     control={control}
@@ -478,8 +478,8 @@ export default function ModalEditarUnidadCurricular({
               </Typography>
               <Grid container spacing={3}>
                 {/* Créditos y Semanas */}
-                <Grid container item sm={12} lg={4}>
-                  <Grid item xs={6}>
+                <Grid container sm={12} lg={4}>
+                  <Grid xs={6}>
                     <Controller
                       name="creditos"
                       control={control}
@@ -511,7 +511,7 @@ export default function ModalEditarUnidadCurricular({
                       )}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid xs={6}>
                     <Controller
                       name="semanas"
                       control={control}
@@ -546,8 +546,8 @@ export default function ModalEditarUnidadCurricular({
                 </Grid>
 
                 {/* HTE y HSE */}
-                <Grid container item sm={12} lg={4}>
-                  <Grid item xs={6}>
+                <Grid container sm={12} lg={4}>
+                  <Grid xs={6}>
                     <Controller
                       name="hte"
                       control={control}
@@ -578,7 +578,7 @@ export default function ModalEditarUnidadCurricular({
                       )}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid xs={6}>
                     <Controller
                       name="hse"
                       control={control}
@@ -612,8 +612,8 @@ export default function ModalEditarUnidadCurricular({
                 </Grid>
 
                 {/* HTA y HSA */}
-                <Grid container item sm={12} lg={4}>
-                  <Grid item xs={6}>
+                <Grid container sm={12} lg={4}>
+                  <Grid xs={6}>
                     <Controller
                       name="hta"
                       control={control}
@@ -644,7 +644,7 @@ export default function ModalEditarUnidadCurricular({
                       )}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid xs={6}>
                     <Controller
                       name="hsa"
                       control={control}
@@ -678,8 +678,8 @@ export default function ModalEditarUnidadCurricular({
                 </Grid>
 
                 {/* HTI y HSI */}
-                <Grid container item sm={12} lg={4}>
-                  <Grid item xs={6}>
+                <Grid container sm={12} lg={4}>
+                  <Grid xs={6}>
                     <Controller
                       name="hti"
                       control={control}
@@ -708,7 +708,7 @@ export default function ModalEditarUnidadCurricular({
                       )}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid xs={6}>
                     <Controller
                       name="hsi"
                       control={control}
@@ -758,7 +758,7 @@ export default function ModalEditarUnidadCurricular({
               <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
                 Detalles Adicionales
               </Typography>
-              <Grid item xs={12}>
+              <Grid xs={12}>
                 <CustomLabel
                   fullWidth
                   label="Descripción *"

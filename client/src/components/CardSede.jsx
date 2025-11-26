@@ -23,7 +23,7 @@ export default function CardSede({ sede }) {
     <Grid container justifyContent="center">
       <Box sx={{ maxWidth: "lg", width: "100%", px: 3 }}>
         <Grid container justifyContent="center">
-          <Grid item xs={12} sm={10} md={8} lg={6}>
+          <Grid xs={12} sm={10} md={8} lg={6}>
             <Card
               sx={{
                 boxShadow: 4,

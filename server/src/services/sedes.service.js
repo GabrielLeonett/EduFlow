@@ -159,7 +159,7 @@ export default class SedeService {
 
       // Recorrer todos los datos
       Sedes.forEach((item) => {
-        // Si el item tiene datos de sede (esto siempre debe existir)
+        // Si el tiene datos de sede (esto siempre debe existir)
         if (item.id_sede) {
           const sedeId = item.id_sede;
 
