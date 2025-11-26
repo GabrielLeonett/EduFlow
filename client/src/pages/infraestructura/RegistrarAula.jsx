@@ -50,7 +50,7 @@ export default function RegistrarAula() {
       setSedes(responseSedes.sedes || []);
     } catch (error) {
       console.error("Error al cargar sedes:", error);
-      alert.error("Error", "No se pudieron cargar las sedes");
+      alert.error("Error", "No se pudieron cargar los núcleos");
     } finally {
       setLoadingSedes(false);
     }
@@ -80,7 +80,7 @@ export default function RegistrarAula() {
 
   // 👉 Cargar sedes al inicio
   useEffect(() => {
-    console.log("🔄 Cargando sedes...");
+    console.log("🔄 Cargando núcleos...");
     fetchSedes();
   }, []);
 
@@ -290,15 +290,15 @@ export default function RegistrarAula() {
                       render={({ field, fieldState: { error } }) => (
                         <CustomLabel
                           select
-                          label="Sede *"
+                          label="Núcleos *"
                           variant="outlined"
                           fullWidth
                           {...field}
                           error={!!error}
-                          helperText={error?.message || "Seleccione la sede"}
+                          helperText={error?.message || "Seleccione el Núcleo"}
                           disabled={loadingSedes}
                         >
-                          <MenuItem value="">Seleccione una sede</MenuItem>
+                          <MenuItem value="">Seleccione el Núcleo</MenuItem>
                           {loadingSedes ? (
                             <MenuItem disabled>
                               <Box
@@ -309,7 +309,7 @@ export default function RegistrarAula() {
                                 }}
                               >
                                 <CircularProgress size={20} />
-                                Cargando sedes...
+                                Cargando núcleos...
                               </Box>
                             </MenuItem>
                           ) : (

@@ -123,7 +123,7 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Profesores Eliminados",
+          name: "Control de Estatus Docente",
           url: "/academico/profesores/eliminados",
           roles: [
             "Vicerrector",
@@ -151,40 +151,18 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Formación Académica",
+      name: "Programas Nacional de Formación",
+      url: "/formacion/programas",
       roles: [
         "Vicerrector",
         "Profesor",
         "Coordinador",
         "Director General de Gestión Curricular",
         "SuperAdmin",
-      ],
-      submenu: [
-        {
-          name: "Programas de Formación",
-          url: "/formacion/programas",
-          roles: [
-            "Vicerrector",
-            "Profesor",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
       ],
     },
     {
-      name: "Gestión Operativa",
-      roles: [
-        "Vicerrector",
-        "Profesor",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
-          name: "Gestión de Horarios Secciones",
+      name: "Planificación de Horarios Académicos",
           url: "/horarios/secciones",
           roles: [
             "Vicerrector",
@@ -193,9 +171,9 @@ function ResponsiveAppBar({ backgroundColor }) {
             "Director General de Gestión Curricular",
             "SuperAdmin",
           ],
-        },
-        {
-          name: "Gestión de Sedes",
+    },
+{
+          name: "Núcleos",
           url: "/infraestructura/sedes",
           roles: [
             "Vicerrector",
@@ -204,9 +182,6 @@ function ResponsiveAppBar({ backgroundColor }) {
             "SuperAdmin",
           ],
         },
-      ],
-    },
-
     {
       name: "Administración",
       roles: ["SuperAdmin"],
@@ -224,16 +199,6 @@ function ResponsiveAppBar({ backgroundColor }) {
         {
           name: "Reportes y Estadísticas",
           url: "/administracion/reportes-estadisticas", // Esta ruta no existe en tus Route, puedes agregarla o removerla
-          roles: ["SuperAdmin"],
-        },
-        {
-          name: "Configuración del Sistema",
-          url: "/administracion/configuracion", // Esta ruta no existe en tus Route, puedes agregarla o removerla
-          roles: ["SuperAdmin"],
-        },
-        {
-          name: "Pagina de pruebas",
-          url: "/desarrollo/pruebas", // Esta ruta no existe en tus Route, puedes agregarla o removerla
           roles: ["SuperAdmin"],
         },
       ],

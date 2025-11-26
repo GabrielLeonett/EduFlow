@@ -45,21 +45,21 @@ export default function GestionSedes() {
   const { startTour, resetTour } = useTour(
     [
       {
-        intro: "👋 Bienvenido a la gestión de sedes. Te mostraré dónde está todo."
+        intro: "👋 Bienvenido a Núcleos. Te mostraré dónde está todo."
       },
       {
         element: "#sede-container",
-        intro: "Aquí verás todas las sedes registradas en el sistema.",
+        intro: "Aquí verás todos los núcleos registrados en el sistema.",
         position: "right"
       },
       {
         element: "#sede-card-ejemplo",
-        intro: "Cada tarjeta muestra la información de una sede, incluyendo ubicación y datos relevantes.",
+        intro: "Cada tarjeta muestra la información de un núcleo, incluyendo ubicación y datos relevantes.",
         position: "bottom"
       },
       {
         element: "#btn-crear-sede",
-        intro: "Haz clic aquí para registrar una nueva sede.",
+        intro: "Haz clic aquí para registrar un nuevo núcleo.",
         position: "left"
       },
       {
@@ -104,7 +104,7 @@ export default function GestionSedes() {
               fontWeight: "bold",
             }}
           >
-            Sedes
+            Núcleos
           </Typography>
         </Box>
 
@@ -134,12 +134,12 @@ export default function GestionSedes() {
                 align="center"
                 sx={{ width: "100%", mt: 4 }}
               >
-                No hay sedes registradas todavía.
+                No hay núcleos registrados todavía.
               </Typography>
             )}
           </Grid>
         )}
-        <Tooltip title={"Crear Sede"} placement="left-start">
+        <Tooltip title={"Crear Núcleo"} placement="left-start">
           <CustomButton
             id="btn-crear-sede"
             onClick={() => {
@@ -158,7 +158,7 @@ export default function GestionSedes() {
               alignItems: "center",
               justifyContent: "center",
             }}
-            aria-label={"Crear Sede"}
+            aria-label={"Crear Núcleo"}
           >
             <AddIcon />
           </CustomButton>

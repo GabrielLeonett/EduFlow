@@ -117,7 +117,7 @@ export default function CardSede({ sede }) {
                   }}
                   onClick={() => navigate(`/infraestructura/sedes/${sede.id_sede}/aulas`)}
                 >
-                  Ver Sede
+                  Ver Núcleo
                 </CustomButton>
 
                 {/* PNFs */}
