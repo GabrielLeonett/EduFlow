@@ -204,7 +204,7 @@ const Miuser = () => {
 
         <Grid container spacing={4}>
           {/* Columna izquierda - Acciones por rol */}
-          <Grid item xs={12} md={8}>
+          <Grid xs={12} md={8}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -255,7 +255,7 @@ const Miuser = () => {
                             {/* Contenedor grid para las acciones */}
                             <Grid container spacing={2}>
                               {section.actions.map((action) => (
-                                <Grid item xs={12} sm={6} key={action.path}>
+                                <Grid xs={12} sm={6} key={action.path}>
                                   <ActionButton
                                     label={action.label}
                                     onClick={() => navigate(action.path)}
@@ -276,7 +276,7 @@ const Miuser = () => {
           </Grid>
 
           {/* Columna derecha - Información del sistema */}
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {/* Información del sistema */}
               <motion.div

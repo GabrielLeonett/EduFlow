@@ -835,7 +835,6 @@ export default function FormRegister() {
               label="Fecha de Ingreso"
               value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
               onChange={(date) => field.onChange(date?.format("DD-MM-YYYY"))}
-              maxDate={dayjs().subtract(18, "year")}
               helperText={error?.message || "Selecciona tu fecha de ingreso"}
               error={!!error}
               fullWidth

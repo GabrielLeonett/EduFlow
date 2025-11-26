@@ -24,7 +24,7 @@ const horarioSchema = z.object({
 
   dia_semana: z.enum(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'], {
     required_error: "El día de la semana es obligatorio",
-    invalid_type_error:"El dia tiene que ser Lunes, Martes, Miércoles, Jueves, Viernes, Sabado."
+    invalid_type_error:"El dia tiene que ser Lunes, Martes, Miércoles, Jueves, Viernes, Sábado."
   }),
 
   hora_inicio: z

@@ -21,6 +21,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
   } = state;
 
   const {
+    setUnidadCurricularSelected,
     setTableHorario,
     setClassToMove,
     setOriginalSlot,
@@ -228,6 +229,9 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
   // Manejar solicitud de movimiento
   const handleMoveRequest = useCallback(
     async (clase) => {
+      setUnidadCurricularSelected(null);
+      setProfesorSelected(null);
+      setAulaSelected(null);
       setClassToMove(clase);
 
       const original = findOriginalSlot(clase, tableHorario);
@@ -281,6 +285,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       setAulaSelected,
       setClassToMove,
       setOriginalSlot,
+      setUnidadCurricularSelected,
       setSelectedClass,
       setProfesorSelected,
       tableHorario,
@@ -296,13 +301,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         return;
       }
 
-      console.log("Moviendo clase:", classToMove);
-      console.log("Desde:", originalSlot);
-      console.log("Hacia:", nuevoSlot);
-
       setTableHorario((prev) => {
-        console.log("Horario antes de modificar:", prev);
-
         let nuevaMatriz = [...prev];
 
         // Liberar el slot original si existe (sin importar si es clase nueva o no)
@@ -313,7 +312,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
 
         // Ocupar el nuevo slot
         nuevaMatriz = ocuparNuevoSlot(nuevoSlot, classToMove, nuevaMatriz);
-        console.log("Horario después de ocupar:", nuevaMatriz);
 
         return nuevaMatriz;
       });

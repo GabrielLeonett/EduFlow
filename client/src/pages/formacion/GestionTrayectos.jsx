@@ -78,7 +78,7 @@ export default function PNF() {
         ) : (
           <Grid container spacing={3}>
             {trayectos.map((trayecto) => (
-              <Grid item xs={12} sm={6} md={4} key={trayecto.id}>
+              <Grid xs={12} sm={6} md={4} key={trayecto.id}>
                 <CardTrayecto Trayecto={trayecto} codigoPNF={codigo} />
               </Grid>
             ))}

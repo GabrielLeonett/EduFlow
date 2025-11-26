@@ -17,10 +17,12 @@ const {
   registerPreGrado,
   registerPosGrado,
   registerAreaConocimiento,
-  registrarDisponibilidad,
+  crearDisponibilidad,
+  actualizarDisponibilidad,
   actualizarProfesor,
   destituirProfesor,
   reingresoProfesor,
+  eliminarDisponibilidad,
   mostrarDisponibilidad,
   mostrarProfesoresEliminados,
 } = ProfesorController;
@@ -257,7 +259,7 @@ profesorRouter.get(
  * @middleware Requiere autenticación y rol autorizado
  */
 profesorRouter.post(
-  "/profesores/:id/disponibilidad",
+  "/profesores/:id_profesor/disponibilidad",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -265,7 +267,46 @@ profesorRouter.post(
     "Coordinador",
     "Profesor",
   ]),
-  registrarDisponibilidad
+  crearDisponibilidad
+);
+
+
+/**
+ * @name PUT /profesores/:id_profesor/disponibilidad
+ * @description Actualizar disponibilidad horaria existente
+ * @param {number} id_profesor - ID del profesor  
+ * @body {Object} Datos de disponibilidad (incluyendo id_disponibilidad)
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.put(
+  "/profesores/:id_profesor/disponibilidad",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular", 
+    "Coordinador",
+    "Profesor",
+  ]),
+  actualizarDisponibilidad
+);
+
+/**
+ * @name DELETE /profesores/:id_profesor/disponibilidad/:id_disponibilidad
+ * @description Eliminar disponibilidad horaria
+ * @param {number} id_profesor - ID del profesor
+ * @param {number} id_disponibilidad - ID de la disponibilidad a eliminar
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.delete(
+  "/profesores/:id_profesor/disponibilidad/:id_disponibilidad",
+  middlewareAuth([
+    "SuperAdmin", 
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador", 
+    "Profesor",
+  ]),
+  eliminarDisponibilidad
 );
 
 /**

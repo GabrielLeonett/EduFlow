@@ -244,9 +244,9 @@ export default function GestionProfesores() {
               </Typography>
             ) : (
               <>
-                <Grid container spacing={3} sx={{ width: "100%", margin: 0 }}>
+                <Grid container spacing={3} sx={{ margin: 4 }}>
                   {profesores.map((profesor) => (
-                    <Grid item key={profesor.cedula || profesor.id}>
+                    <Grid key={profesor.cedula || profesor.id} size={12}>
                       <CardProfesor
                         profesor={profesor}
                         isSearch={!!id_profesor}

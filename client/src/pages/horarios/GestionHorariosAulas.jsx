@@ -50,7 +50,7 @@ export default function GestionHorariosAulas() {
             }}
           >
             <ScheduleIcon fontSize="large" />
-            Gestión de Horarios
+            Planificación de Horarios Académicos
           </Typography>
           <Typography variant="h6" color="text.secondary">
             Visualiza el horario académico por sección
@@ -60,7 +60,7 @@ export default function GestionHorariosAulas() {
         {/* Layout principal con sidebar de filtros y contenido */}
         <Grid container spacing={4}>
           {/* Contenido principal */}
-          <Grid item xs={12} md={8} lg={9}>
+          <Grid xs={12} md={8} lg={9}>
             {/* HorarioAula */}
             {horario ? (
               <HorarioAula

@@ -142,7 +142,7 @@ export default function GestionHorariosSecciones() {
             }}
           >
             <ScheduleIcon fontSize="large" />
-            Gestión de Horarios
+            Planificación de Horarios Académicos
           </Typography>
           <Typography variant="h6" color="text.secondary">
             Visualiza el horario académico por sección
@@ -150,9 +150,9 @@ export default function GestionHorariosSecciones() {
         </Grid>
 
         {/* Layout principal con sidebar de filtros y contenido */}
-        <Grid container spacing={4}>
+        <Grid container spacing={4} direction={{md: 'column', lg:'row'}}>
           {/* Sidebar de Filtros */}
-          <Grid size={{ xs: 12, md: 4, lg: 3 }}>
+          <Grid size={{ xs: 12, lg: 3 }}>
             <FiltroAcordeonHorario
               onSeccionSelect={manejarSeleccionSeccion}
               selectedSeccion={seccion}
@@ -160,7 +160,7 @@ export default function GestionHorariosSecciones() {
           </Grid>
 
           {/* Contenido principal */}
-          <Grid xs={12} md={8} lg={8}>
+          <Grid size={{ xs: 12, lg: 9 }}>
             {renderContent()}
           </Grid>
         </Grid>

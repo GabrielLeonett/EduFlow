@@ -7,7 +7,6 @@ import {
   Stack,
   Pagination,
   MenuItem,
-  CircularProgress,
 } from "@mui/material";
 import {
   PersonAdd as PersonAddIcon,
@@ -19,6 +18,7 @@ import useApi from "../../../hook/useApi";
 import { useNavigate, useParams } from "react-router-dom";
 import ResponsiveAppBar from "../../../components/navbar";
 import CardCoordinador from "../../../components/CardCoordinador";
+import SkeletonProfesores from "../../../components/SkeletonProfesores";
 import CustomButton from "../../../components/customButton";
 import { useTour } from "../../../hook/useTour";
 import CustomAutocomplete from "../../../components/CustomAutocomplete";
@@ -27,6 +27,19 @@ import CustomLabel from "../../../components/customLabel";
 export default function Coordinadores() {
   const axios = useApi();
   const navigate = useNavigate();
+
+  const [coordinadores, setCoordinadores] = useState([]);
+  const [coordinadorSearch, setCoordinadorSearch] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
+  const [sortOrder, setSortOrder] = useState("nombres");
+  const [loading, setLoading] = useState(true);
   const { id_coordinador } = useParams();
 
   const [coordinadores, setCoordinadores] = useState([]);
@@ -45,72 +58,31 @@ export default function Coordinadores() {
   const fetchCoordinadores = useCallback(async () => {
     setLoading(true);
     try {
-      const endpoint = "/coordinadores";
-      const respuesta = await axios.get(endpoint);
-      console.log("Respuesta de coordinadores:", respuesta);
-      const coordinadoresData = respuesta.coordinadores || [];
+      const endpoint = `/coordinadores?page=${pagination.page}&limit=${
+        pagination.limit
+      }&sort=${sortOrder}&search=${coordinadorSearch || ""}`;
+      const data = await axios.get(endpoint);
+
+      let coordinadoresData = data.coordinadores || [];
+      let paginationData = data.pagination || {};
+
       setCoordinadores(coordinadoresData);
-      setCoordinadoresFiltrados(coordinadoresData);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
-        total: coordinadoresData.length,
-        totalPages: Math.ceil(coordinadoresData.length / prev.limit)
+        ...paginationData,
       }));
     } catch (err) {
       console.error("❌ Error cargando coordinadores:", err);
       setCoordinadores([]);
-      setCoordinadoresFiltrados([]);
     } finally {
       setLoading(false);
     }
-  }, [axios]);
+  }, [axios, pagination.page, pagination.limit, sortOrder, coordinadorSearch]);
 
-  // Efecto inicial
+  // Efecto para cargar coordinadores cuando cambian los parámetros
   useEffect(() => {
     fetchCoordinadores();
-  }, [fetchCoordinadores]);
-
-  // Efecto para filtrar coordinadores cuando cambia la búsqueda
-  useEffect(() => {
-    if (coordinadorSearch) {
-      const filtered = coordinadores.filter(
-        (coord) =>
-          coord.id_coordinador === coordinadorSearch ||
-          coord.cedula === coordinadorSearch
-      );
-      setCoordinadoresFiltrados(filtered);
-    } else {
-      setCoordinadoresFiltrados(coordinadores);
-    }
-    
-    // Resetear a página 1 cuando se realiza una búsqueda
-    setPagination(prev => ({
-      ...prev,
-      page: 1
-    }));
-  }, [coordinadorSearch, coordinadores]);
-
-  // Obtener coordinadores paginados
-  const coordinadoresPaginados = coordinadoresFiltrados.slice(
-    (pagination.page - 1) * pagination.limit,
-    pagination.page * pagination.limit
-  );
-
-  // Ordenar coordinadores
-  const coordinadoresOrdenados = [...coordinadoresPaginados].sort((a, b) => {
-    switch (sortOrder) {
-      case "nombre":
-        return (a.nombre || a.nombres || "").localeCompare(b.nombre || b.nombres || "");
-      case "apellido":
-        return (a.apellido || a.apellidos || "").localeCompare(b.apellido || b.apellidos || "");
-      case "cedula":
-        return (a.cedula || "").toString().localeCompare((b.cedula || "").toString());
-      case "fecha_creacion":
-        return new Date(b.fecha_creacion || 0) - new Date(a.fecha_creacion || 0);
-      default:
-        return 0;
-    }
-  });
+  }, [pagination.page, pagination.limit, sortOrder, coordinadorSearch]);
 
   const { startTour, resetTour } = useTour(
     [
@@ -128,8 +100,8 @@ export default function Coordinadores() {
         position: "bottom",
       },
       {
-        element: "#btn-registrar-coordinador",
-        intro: "Haz clic aquí para registrar un nuevo coordinador.",
+        element: "#btn-asignar-coordinador",
+        intro: "Haz clic aquí para asignar un nuevo coordinador.",
         position: "left",
       },
       {
@@ -167,7 +139,12 @@ export default function Coordinadores() {
 
   // Manejar cambio en el autocomplete de búsqueda
   const handleSearchChange = (event, newValue) => {
-    setCoordinadorSearch(newValue?.id_coordinador || newValue?.cedula);
+    setCoordinadorSearch(newValue?.id_coordinador);
+    // Resetear a página 1 cuando se realiza una búsqueda
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+    }));
   };
 
   return (
@@ -179,7 +156,7 @@ export default function Coordinadores() {
           Gestión de Coordinadores
         </Typography>
         <Typography variant="body2" color="text.secondary" mb={3}>
-          Visualizar, Editar y Crear Coordinadores
+          Visualizar, Editar y Asignar Coordinadores
         </Typography>
 
         {/* Filtros y Búsqueda */}
@@ -198,7 +175,7 @@ export default function Coordinadores() {
             <CustomAutocomplete
               options={coordinadores}
               getOptionLabel={(coordinador) =>
-                `${coordinador.nombre || coordinador.nombres || ''} ${coordinador.apellido || coordinador.apellidos || ''}`.trim() || 'Coordinador sin nombre'
+                `${coordinador.nombres} ${coordinador.apellidos}`
               }
               value={null}
               onChange={handleSearchChange}
@@ -218,23 +195,22 @@ export default function Coordinadores() {
                 />
               )}
               isOptionEqualToValue={(option, value) =>
-                option.id_coordinador === value?.id_coordinador || 
-                option.cedula === value?.cedula
+                option.id_coordinador === value?.id_coordinador
               }
               filterOptions={(options, { inputValue }) => {
-                if (!inputValue) return options;
-                
                 return options.filter(
                   (option) =>
-                    (option.nombre || option.nombres || '')
-                      .toLowerCase()
+                    option.nombres
+                      ?.toLowerCase()
                       .includes(inputValue.toLowerCase()) ||
-                    (option.apellido || option.apellidos || '')
-                      .toLowerCase()
+                    option.apellidos
+                      ?.toLowerCase()
                       .includes(inputValue.toLowerCase()) ||
-                    (option.cedula || '')
-                      .toString()
-                      .toLowerCase()
+                    option.cedula
+                      ?.toLowerCase()
+                      .includes(inputValue.toLowerCase()) ||
+                    option.nombre_pnf
+                      ?.toLowerCase()
                       .includes(inputValue.toLowerCase())
                 );
               }}
@@ -252,10 +228,11 @@ export default function Coordinadores() {
             label="Ordenar por"
             onChange={handleSortChange}
           >
-            <MenuItem value="nombre">Nombre (A-Z)</MenuItem>
-            <MenuItem value="apellido">Apellido (A-Z)</MenuItem>
+            <MenuItem value="nombres">Nombre (A-Z)</MenuItem>
+            <MenuItem value="apellidos">Apellido (A-Z)</MenuItem>
             <MenuItem value="cedula">Cédula</MenuItem>
-            <MenuItem value="fecha_creacion">Más recientes</MenuItem>
+            <MenuItem value="fecha_designacion">Fecha de designación</MenuItem>
+            <MenuItem value="nombre_pnf">PNF</MenuItem>
           </CustomLabel>
         </Box>
 
@@ -263,27 +240,27 @@ export default function Coordinadores() {
           <Box
             sx={{
               display: "flex",
+              flexDirection: "row",
               justifyContent: "center",
-              alignItems: "center",
-              minHeight: 200,
+              alignContent: "center",
+              flexWrap: "wrap",
             }}
           >
-            <CircularProgress />
+            <SkeletonProfesores />
+            <SkeletonProfesores />
+            <SkeletonProfesores />
           </Box>
         ) : (
           <Box id="coordinadores-container">
-            {coordinadoresOrdenados.length === 0 ? (
+            {coordinadores.length === 0 ? (
               <Typography textAlign="center" my={4}>
-                {coordinadores.length === 0 
-                  ? "No hay coordinadores registrados" 
-                  : "No se encontraron coordinadores con los filtros seleccionados"
-                }
+                No hay coordinadores registrados
               </Typography>
             ) : (
               <>
                 <Grid container spacing={3} sx={{ width: "100%", margin: 0 }}>
-                  {coordinadoresOrdenados.map((coordinador) => (
-                    <Grid item key={coordinador.cedula || coordinador.id_coordinador}>
+                  {coordinadores.map((coordinador) => (
+                    <Grid key={coordinador.id_coordinador || coordinador.cedula}>
                       <CardCoordinador
                         coordinador={coordinador}
                         isSearch={!!id_coordinador}
@@ -323,7 +300,7 @@ export default function Coordinadores() {
         )}
 
         {/* Información de paginación */}
-        {coordinadoresOrdenados.length > 0 && (
+        {coordinadores.length > 0 && (
           <Typography
             variant="body2"
             color="text.secondary"
@@ -331,14 +308,14 @@ export default function Coordinadores() {
             mt={2}
           >
             Mostrando {(pagination.page - 1) * pagination.limit + 1} -{" "}
-            {Math.min(pagination.page * pagination.limit, coordinadoresFiltrados.length)} de{" "}
-            {coordinadoresFiltrados.length} coordinadores
+            {Math.min(pagination.page * pagination.limit, pagination.total)} de{" "}
+            {pagination.total} coordinadores
           </Typography>
         )}
 
-        <Tooltip title="Registrar Coordinador" placement="left-start">
+        <Tooltip title="Asignar Coordinador" placement="left-start">
           <CustomButton
-            id="btn-registrar-coordinador"
+            id="btn-asignar-coordinador"
             onClick={() => navigate("/coordinacion/coordinadores/asignar")}
             sx={{
               position: "fixed",
@@ -353,7 +330,7 @@ export default function Coordinadores() {
               alignItems: "center",
               justifyContent: "center",
             }}
-            aria-label="Registrar Coordinador"
+            aria-label="Asignar Coordinador"
           >
             <PersonAddIcon />
           </CustomButton>

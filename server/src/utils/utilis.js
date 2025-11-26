@@ -141,15 +141,36 @@ export const UTILS = {
 
   obtenerDiaNombre: (diaIndex) => {
     const dias = [
-      "lunes",
-      "martes",
-      "miercoles",
-      "jueves",
-      "viernes",
-      "sabado",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
     ];
     return dias[diaIndex] || "";
   },
+  
+  horariosAcademicos: [
+    "07:00",
+    "07:45",
+    "08:30",
+    "09:15",
+    "10:00",
+    "10:45",
+    "11:30",
+    "12:15",
+    "13:00",
+    "13:45",
+    "14:30",
+    "15:15",
+    "16:00",
+    "16:45",
+    "17:30",
+    "18:15",
+    "19:00",
+     
+  ],
 
   sumar45Minutos: (horaInicio, bloques) => {
     const horas = Math.floor(horaInicio / 100);

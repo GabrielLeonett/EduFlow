@@ -8,13 +8,18 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
+  Chip,
 } from "@mui/material";
 
 import {
   Edit as EditIcon,
   Visibility as VisibilityIcon,
   Settings as SettingsIcon,
-  PersonRemove as PersonRemoveIcon,
+  Bookmark as BookmarkIcon,
+  BookmarkRemove as BookmarkRemoveIcon,
+  LocationOn as LocationIcon,
+  Person as PersonIcon,
+  Schedule as ScheduleIcon,
 } from "@mui/icons-material";
 
 import { useTheme } from "@mui/material/styles";
@@ -29,7 +34,7 @@ export default function CardPNF({ PNF, onActualizar }) {
   const theme = useTheme();
   const axios = useApi(false);
   const navigate = useNavigate();
-  const { confirm, alert: showAlert } = useSweetAlert(); // 👈 Corregido: desestructurar correctamente
+  const alert = useSweetAlert();
 
   // Estados
   const [pnfActual, setPnfActual] = useState(PNF);
@@ -85,55 +90,92 @@ export default function CardPNF({ PNF, onActualizar }) {
     }
   };
 
-  // 👇 Función para eliminar PNF con useSweetAlert
-  const handleEliminarPNF = async () => {
+  // Función para Desactivar PNF con useSweetAlert
+  const handleDesactivarPNF = async () => {
     try {
-      await axios.delete(`/pnf/${pnfActual.id_pnf}`);
-      
-      // Mostrar alerta de éxito con SweetAlert
-      showAlert({
-        title: "¡Éxito!",
-        text: `PNF "${pnfActual.nombre_pnf}" eliminado correctamente`,
-        icon: "success",
-        timer: 3000
-      });
+      await axios.delete(`/pnfs/${pnfActual.id_pnf}`);
 
-      // Recargar o actualizar la lista
+      alert.success(
+        "¡Éxito!",
+        `PNF "${pnfActual.nombre_pnf}" activar correctamente`,{
+        icon: "success",
+        timer: 3000,}
+      );
+
       if (onActualizar) {
         setTimeout(() => {
           onActualizar();
         }, 500);
       }
-
     } catch (error) {
-      console.error("Error al eliminar PNF:", error);
-      
-      // Mostrar alerta de error con SweetAlert
-      showAlert({
-        title: "Error",
-        text: `Error al eliminar el PNF: ${error.response?.data?.message || error.message}`,
+      console.error("Error al Desactivar PNF:", error);
+
+      alert.error(
+         "Error",
+         `Error al Desactivar el PNF: ${
+          error?.message
+        }`,{
         icon: "error",
-        timer: 4000
-      });
+        timer: 4000,}
+      );
+    }
+  };
+  const handleReactivarPNF = async () => {
+    try {
+      await axios.post(`/pnfs/${pnfActual.id_pnf}/activar`);
+
+      alert.success(
+        "¡Éxito!",
+        `PNF "${pnfActual.nombre_pnf}" reactivar correctamente`,
+        {icon: "success",timer: 3000,}
+      );
+
+      if (onActualizar) {
+        setTimeout(() => {
+          onActualizar();
+        }, 500);
+      }
+    } catch (error) {
+      console.error("Error al Reactivar PNF:", error);
+
+      alert.error(
+        "Error",
+         `Error al Reactivar el PNF: ${
+          error?.message || error.message
+        }`,{
+        icon: "error",
+        timer: 4000,}
+      );
     }
   };
 
-  // 👇 Función para manejar la opción de eliminar del menú (con confirmación SweetAlert)
-  const handleEliminarClick = async () => {
-    const result = await confirm(
-      '¿Desea eliminar el PNF?', 
-      `Desea eliminar el PNF ${pnfActual.nombre_pnf}`
+  // Función para manejar la opción de Desactivar del menú (con confirmación SweetAlert)
+  const handleDesactivarClick = async () => {
+    const result = await alert.confirm(
+      "¿Desea Desactivar el PNF?",
+      `Desea Desactivar el PNF ${pnfActual.nombre_pnf}`
     );
-    
+
     if (result) {
-      handleEliminarPNF();
+      handleDesactivarPNF();
+    }
+  };
+  // Función para manejar la opción de Reactivar del menú (con alert.confirmación SweetAlert)
+  const handleReactivarClick = async () => {
+    const result = await alert.confirm(
+      "¿Desea activar el PNF?",
+      `Desea activar el PNF ${pnfActual.nombre_pnf}`
+    );
+
+    if (result) {
+      handleReactivarPNF();
     }
   };
 
   return (
     <Box
       component="div"
-      id={pnfActual.codigo}
+      id={pnfActual.codigo_pnf}
       sx={{
         position: "relative",
         maxWidth: "1100px",
@@ -152,117 +194,209 @@ export default function CardPNF({ PNF, onActualizar }) {
         },
       }}
     >
-      {/* ✅ Botón Acciones - Mismo estilo que CardProfesor */}
-      <Box
-        sx={{
-          position: "absolute",
-          right: 15,
-          top: 15,
-          color: theme.palette.text.primary,
-          fontWeight: "bold",
-          "&:hover": {
-            backgroundColor: "rgba(163, 163, 163, 0.3)",
-          },
-          borderRadius: "50%",
-          transition: "background-color 0.2s ease-in-out",
-        }}
-      >
-        <Tooltip title="Acciones" arrow>
-          <IconButton
-            onClick={handleClick}
-            size="small"
-            sx={{
-              color: "inherit",
-              "&:hover": {
-                backgroundColor: "transparent",
-              },
-            }}
-            aria-controls={open ? "account-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? "true" : undefined}
-          >
-            <SettingsIcon sx={{ color: "inherit" }} />
-          </IconButton>
-        </Tooltip>
-      </Box>
-
-      {/* Título principal */}
+      {/* Header con título y estado */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          pr: 4,
+          alignItems: "flex-start",
+          mb: 2,
         }}
       >
-        <Typography
-          component="h2"
-          variant="h5"
-          gutterBottom
-          sx={{
-            fontWeight: "bold",
-            color: theme.palette.primary.main,
-          }}
-        >
-          {pnfActual?.nombre_pnf || "PNF sin nombre"}
-        </Typography>
-        
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+            <Typography
+              component="h2"
+              variant="h5"
+              sx={{
+                fontWeight: "bold",
+                color: theme.palette.primary.main,
+              }}
+            >
+              {pnfActual?.nombre_pnf || "PNF sin nombre"}
+            </Typography>
+            <Chip
+              label={pnfActual?.activo ? "Activo" : "Inactivo"}
+              color={pnfActual?.activo ? "success" : "error"}
+              size="small"
+              variant="outlined"
+            />
+          </Box>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontWeight: "medium",
+            }}
+          >
+            Código: {pnfActual?.codigo_pnf}
+          </Typography>
+        </Box>
+
+        {/* Botón Acciones */}
+        <Box>
+          <Tooltip title="Acciones" arrow>
+            <IconButton
+              onClick={handleClick}
+              size="small"
+              sx={{
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor: "rgba(163, 163, 163, 0.3)",
+                },
+              }}
+            >
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
-      {/* Información general */}
-      <Box sx={{ mt: 1 }}>
-        <Typography>
-          <strong>Código:</strong>&nbsp;{pnfActual?.codigo_pnf}
-        </Typography>
+      {/* Información principal en grid */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 3,
+          mt: 2,
+        }}
+      >
+        {/* Columna izquierda - Información académica */}
+        <Box>
+          <Typography
+            variant="h6"
+            sx={{ mb: 2, color: theme.palette.primary.main }}
+          >
+            Información Académica
+          </Typography>
 
-        <Typography sx={{ mt: 1 }}>
-          <strong>Población Estudiantil:</strong>&nbsp;
-          {pnfActual?.poblacion_estudiantil}
-        </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {/* Duración */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <ScheduleIcon color="action" fontSize="small" />
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  Duración de trayectos
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="body1">
+                    {pnfActual?.duracion_trayectos} períodos
+                  </Typography>
+                  <Tooltip title="Editar duración" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        handleOpenModalEditar(
+                          "duracion_trayectos",
+                          pnfActual.duracion_trayectos
+                        )
+                      }
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+            </Box>
 
-        <Typography sx={{ mt: 1, display: "flex", alignItems: "center" }}>
-          <strong>Descripción:</strong>&nbsp;
-          {pnfActual?.descripcion_pnf}
-          <Tooltip title="Editar descripción" arrow>
-            <IconButton
-              size="small"
-              sx={{ ml: 1 }}
-              onClick={() =>
-                handleOpenModalEditar("descripcion_pnf", pnfActual.descripcion_pnf)
-              }
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Typography>
+            {/* Población estudiantil */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <PersonIcon color="action" fontSize="small" />
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  Población estudiantil
+                </Typography>
+                <Typography variant="body1">
+                  {pnfActual?.poblacion_estudiantil_pnf || 0} estudiantes
+                </Typography>
+              </Box>
+            </Box>
 
-        <Typography sx={{ mt: 1, display: "flex", alignItems: "center" }}>
-          <strong>Duración Trayectos:</strong>&nbsp;
-          {pnfActual?.duracion_trayectos}
-          <Tooltip title="Editar duración" arrow>
-            <IconButton
-              size="small"
-              sx={{ ml: 1 }}
-              onClick={() =>
-                handleOpenModalEditar("duracion_trayectos", pnfActual.duracion_trayectos)
-              }
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Typography>
+            {/* Coordinador */}
+            {pnfActual?.tiene_coordinador && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <PersonIcon color="action" fontSize="small" />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Coordinador
+                  </Typography>
+                  <Typography variant="body1">
+                    {pnfActual?.nombre_coordinador}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        </Box>
 
-        {pnfEditado && (
+        {/* Columna derecha - Información de sede y descripción */}
+        <Box>
+          <Typography
+            variant="h6"
+            sx={{ mb: 2, color: theme.palette.primary.main }}
+          >
+            Información General
+          </Typography>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {/* Sede */}
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+              <LocationIcon color="action" fontSize="small" sx={{ mt: 0.5 }} />
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  Sede
+                </Typography>
+                <Typography variant="body1">
+                  {pnfActual?.nombre_sede}
+                </Typography>
+                {pnfActual?.ubicacion_sede && (
+                  <Typography variant="caption" color="text.secondary">
+                    {pnfActual.ubicacion_sede}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+
+            {/* Descripción */}
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Descripción
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                <Typography variant="body2" sx={{ flex: 1 }}>
+                  {pnfActual?.descripcion_pnf || "Sin descripción"}
+                </Typography>
+                <Tooltip title="Editar descripción" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      handleOpenModalEditar(
+                        "descripcion_pnf",
+                        pnfActual.descripcion_pnf
+                      )
+                    }
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Botón Guardar Cambios */}
+      {pnfEditado && (
+        <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
           <CustomButton
             tipo="success"
             variant="contained"
-            sx={{ mt: 2 }}
             onClick={handleGuardarCambiosServidor}
           >
             Guardar Cambios
           </CustomButton>
-        )}
-      </Box>
+        </Box>
+      )}
 
       {/* Modal Editar */}
       <ModalEditarCampoPNF
@@ -335,13 +469,22 @@ export default function CardPNF({ PNF, onActualizar }) {
           Ver detalles
         </MenuItem>
 
-        {/* 👇 Opción eliminar con SweetAlert */}
-        <MenuItem onClick={handleEliminarClick}>
-          <ListItemIcon>
-            <PersonRemoveIcon fontSize="small" />
-          </ListItemIcon>
-          Eliminar PNF
-        </MenuItem>
+        {/* Opción Desactivar con SweetAlert */}
+        {PNF.activo ? (
+          <MenuItem onClick={handleDesactivarClick}>
+            <ListItemIcon>
+              <BookmarkRemoveIcon fontSize="small" />
+            </ListItemIcon>
+            Desactivar PNF
+          </MenuItem>
+        ) : (
+          <MenuItem onClick={handleReactivarClick}>
+            <ListItemIcon>
+              <BookmarkIcon fontSize="small" />
+            </ListItemIcon>
+            Activar PNF
+          </MenuItem>
+        )}
       </Menu>
     </Box>
   );

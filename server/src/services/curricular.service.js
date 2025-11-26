@@ -1649,4 +1649,371 @@ export default class CurricularService {
       throw error;
     }
   }
+
+  /**
+   * @static
+   * @async
+   * @method eliminarPnf
+   * @description Eliminar un PNF físicamente del sistema
+   * @param {number} id_pnf - ID del PNF a eliminar
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async eliminarPnf(id_pnf, user_action) {
+    try {
+      console.log("🔍 [eliminarPnf] Iniciando eliminación de PNF...");
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos recibidos:", {
+          id_pnf: id_pnf,
+          user_action: user_action,
+        });
+      }
+
+      // 1. Validar ID de usuario
+      const idUsuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+
+      if (!idUsuarioValidation.isValid) {
+        console.error(
+          "❌ Validación de ID de usuario fallida:",
+          idUsuarioValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          idUsuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 2. Validar ID del PNF
+      const idPnfValidation = ValidationService.validateId(id_pnf, "pnf");
+
+      if (!idPnfValidation.isValid) {
+        console.error(
+          "❌ Validación de ID de PNF fallida:",
+          idPnfValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          idPnfValidation.errors,
+          "ID de PNF inválido"
+        );
+      }
+
+      // 3. Obtener información del PNF antes de eliminar (para notificaciones)
+      console.log("📚 Obteniendo información del PNF...");
+      const infoPNF = await CurricularModel.mostrarPNF({ searchID: id_pnf });
+
+      if (FormatterResponseService.isError(infoPNF)) {
+        console.error("❌ Error al obtener información del PNF:", infoPNF);
+        return infoPNF;
+      }
+
+      if (!infoPNF.data || infoPNF.data.length === 0) {
+        console.error("❌ PNF no encontrado");
+        return FormatterResponseService.error(
+          "PNF no encontrado",
+          "Error de validación",
+          { status: 404 }
+        );
+      }
+
+      const pnfData = infoPNF.data[0];
+
+      // 4. Eliminar PNF en el modelo
+      console.log("🗑️ Eliminando PNF en base de datos...");
+      const respuestaModel = await CurricularModel.eliminarPnf(
+        user_action.id,
+        id_pnf
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo eliminar PNF:", respuestaModel);
+        return respuestaModel;
+      }
+
+      // 5. Enviar notificación específica para coordinación académica
+      console.log("🔔 Enviando notificaciones de eliminación...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "PNF Eliminado",
+        tipo: "pnf_eliminado",
+        contenido: `Se ha eliminado el PNF "${
+          pnfData.nombre_pnf || "PNF Desconocido"
+        }" (Código: ${
+          pnfData.codigo_pnf || "N/A"
+        }) del sistema junto con todos sus trayectos y secciones`,
+        metadatos: {
+          pnf_nombre: pnfData.nombre_pnf,
+          pnf_codigo: pnfData.codigo_pnf,
+          id_pnf: id_pnf,
+          sede_id: pnfData.id_sede,
+          trayectos_desactivados:
+            respuestaModel.data?.trayectos_desactivados || 0,
+          secciones_eliminadas: respuestaModel.data?.secciones_eliminadas || 0,
+          usuario_eliminador: user_action.id,
+          fecha_eliminacion: new Date().toISOString(),
+          url_action: `/academico/pnfs`,
+        },
+        roles_ids: [2, 7, 8, 20], // Solo Coordinador, Directores y SuperAdmin
+        users_ids: [user_action.id], // Usuario que eliminó el PNF
+      });
+
+      console.log("✅ PNF eliminado exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "PNF eliminado exitosamente",
+          pnf_eliminado: {
+            id: id_pnf,
+            nombre: pnfData.nombre_pnf,
+            codigo: pnfData.codigo_pnf,
+            sede_id: pnfData.id_sede,
+            trayectos_desactivados:
+              respuestaModel.data?.trayectos_desactivados || 0,
+            secciones_eliminadas:
+              respuestaModel.data?.secciones_eliminadas || 0,
+          },
+          registros_afectados: {
+            trayectos: respuestaModel.data?.trayectos_desactivados || 0,
+            secciones: respuestaModel.data?.secciones_eliminadas || 0,
+          },
+        },
+        "PNF eliminado permanentemente del sistema junto con sus dependencias",
+        {
+          status: 200,
+          title: "PNF Eliminado",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio eliminar PNF:", error);
+
+      // Manejo específico de errores de integridad referencial
+      if (
+        error.message?.includes("foreign_key_violation") ||
+        error.message?.includes("integrity constraint") ||
+        error.message?.includes("clave foránea")
+      ) {
+        return FormatterResponseService.error(
+          "No se puede eliminar el PNF porque tiene registros asociados en uso",
+          "Error de integridad referencial",
+          {
+            status: 409,
+            details: {
+              suggestion:
+                "Revise los coordinadores, estudiantes u otros registros asociados antes de eliminar",
+            },
+          }
+        );
+      }
+
+      // Manejo específico de errores de PNF no encontrado
+      if (
+        error.message?.includes("no existe") ||
+        error.message?.includes("not found")
+      ) {
+        return FormatterResponseService.error(
+          "El PNF no existe o ya fue eliminado",
+          "Recurso no encontrado",
+          { status: 404 }
+        );
+      }
+
+      // Manejo específico de errores de permisos
+      if (
+        error.message?.includes("permisos") ||
+        error.message?.includes("no autorizado")
+      ) {
+        return FormatterResponseService.error(
+          "No tiene permisos para eliminar PNFs",
+          "Error de autorización",
+          { status: 403 }
+        );
+      }
+
+      return FormatterResponseService.error(
+        "Error interno del servidor al eliminar el PNF",
+        "Error del sistema",
+        {
+          status: 500,
+          details: {
+            error_message: error.message,
+            timestamp: new Date().toISOString(),
+          },
+        }
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method reactivarPnf
+   * @description Reactivar un PNF en el sistema
+   * @param {number} id_pnf - ID del PNF a reactivar
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async reactivarPnf(id_pnf, user_action) {
+    try {
+      console.log("🔍 [reactivarPnf] Iniciando reactivación de PNF...");
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos recibidos:", {
+          id_pnf: id_pnf,
+          user_action: user_action,
+        });
+      }
+
+      // 1. Validar ID de usuario
+      const idUsuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+
+      if (!idUsuarioValidation.isValid) {
+        console.error(
+          "❌ Validación de ID de usuario fallida:",
+          idUsuarioValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          idUsuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 2. Validar ID del PNF
+      const idPnfValidation = ValidationService.validateId(id_pnf, "pnf");
+
+      if (!idPnfValidation.isValid) {
+        console.error(
+          "❌ Validación de ID de PNF fallida:",
+          idPnfValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          idPnfValidation.errors,
+          "ID de PNF inválido"
+        );
+      }
+
+      // 3. Obtener información del PNF antes de reactivar
+      console.log("📚 Obteniendo información del PNF...");
+      const infoPNF = await CurricularModel.mostrarPNF({ searchID: id_pnf });
+
+      if (FormatterResponseService.isError(infoPNF)) {
+        console.error("❌ Error al obtener información del PNF:", infoPNF);
+        return infoPNF;
+      }
+
+      if (!infoPNF.data || infoPNF.data.length === 0) {
+        console.error("❌ PNF no encontrado");
+        return FormatterResponseService.error(
+          "PNF no encontrado",
+          "Error de validación",
+          { status: 404 }
+        );
+      }
+
+      const pnfData = infoPNF.data[0];
+
+      // 4. Reactivar PNF en el modelo
+      console.log("🔄 Reactivando PNF en base de datos...");
+      const respuestaModel = await CurricularModel.reactivarPnf(
+        user_action.id,
+        id_pnf
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo reactivar PNF:", respuestaModel);
+        return respuestaModel;
+      }
+
+      // 5. Enviar notificación
+      console.log("🔔 Enviando notificaciones de reactivación...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "PNF Reactivado",
+        tipo: "pnf_reactivado",
+        contenido: `Se ha reactivado el PNF "${
+          pnfData.nombre_pnf || "PNF Desconocido"
+        }" (Código: ${
+          pnfData.codigo_pnf || "N/A"
+        }) del sistema junto con todos sus trayectos`,
+        metadatos: {
+          pnf_nombre: pnfData.nombre_pnf,
+          pnf_codigo: pnfData.codigo_pnf,
+          id_pnf: id_pnf,
+          sede_id: pnfData.id_sede,
+          trayectos_reactivados:
+            respuestaModel.data?.trayectos_reactivados || 0,
+          usuario_reactivador: user_action.id,
+          fecha_reactivacion: new Date().toISOString(),
+          url_action: `/academico/pnfs`,
+        },
+        roles_ids: [2, 7, 8, 20], // Coordinador, Directores y SuperAdmin
+        users_ids: [user_action.id], // Usuario que reactivó el PNF
+      });
+
+      console.log("✅ PNF reactivado exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "PNF reactivado exitosamente",
+          pnf_reactivado: {
+            id: id_pnf,
+            nombre: pnfData.nombre_pnf,
+            codigo: pnfData.codigo_pnf,
+            sede_id: pnfData.id_sede,
+            trayectos_reactivados:
+              respuestaModel.data?.trayectos_reactivados || 0,
+          },
+        },
+        "PNF reactivado exitosamente en el sistema",
+        {
+          status: 200,
+          title: "PNF Reactivado",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio reactivar PNF:", error);
+
+      // Manejo específico de errores
+      if (error.message?.includes("ya está activo")) {
+        return FormatterResponseService.error(
+          "El PNF ya se encuentra activo",
+          "Error de validación",
+          { status: 400 }
+        );
+      }
+
+      if (error.message?.includes("no existe")) {
+        return FormatterResponseService.error(
+          "El PNF no existe",
+          "Recurso no encontrado",
+          { status: 404 }
+        );
+      }
+
+      if (error.message?.includes("permisos")) {
+        return FormatterResponseService.error(
+          "No tiene permisos para reactivar PNFs",
+          "Error de autorización",
+          { status: 403 }
+        );
+      }
+
+      return FormatterResponseService.error(
+        "Error interno del servidor al reactivar el PNF",
+        "Error del sistema",
+        {
+          status: 500,
+          details: {
+            error_message: error.message,
+            timestamp: new Date().toISOString(),
+          },
+        }
+      );
+    }
+  }
 }

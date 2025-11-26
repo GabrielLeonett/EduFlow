@@ -38,7 +38,7 @@ export const unidadcurricularSchema = z.object({
     .trim()
     .toUpperCase(),
 
-    tipo_unidad: z.enum(["Taller", "Proyecto", "Asignatura", "Seminario"], {
+    tipo_unidad: z.enum(["Taller", "Proyecto", "Asignatura", "Seminario", "Curso"], {
         invalid_type_error: "El tipo de unidad curricular es inválido.",
         required_error: "El tipo de unidad curricular es obligatorio.",
     }),
@@ -58,8 +58,8 @@ export const unidadcurricularSchema = z.object({
         required_error: "La carga de horas académicas es obligatoria.",
     })
     .min(1, "Lo mínimo es 1 (45min).")
-    .max(4, "Lo máximo es 4 (3h).")
-    .int("Debe ser un número entero (1, 2, 3 o 4)"),
+    .max(6, "Lo máximo es 6 (4h 30min).")
+    .int("Debe ser un número entero (1, 2, 3, 4, 5 o 6)"),
 
     creditos: z.number({
         invalid_type_error: "Los créditos deben ser un número.",
@@ -75,7 +75,7 @@ export const unidadcurricularSchema = z.object({
     })
     .int("Las semanas deben ser un número entero.")
     .min(1, "La duración mínima es 1 semana.")
-    .max(16, "La duración máxima es de 16 semanas."),
+    .max(50, "La duración máxima es de 50 semanas."),
 
     // --- RELACIONES ---
     areas_conocimiento: z.array(areaConocimientoSchema, {
@@ -87,8 +87,7 @@ export const unidadcurricularSchema = z.object({
     lineas_investigacion: z.array(lineaInvestigacionSchema, {
         invalid_type_error: "Las líneas de investigación deben ser una lista (array).",
         required_error: "Las líneas de investigación son obligatorias.",
-    })
-    .min(1, "Debe seleccionar al menos una Línea de Investigación."),
+    }).optional(),
 
     // --- DISTRIBUCIÓN DE HORAS ---
     hte: hourSchema, // Horas Teóricas Presenciales

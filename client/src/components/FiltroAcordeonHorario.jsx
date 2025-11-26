@@ -111,7 +111,6 @@ export default function FiltroAcordeonHorario({
     <Box
       sx={{
         width: "100%",
-        maxWidth: 800,
         backgroundColor: theme.palette.background.paper,
         borderRadius: theme.shape.borderRadius,
         p: 2,

@@ -78,6 +78,7 @@ import MiPerfil from "./pages/MiPerfil";
 import CambiarContraseña from "./pages/cambiarContraseña";
 import EditarAula from "./pages/EditarAula";
 import RecuperarContraseña from "./pages/RecuperarContraseña.jsx";
+import CoordinadoresDestituidosView from "./pages/personal/coordinador/CoordinadoresDestituidosView.jsx"
 
 // Roles comunes para reutilización
 const ROLES = {
@@ -358,6 +359,15 @@ export default function App() {
               />
 
               <Route path="/recuperar-contrasena" element={<RecuperarContraseña />} />
+
+              <Route
+                path="/personal/coordinadores-destituidos"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <CoordinadoresDestituidosView />
+                  </ProtectedViews>
+                }
+              />
 
             </Routes>
           </AuthProvider>

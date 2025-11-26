@@ -22,7 +22,7 @@ import {
 } from "../schemas/profesor.schema.js";
 import seccionSchema from "../schemas/seccion.schema.js";
 import sedeSchema from "../schemas/sede.schema.js";
-import unidadCurricularSchema from "../schemas/unidadcurricular.schema.js";
+import unidadcurricularSchema from "../schemas/unidadcurricular.schema.js";
 import userSchema from "../schemas/user.schema.js";
 import lineaInvestigacionSchema from "../schemas/lineasInves.schema.js";
 import { z } from "zod";
@@ -817,7 +817,7 @@ export default class ValidationService {
    * @returns {Object} Resultado de la validación
    */
   static validateUnidadCurricular(data, options = {}) {
-    const validationResult = unidadCurricularSchema.safeParse(data);
+    const validationResult = unidadcurricularSchema.safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {
@@ -835,7 +835,7 @@ export default class ValidationService {
    * @returns {Object} Resultado de la validación
    */
   static validatePartialUnidadCurricular(data, options = {}) {
-    const validationResult = unidadCurricularSchema.partial().safeParse(data);
+    const validationResult = unidadcurricularSchema.partial().safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {

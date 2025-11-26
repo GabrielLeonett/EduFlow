@@ -62,6 +62,10 @@ export default class HorarioController {
         parseInt(req.params.id_seccion),
         parseInt(req.body.horas_necesarias),
         parseInt(req.body.id_profesor),
+        req.body.id_unidad_curricular
+          ? parseInt(req.body.id_unidad_curricular)
+          : null,
+        req.body.search
       )
     );
   }
@@ -79,7 +83,10 @@ export default class HorarioController {
       HorarioService.mostrarProfesoresParaHorario(
         parseInt(req.params.id_seccion),
         parseInt(req.body.horas_necesarias),
-        req.body.id_unidad_curricular ? parseInt(req.body.id_unidad_curricular) : null
+        req.body.id_unidad_curricular
+          ? parseInt(req.body.id_unidad_curricular)
+          : null,
+        req.body.search ? req.body.search : null
       )
     );
   }
@@ -94,9 +101,7 @@ export default class HorarioController {
   static async mostrarAulaCambiarHorario(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      HorarioService.mostrarAulaCambiarHorario(
-        parseInt(req.params.id_aula)
-      )
+      HorarioService.mostrarAulaCambiarHorario(parseInt(req.params.id_aula))
     );
   }
 

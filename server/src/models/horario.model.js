@@ -195,30 +195,77 @@ export default class HorarioModel {
 
   /**
    * @name obtenerProfesoresDisponibles
-   * @description Obtener profesores con horas disponibles
-   * @param {number} id_seccion - id de la sección
-   * @param {number} horasNecesarias - Horas necesarias en formato intervalo
-   * @param {number} id_unidad_curricular - id de la unidad curricular
-   * @returns {Object} Respuesta formateada con profesores disponibles
+   * @description Obtener profesores con horas disponibles según el contexto
+   * ... (omitted JSDoc)
    */
   static async obtenerProfesoresDisponibles(
     id_seccion,
     horasNecesarias,
-    id_unidad_curricular
+    id_unidad_curricular,
+    search,
+    modo = "general"
   ) {
     try {
+      let funcionPostgres;
+      let parametros;
+      let consultaSQL; // <<-- Nueva variable para la consulta específica
+
+      switch (modo) {
+        case "nueva_asignacion":
+          if (!id_unidad_curricular) {
+            throw new Error(
+              "Para nueva asignación se requiere id_unidad_curricular"
+            );
+          }
+          funcionPostgres = "buscar_profesores_nueva_asignacion";
+          parametros = [
+            id_seccion,
+            horasNecesarias,
+            id_unidad_curricular,
+            search || null,
+          ];
+          // Construcción de la consulta con 4 parámetros
+          consultaSQL = `SELECT * FROM ${funcionPostgres}($1, $2, $3, $4) AS p_resultado;`;
+          console.log(consultaSQL, parametros);
+          break;
+
+        case "completar_horas":
+          if (!id_unidad_curricular) {
+            throw new Error(
+              "Para completar horas se requiere id_unidad_curricular"
+            );
+          }
+          funcionPostgres = "buscar_profesores_completar_horas";
+          parametros = [id_seccion, id_unidad_curricular];
+          // Construcción de la consulta con 2 parámetros
+          consultaSQL = `SELECT * FROM ${funcionPostgres}($1, $2) AS p_resultado;`;
+          console.log(consultaSQL, parametros);
+          break;
+
+        case "general":
+        default:
+          funcionPostgres = "buscar_profesores_general";
+          parametros = [id_seccion, horasNecesarias, search || null];
+          // Construcción de la consulta con 3 parámetros
+          consultaSQL = `SELECT * FROM ${funcionPostgres}($1, $2, $3) AS p_resultado;`;
+          console.log(consultaSQL, parametros);
+          break;
+      }
+
+      // Usar la consulta y los parámetros definidos en el switch
       const { rows } = await pg.query(
-        `SELECT * FROM buscar_profesores_disponibles($1, $2, $3) AS p_resultado;`,
-        [id_seccion, horasNecesarias, id_unidad_curricular || null]
+        consultaSQL, // <<-- Uso de la variable dinámica
+        parametros
       );
+
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Profesores disponibles obtenidos exitosamente"
+        `Profesores disponibles obtenidos exitosamente (modo: ${modo})`
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener profesores disponibles"
+        `Error al obtener profesores disponibles (modo: ${modo})`
       );
     }
   }
@@ -229,32 +276,38 @@ export default class HorarioModel {
    * @param {number} id_seccion - id de la seccion
    * @param {number} horasNecesarias - horas necesarias
    * @param {number} id_profesor - id de la profesor
+   * @param {number} id_unidad_curricular - id de la unidad curricular (opcional)
+   * @param {string} busqueda_aula - término de búsqueda (opcional)
    * @returns {Object} Respuesta formateada con aulas disponibles
    */
   static async obtenerAulasDisponibles(
     id_seccion,
+    id_profesor,
     horasNecesarias,
-    id_profesor
   ) {
     try {
-      console.log(id_seccion, horasNecesarias, id_profesor);
       const { rows } = await pg.query(
-        "SELECT * FROM buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
-        [id_seccion, id_profesor, horasNecesarias]
+        "SELECT * FROM public.buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
+        [
+          id_seccion,
+          id_profesor,
+          horasNecesarias,
+        ]
       );
-      console.log(rows);
+
+      console.log("✅ Resultado de aulas:", rows);
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Aulas disponibles obtenidas exitosamente"
       );
     } catch (error) {
+      console.error("❌ Error al obtener aulas:", error);
       throw FormatResponseModel.respuestaError(
         error,
         "Error al obtener aulas disponibles"
       );
     }
   }
-
   /**
    * @name crear
    * @description Crear un nuevo horario
@@ -276,11 +329,12 @@ export default class HorarioModel {
         id_unidad_curricular,
         id_aula,
         dia_semana,
+        horas_clase,
         hora_inicio,
       } = datos;
 
       const { rows } = await pg.query(
-        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, TRUE, NULL)",
+        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, TRUE, $8, NULL)",
         [
           usuarioId,
           id_seccion,
@@ -289,8 +343,10 @@ export default class HorarioModel {
           id_aula,
           dia_semana,
           hora_inicio,
+          horas_clase,
         ]
       );
+      console.log(rows);
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Horario creado exitosamente"
@@ -323,15 +379,17 @@ export default class HorarioModel {
       });
 
       const { rows } = await pg.query(
-        "CALL public.actualizar_horario_completo_o_parcial($1, $2, $3, $4, $5)",
+        "CALL public.actualizar_horario_completo_o_parcial($1, $2, $3, $4, $5, $6)",
         [
-          null, // p_resultado (OUT parameter)
           usuarioId,
           idHorario,
-          datos.hora_inicio || null,
           datos.dia_semana || null,
+          datos.hora_inicio || null,
+          datos.horas_clase || null,
+          null,
         ]
       );
+      console.log(rows[0].p_resultado);
 
       return FormatResponseModel.respuestaPostgres(
         rows,

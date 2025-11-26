@@ -179,7 +179,6 @@ export default class CurricularModel {
     try {
       console.log("Datos para registrar Unidad Curricular:", datos);
       const {
-        // id_trayecto, // NO SE UTILIZA YA QUE SE PASA COMO PARÁMETRO DIRECTO (idTrayecto)
         nombre_unidad_curricular,
         codigo_unidad_curricular,
         tipo_unidad,
@@ -189,16 +188,14 @@ export default class CurricularModel {
         semanas,
         areas_conocimiento = [],
         lineas_investigacion = [],
-        // Nota: `sinoptico` e `id_linea_investigacion` parecen faltar en el destructuring,
-        // por lo que se asumen valores por defecto (null o undefined) para la consulta.
-        sinoptico,
-        id_linea_investigacion,
-        hte,
-        hse,
-        hta,
-        hsa,
-        hti,
-        hsi,
+        sinoptico = null,
+        id_linea_investigacion = null,
+        hte = 0,
+        hse = 0,
+        hta = 0,
+        hsa = 0,
+        hti = 0,
+        hsi = 0,
       } = datos;
 
       // Validar que areas_conocimiento sea un array
@@ -206,52 +203,51 @@ export default class CurricularModel {
         throw new Error("El parámetro areas_conocimiento debe ser un array");
       }
 
-      // Validar que lineas_investigacion sea un array (asumiendo estructura similar)
+      // Validar que lineas_investigacion sea un array
       if (!Array.isArray(lineas_investigacion)) {
         throw new Error("El parámetro lineas_investigacion debe ser un array");
       }
 
       // Convertir areas_conocimiento a array de números
       const areasConocimientoArray = areas_conocimiento.map((area) =>
-        Number(area.id_area_conocimiento)
+        Number(area.id_area_conocimiento || area)
       );
 
       // Convertir lineas_investigacion a array de números
-      // **Asumiendo que el objeto tiene una propiedad id_linea_investigacion**
+      // Maneja tanto objetos como IDs directos
       const lineasInvestigacionArray = lineas_investigacion.map((linea) =>
-        Number(linea.id_linea_investigacion)
+        Number(linea.id_linea_investigacion || linea)
       );
 
-      // --- Consulta a la Función Almacenada (query) ---
+      // Si el array está vacío, lo convertimos a NULL para PostgreSQL
+      const lineasInvestigacionParam =
+        lineasInvestigacionArray.length > 0 ? lineasInvestigacionArray : null;
 
-      // La consulta ya está bien definida, simplemente necesita un valor por cada placeholder ($1, $2, etc.)
-      // La vamos a dejar como template string por claridad, pero usaremos $n en los parámetros.
+      // --- Consulta a la Función Almacenada ---
       const query = `CALL registrar_unidad_curricular_completo(
-       $1,  -- p_usuario_accion
-       $2,  -- p_id_trayecto
-       $3,  -- p_nombre_unidad_curricular
-       $4,  -- p_descripcion_unidad_curricular
-       $5,  -- p_carga_horas
-       $6,  -- p_codigo_unidad
-       $7,  -- p_areas_conocimiento (integer[])
-       $8,  -- p_lineas_investigacion (integer[])
-       $9,  -- p_sinoptico (text)
-       $10, -- p_id_linea_investigacion (bigint)
-       $11, -- p_creditos (smallint)
-       $12, -- p_semanas (smallint)
-       $13, -- p_tipo_unidad (character varying)
-       $14, -- p_hte (numeric)
-       $15, -- p_hse (numeric)
-       $16, -- p_hta (numeric)
-       $17, -- p_hsa (numeric)
-       $18, -- p_hti (numeric)
-       $19, -- p_hsi (numeric)
-       NULL
-     )`;
+      $1,  -- p_usuario_accion
+      $2,  -- p_id_trayecto
+      $3,  -- p_nombre_unidad_curricular
+      $4,  -- p_descripcion_unidad_curricular
+      $5,  -- p_carga_horas
+      $6,  -- p_codigo_unidad
+      $7,  -- p_areas_conocimiento (integer[])
+      $8,  -- p_lineas_investigacion (integer[]) - AHORA EN POSICIÓN CORRECTA
+      $9,  -- p_sinoptico (text)
+      $10, -- p_id_linea_investigacion (bigint)
+      $11, -- p_creditos (smallint)
+      $12, -- p_semanas (smallint)
+      $13, -- p_tipo_unidad (character varying)
+      $14, -- p_hte (numeric)
+      $15, -- p_hse (numeric)
+      $16, -- p_hta (numeric)
+      $17, -- p_hsa (numeric)
+      $18, -- p_hti (numeric)
+      $19, -- p_hsi (numeric)
+      $20  -- p_resultado (OUT parameter)
+    )`;
 
-      // --- Array de Parámetros (params) ---
-
-      // Deben coincidir en orden con los placeholders ($1, $2, $3, etc.) de la consulta.
+      // --- Array de Parámetros ---
       const params = [
         usuario_accion, // $1
         idTrayecto, // $2
@@ -260,22 +256,24 @@ export default class CurricularModel {
         carga_horas_academicas, // $5
         codigo_unidad_curricular, // $6
         areasConocimientoArray, // $7
-        lineasInvestigacionArray, // $8 (Usamos el array de líneas de investigación)
-        sinoptico, // $9 (Usamos null si no viene en los datos)
-        id_linea_investigacion, // $10 (Usamos null si no viene en los datos)
+        lineasInvestigacionParam, // $8 - AHORA EN POSICIÓN CORRECTA
+        sinoptico, // $9
+        id_linea_investigacion, // $10
         creditos, // $11
         semanas, // $12
         tipo_unidad, // $13
-        hte, // $14 (Horas Teóricas Estudiantiles)
-        hse, // $15 (Horas Seminario Estudiantiles)
-        hta, // $16 (Horas Teóricas Académicas)
-        hsa, // $17 (Horas Seminario Académicas)
-        hti, // $18 (Horas Taller Investigación)
-        hsi, // $19 (Horas Seminario Investigación)
+        hte, // $14
+        hse, // $15
+        hta, // $16
+        hsa, // $17
+        hti, // $18
+        hsi, // $19
+        null, // $20 - Para el parámetro OUT
       ];
 
       console.log("Parámetros para el procedimiento:", params);
 
+      // Ejecutar el procedimiento
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
@@ -290,6 +288,7 @@ export default class CurricularModel {
       );
     }
   }
+
   /**
    * @static
    * @async
@@ -411,12 +410,11 @@ export default class CurricularModel {
       );
     }
   }
-
   /**
    * @static
    * @async
    * @method actualizarUnidadCurricular
-   * @description Actualizar una Unidad Curricular usando el procedimiento almacenado
+   * @description Actualizar una Unidad Curricular usando el procedimiento almacenado completo
    * @param {number} id_unidad_curricular - ID de la unidad curricular
    * @param {Object} datos - Datos de actualización
    * @param {string} [datos.codigo_unidad_curricular] - Nuevo código de la unidad
@@ -426,6 +424,16 @@ export default class CurricularModel {
    * @param {number} [datos.id_trayecto] - Nuevo ID del trayecto
    * @param {boolean} [datos.activo] - Nuevo estado activo/inactivo
    * @param {Array<number>} [datos.areas_conocimiento] - Array de IDs de áreas de conocimiento
+   * @param {Array<number>} [datos.lineas_investigacion] - Array de IDs de líneas de investigación
+   * @param {string} [datos.tipo_unidad] - Tipo de unidad (Taller, Proyecto, Asignatura, Seminario, Curso)
+   * @param {number} [datos.creditos] - Número de créditos
+   * @param {number} [datos.semanas] - Duración en semanas
+   * @param {number} [datos.hte] - Horas Teóricas Presenciales
+   * @param {number} [datos.hse] - Horas Semipresenciales
+   * @param {number} [datos.hta] - Horas Trabajo Autónomo
+   * @param {number} [datos.hsa] - Horas Servicio/Seminario
+   * @param {number} [datos.hti] - Horas Tutoría/Taller
+   * @param {number} [datos.hsi] - Horas Seminario Investigación
    * @param {number} usuarioId - ID del usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
@@ -441,46 +449,126 @@ export default class CurricularModel {
         usuarioId,
       });
 
+      // Extraer todos los campos posibles con valores por defecto
+      const {
+        id_trayecto,
+        codigo_unidad_curricular,
+        nombre_unidad_curricular,
+        descripcion_unidad_curricular,
+        carga_horas_academicas,
+        activo,
+        areas_conocimiento,
+        lineas_investigacion,
+        tipo_unidad,
+        creditos,
+        semanas,
+        sinoptico,
+        hte,
+        hse,
+        hta,
+        hsa,
+        hti,
+        hsi,
+      } = datos;
+
+      // Validar que areas_conocimiento sea un array
+      if (areas_conocimiento && !Array.isArray(areas_conocimiento)) {
+        console.log(areas_conocimiento);
+        throw new Error("El parámetro areas_conocimiento debe ser un array");
+      }
+
+      // Validar que lineas_investigacion sea un array
+      if (lineas_investigacion && !Array.isArray(lineas_investigacion)) {
+        console.log(lineas_investigacion);
+        throw new Error("El parámetro lineas_investigacion debe ser un array");
+      }
+
+      // Convertir areas_conocimiento a array de números
+      const areasConocimientoArray =
+        areas_conocimiento?.map((area) =>
+          Number(area.id_area_conocimiento || area)
+        ) || null;
+
+      // Convertir lineas_investigacion a array de números
+      const lineasInvestigacionArray =
+        lineas_investigacion?.map((linea) =>
+          Number(linea.id_linea_investigacion || linea)
+        ) || null;
+
+      // Query actualizada con todos los parámetros
       const query = `
-      CALL actualizar_unidad_curricular_completo(
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-      )
-    `;
+        CALL actualizar_unidad_curricular_completo(
+          $1,   -- p_resultado (OUT)
+          $2,   -- p_usuario_accion
+          $3,   -- p_id_unidad_curricular
+          $4,   -- p_id_trayecto
+          $5,   -- p_codigo_unidad
+          $6,   -- p_nombre_unidad_curricular
+          $7,   -- p_descripcion_unidad_curricular
+          $8,   -- p_horas_clase
+          $9,   -- p_activo
+          $10,  -- p_areas_conocimiento
+          $11,  -- p_lineas_investigacion
+          $12,  -- p_tipo_unidad
+          $13,  -- p_creditos
+          $14,  -- p_semanas
+          $15,  -- p_sinoptico
+          $16,  -- p_hte
+          $17,  -- p_hse
+          $18,  -- p_hta
+          $19,  -- p_hsa
+          $20,  -- p_hti
+          $21   -- p_hsi
+        )
+      `;
 
-      /*
-        OUT p_resultado JSON,
-        IN p_usuario_accion INTEGER,
-        IN p_id_unidad_curricular INTEGER,
-        IN p_id_trayecto INTEGER DEFAULT NULL,
-        IN p_codigo_unidad VARCHAR DEFAULT NULL,
-        IN p_nombre_unidad_curricular VARCHAR DEFAULT NULL,
-        IN p_descripcion_unidad_curricular TEXT DEFAULT NULL,
-        IN p_horas_clase SMALLINT DEFAULT NULL,
-        IN p_activo BOOLEAN DEFAULT NULL,
-        IN p_areas_conocimiento INTEGER[] DEFAULT NULL 
-      */
-
+      // Parámetros completos en el orden correcto
       const valores = [
-        null, // p_resultado (OUT parameter)
-        usuarioId, // p_usuario_accion
-        id_unidad_curricular, // p_id_unidad_curricular
-        datos.id_trayecto || null, // p_id_trayecto
-        datos.codigo_unidad_curricular || null, // p_codigo_unidad
-        datos.nombre_unidad_curricular || null, // p_nombre_unidad_curricular
-        datos.descripcion_unidad_curricular || null, // p_descripcion_unidad_curricular
-        datos.carga_horas_academicas !== undefined
-          ? Number(datos.carga_horas_academicas)
-          : null, // p_horas_clase
-        datos.activo !== undefined ? Boolean(datos.activo) : null, // p_activo
-        datos.areas_conocimiento?.map((area) => {
-          return area.id_area_conocimiento;
-        }) || null, // p_areas_conocimiento (NUEVO parámetro)
+        null, // $1 - p_resultado (OUT parameter)
+        usuarioId, // $2 - p_usuario_accion
+        id_unidad_curricular, // $3 - p_id_unidad_curricular
+        id_trayecto || null, // $4 - p_id_trayecto
+        codigo_unidad_curricular || null, // $5 - p_codigo_unidad
+        nombre_unidad_curricular || null, // $6 - p_nombre_unidad_curricular
+        descripcion_unidad_curricular || null, // $7 - p_descripcion_unidad_curricular
+        carga_horas_academicas !== undefined
+          ? Number(carga_horas_academicas)
+          : null, // $8 - p_horas_clase
+        activo !== undefined ? Boolean(activo) : null, // $9 - p_activo
+        areasConocimientoArray, // $10 - p_areas_conocimiento
+        lineasInvestigacionArray, // $11 - p_lineas_investigacion
+        tipo_unidad || null, // $12 - p_tipo_unidad
+        creditos !== undefined ? Number(creditos) : null, // $13 - p_creditos
+        semanas !== undefined ? Number(semanas) : null, // $14 - p_semanas
+        sinoptico || null, // $15 - p_sinoptico
+        hte !== undefined ? Number(hte) : null, // $16 - p_hte
+        hse !== undefined ? Number(hse) : null, // $17 - p_hse
+        hta !== undefined ? Number(hta) : null, // $18 - p_hta
+        hsa !== undefined ? Number(hsa) : null, // $19 - p_hsa
+        hti !== undefined ? Number(hti) : null, // $20 - p_hti
+        hsi !== undefined ? Number(hsi) : null, // $21 - p_hsi
       ];
 
       console.log("🔍 [Model] Parámetros enviados al procedimiento:", {
-        ...valores,
-        // Ocultar el primer parámetro (null) para mejor legibilidad
-        areas_conocimiento: datos.areas_conocimiento || "No proporcionado",
+        id_unidad_curricular,
+        usuario_accion: usuarioId,
+        id_trayecto: id_trayecto,
+        codigo_unidad: codigo_unidad_curricular,
+        nombre_unidad_curricular: nombre_unidad_curricular,
+        horas_clase: carga_horas_academicas,
+        tipo_unidad: tipo_unidad,
+        creditos: creditos,
+        semanas: semanas,
+        total_areas: areasConocimientoArray?.length,
+        total_lineas: lineasInvestigacionArray?.length,
+        distribucion_horas: {
+          hte: hte,
+          hse: hse,
+          hta: hta,
+          hsa: hsa,
+          hti: hti,
+          hsi: hsi,
+        },
       });
 
       const { rows } = await pg.query(query, valores);
@@ -491,13 +579,18 @@ export default class CurricularModel {
       );
     } catch (error) {
       console.error("💥 Error en modelo actualizar unidad curricular:", error);
-      error.details = { path: "CurricularModel.actualizarUnidadCurricular" };
+      error.details = {
+        path: "CurricularModel.actualizarUnidadCurricular",
+        id_unidad_curricular,
+        usuarioId,
+      };
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al actualizar la Unidad Curricular"
       );
     }
   }
+
   // ===========================================================
   // MÉTODOS DE CONSULTA
   // ===========================================================
@@ -512,6 +605,7 @@ export default class CurricularModel {
    * @param {boolean} filters.activo - Filtrar por estado activo/inactivo
    * @param {boolean} filters.tiene_coordinador - Filtrar por PNFs con coordinador
    * @param {string} filters.search - Búsqueda por nombre o código
+   * @param {string} filters.searchID - Búsqueda por id_pnf
    * @returns {Promise<Object>} Resultado de la consulta
    */
   static async mostrarPNF(filters = {}) {
@@ -520,7 +614,7 @@ export default class CurricularModel {
       let queryParams = [];
       let paramCount = 0;
 
-      // Construir condiciones WHERE dinámicamente
+      // Construir condiciones WHERE dinámicamente con parámetros preparados
       if (filters.id_sede) {
         paramCount++;
         whereConditions.push(`id_sede = $${paramCount}`);
@@ -534,11 +628,16 @@ export default class CurricularModel {
       }
 
       if (filters.tiene_coordinador !== undefined) {
-        paramCount++;
-        whereConditions.push(
-          `(EXISTS (SELECT 1 FROM coordinadores WHERE id_pnf = id_pnf)) = $${paramCount}`
-        );
-        queryParams.push(filters.tiene_coordinador);
+        // Corrección: usar alias para evitar conflicto de nombres
+        if (filters.tiene_coordinador) {
+          whereConditions.push(
+            `EXISTS (SELECT 1 FROM coordinadores c WHERE c.id_pnf = vista_pnfs.id_pnf)`
+          );
+        } else {
+          whereConditions.push(
+            `NOT EXISTS (SELECT 1 FROM coordinadores c WHERE c.id_pnf = vista_pnfs.id_pnf)`
+          );
+        }
       }
 
       if (filters.search) {
@@ -549,6 +648,12 @@ export default class CurricularModel {
         queryParams.push(`%${filters.search}%`);
       }
 
+      if (filters.searchID) {
+        paramCount++;
+        whereConditions.push(`id_pnf = $${paramCount}`);
+        queryParams.push(filters.searchID); // Sin % porque es búsqueda exacta de ID
+      }
+
       // Construir la consulta final
       const whereClause =
         whereConditions.length > 0
@@ -556,10 +661,10 @@ export default class CurricularModel {
           : "";
 
       const query = `
-        SELECT * FROM public.vista_pnfs
-        ${whereClause}
-        ORDER BY nombre_pnf ASC
-      `;
+      SELECT * FROM public.vista_pnfs
+      ${whereClause}
+      ORDER BY nombre_pnf ASC
+    `;
 
       console.log("🔍 Query ejecutada:", query);
       console.log("📊 Parámetros:", queryParams);
@@ -900,6 +1005,74 @@ export default class CurricularModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al eliminar la unidad curricular"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method eliminarPnf
+   * @description Elimina físicamente un PNF y todos sus registros relacionados
+   * @param {number} id_usuario - ID del usuario que ejecuta la acción
+   * @param {number} id_pnf - ID del PNF a eliminar
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async eliminarPnf(id_usuario, id_pnf) {
+    try {
+      const query = `
+      CALL eliminar_pnf($1, $2, NULL);
+    `;
+
+      const { rows } = await pg.query(query, [id_usuario, id_pnf]);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "PNF eliminado correctamente."
+      );
+    } catch (error) {
+      error.details = {
+        path: "CurricularModel.eliminarPnf",
+        id_usuario: id_usuario,
+        id_pnf: id_pnf,
+      };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al eliminar el PNF"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method reactivarPnf
+   * @description Reactiva un PNF y sus trayectos relacionados
+   * @param {number} id_usuario - ID del usuario que ejecuta la acción
+   * @param {number} id_pnf - ID del PNF a reactivar
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async reactivarPnf(id_usuario, id_pnf) {
+    try {
+      const query = `
+      CALL reactivar_pnf($1, $2, NULL);
+    `;
+
+      const { rows } = await pg.query(query, [id_usuario, id_pnf]);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "PNF reactivado correctamente."
+      );
+    } catch (error) {
+      error.details = {
+        path: "CurricularModel.reactivarPnf",
+        id_usuario: id_usuario,
+        id_pnf: id_pnf,
+      };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al reactivar el PNF"
       );
     }
   }

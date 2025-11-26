@@ -3,22 +3,71 @@ export const UTILS = {
     const dias = [
       "lunes",
       "martes",
-      "miercoles",
+      "miércoles",
       "jueves",
       "viernes",
-      "sabado",
+      "sábado",
     ];
     return dias.indexOf(dia.toLowerCase());
+  },
+
+  /**
+   * Convierte una duración en formato HH:MM:SS a minutos totales y segundos totales
+   * @param {string} duracionString - Duración en formato "HH:MM:SS" o "MM:SS" o "HH:MM"
+   * @returns {Object} Objeto con minutosTotales y segundosTotales
+   */
+  convertirDuracion: (duracionString) => {
+    if (typeof duracionString !== "string") {
+      throw new Error('El parámetro debe ser un string en formato "HH:MM:SS"');
+    }
+
+    const partes = duracionString.split(":");
+
+    let horas = 0;
+    let minutos = 0;
+    let segundos = 0;
+
+    // Manejar diferentes formatos: HH:MM:SS, MM:SS, HH:MM
+    if (partes.length === 3) {
+      // Formato HH:MM:SS
+      [horas, minutos, segundos] = partes.map(Number);
+    } else if (partes.length === 2) {
+      // Formato MM:SS o HH:MM (asumimos MM:SS si el primer número es < 60)
+      const primerValor = parseInt(partes[0]);
+      if (primerValor < 60) {
+        // Formato MM:SS
+        [minutos, segundos] = partes.map(Number);
+      } else {
+        // Formato HH:MM
+        [horas, minutos] = partes.map(Number);
+      }
+    } else {
+      throw new Error('Formato inválido. Use "HH:MM:SS", "MM:SS" o "HH:MM"');
+    }
+
+    // Validar valores
+    if ([horas, minutos, segundos].some(isNaN)) {
+      throw new Error("Todos los valores deben ser números válidos");
+    }
+
+    // Calcular totales
+    const minutosTotales = horas * 60 + minutos;
+    const segundosTotales = horas * 3600 + minutos * 60 + segundos;
+
+    return {
+      minutosTotales,
+      segundosTotales,
+    };
   },
 
   obtenerDiaNombre: (id) => {
     const dias = [
       "Lunes",
       "Martes",
-      "Miercoles",
+      "Miércoles",
       "Jueves",
       "Viernes",
-      "Sabado",
+      "Sábado",
     ];
     return dias[id] || "";
   },
@@ -79,6 +128,13 @@ export const UTILS = {
 
     return `${ceroAñadido}${horas12}:${String(minutos).padStart(2, "0")}:00`;
   },
+  formatearHora24: (horaMilitar) => {
+    const horas = Math.floor(horaMilitar / 100);
+    const minutos = horaMilitar % 100;
+    const horasStr = horas.toString().padStart(2, "0");
+    const minutosStr = minutos.toString().padStart(2, "0");
+    return `${horasStr}:${minutosStr}:00`;
+  },
   obtenerTrayectoNumero(trayecto) {
     const trayectos = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 };
     return trayectos[trayecto] || 1;
@@ -86,6 +142,7 @@ export const UTILS = {
   horasMinutos(h, m) {
     return parseInt(h) * 60 + parseInt(m);
   },
+
   calcularHorasHHMM(minutos) {
     const h = Math.floor(minutos / 60);
     const m = minutos % 60;
@@ -98,7 +155,6 @@ export const UTILS = {
 
     Object.keys(UTILS.initialHours).forEach((hora) => {
       if (hora >= inicio_hora && hora < fin_hora) {
-        console.log("Añadiendo bloque:", hora);
         bloques.push(hora);
       }
     });
@@ -123,9 +179,8 @@ export const UTILS = {
     "17:30",
     "18:15",
     "19:00",
-    "19:45",
   ],
-  diasSemana: ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"],
+  diasSemana: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
 
   initialHours: {
     700: null,
@@ -146,6 +201,5 @@ export const UTILS = {
     1815: null,
     1900: null,
     1945: null,
-    2030: null,
   },
 };

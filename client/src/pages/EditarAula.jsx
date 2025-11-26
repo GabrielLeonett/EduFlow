@@ -147,7 +147,7 @@ export default function EditarAula() {
           >
             <Grid container spacing={3}>
               {/* Código */}
-              <Grid item xs={12} md={6}>
+              <Grid xs={12} md={6}>
                 <CustomLabel
                   id="codigo"
                   name="codigo"
@@ -161,7 +161,7 @@ export default function EditarAula() {
               </Grid>
 
               {/* Tipo */}
-              <Grid item xs={12} md={6}>
+              <Grid xs={12} md={6}>
                 <Controller
                   name="tipo"
                   control={control}
@@ -186,7 +186,7 @@ export default function EditarAula() {
               </Grid>
 
               {/* Capacidad */}
-              <Grid item xs={12} md={6}>
+              <Grid xs={12} md={6}>
                 <CustomLabel
                   id="capacidad"
                   label="Capacidad"
@@ -199,7 +199,7 @@ export default function EditarAula() {
               </Grid>
 
               {/* Sede */}
-              <Grid item xs={12} md={6}>
+              <Grid xs={12} md={6}>
                 {loadingSedes ? (
                   <Box
                     display="flex"

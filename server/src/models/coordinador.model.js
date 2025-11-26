@@ -66,13 +66,21 @@ export default class CoordinadorModel {
         params.push(queryParams.id_pnf);
       }
 
+      // Aplicar búsqueda por nombres, apellidos o cédula
+      if (queryParams.search) {
+        paramCount++;
+        query += ` AND (nombres ILIKE $${paramCount} OR apellidos ILIKE $${paramCount} OR cedula::TEXT ILIKE $${paramCount})`;
+        params.push(`%${queryParams.search}%`);
+      }
+
       // Aplicar ordenamiento
       if (queryParams.sort) {
         const allowedSortFields = [
           "nombres",
           "apellidos",
           "nombre_pnf",
-          "fecha_inicio",
+          "fecha_ingreso",
+          "cedula",
         ];
         const sortField = allowedSortFields.includes(queryParams.sort)
           ? queryParams.sort
@@ -113,6 +121,86 @@ export default class CoordinadorModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener coordinadores"
+      );
+    }
+  }
+
+  static async listarCoordinadoresDestituidos(queryParams = {}) {
+    try {
+      let query = `SELECT * FROM public.coordinadores_destituidos_completos WHERE 1=1`;
+      const params = [];
+      let paramCount = 0;
+
+      // Mantener otros filtros
+      if (queryParams.id_pnf) {
+        paramCount++;
+        query += ` AND id_pnf = $${paramCount}`;
+        params.push(queryParams.id_pnf);
+      }
+
+      if (queryParams.nombre_pnf) {
+        paramCount++;
+        query += ` AND nombre_pnf ILIKE $${paramCount}`;
+        params.push(`%${queryParams.nombre_pnf}%`);
+      }
+
+      if (queryParams.cedula) {
+        paramCount++;
+        query += ` AND cedula = $${paramCount}`;
+        params.push(queryParams.cedula);
+      }
+
+      // Aplicar ordenamiento
+      if (queryParams.sort) {
+        const allowedSortFields = [
+          "nombres",
+          "apellidos",
+          "nombre_pnf",
+          "fecha_ingreso",
+          "fecha_destitucion",
+          "fecha_designacion",
+        ];
+        const sortField = allowedSortFields.includes(queryParams.sort)
+          ? queryParams.sort
+          : "nombres";
+        const sortOrder =
+          queryParams.order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
+        query += ` ORDER BY ${sortField} ${sortOrder}`;
+      } else {
+        query += ` ORDER BY fecha_destitucion DESC, nombres ASC`; // Orden por destitución reciente
+      }
+
+      // Aplicar paginación
+      if (queryParams.limit) {
+        const limit = parseInt(queryParams.limit);
+        const offset = queryParams.page
+          ? (parseInt(queryParams.page) - 1) * limit
+          : 0;
+
+        paramCount++;
+        query += ` LIMIT $${paramCount}`;
+        params.push(limit);
+
+        if (offset > 0) {
+          paramCount++;
+          query += ` OFFSET $${paramCount}`;
+          params.push(offset);
+        }
+      }
+
+      const { rows } = await pg.query(query, params);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Listado de coordinadores destituidos obtenido correctamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "CoordinadorModel.listarCoordinadoresDestituidos",
+      };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener coordinadores destituidos"
       );
     }
   }
@@ -271,7 +359,7 @@ export default class CoordinadorModel {
     fecha_efectiva = null
   ) {
     try {
-      const query = `CALL eliminar_destituir_coordinador($1, $2, $3, $4, $5, $6, $7)`;
+      const query = `CALL eliminar_destituir_coordinador(NULL, $1, $2, $3, $4, $5, $6)`;
       const params = [
         id_usuario,
         id_coordinador,
@@ -371,7 +459,7 @@ export default class CoordinadorModel {
         FROM destituciones d
         INNER JOIN coordinadores c ON d.usuario_id = c.id_profesor
         INNER JOIN users u ON d.usuario_accion = u.cedula
-        WHERE c.id_coordinador = $1
+        WHERE c.id_coordinador = $1 AND d.rol_id = 2
         ORDER BY d.created_at DESC
       `;
 
@@ -391,7 +479,7 @@ export default class CoordinadorModel {
       );
     }
   }
-  
+
   /**
    * @static
    * @async

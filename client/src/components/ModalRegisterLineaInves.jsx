@@ -75,10 +75,11 @@ export default function ModalRegisterLineaInvestigacion({
       });
 
       // 🔄 Recargar lista actualizada
-      const { lineas_investigacion } = await axios.get(
-        "/catalogos/lineas-investigacion"
+      const lineasRes = await axios.get(
+        `/catalogo/trayectos/${id_trayecto}/lineas-investigacion`
       );
-      setState(lineas_investigacion);
+      
+      setState(lineasRes);
 
       reset();
       onClose();

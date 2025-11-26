@@ -201,65 +201,72 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
     ]
   );
 
-  // Crear nueva clase en el estado
-  const crearClaseEnHorario = useCallback(() => {
-    if (!profesorSelected || !aulaSelected || !unidadCurricularSelected) {
-      console.warn("Datos incompletos para crear clase");
-      // ALERTA AGREGADA
-      alert.error("Error", "Datos incompletos para crear la clase");
-      return;
-    }
+  // Crear nueva clase en el estado - VERSIÓN MEJORADA
+  const crearClaseEnHorario = useCallback(
+    (numClasesTotales, indexActual, horas_clase) => {
+      if (!profesorSelected || !aulaSelected || !unidadCurricularSelected) {
+        console.warn("Datos incompletos para crear clase");
+        alert.error("Error", "Datos incompletos para crear la clase");
+        return;
+      }
 
-    const nuevaClase = {
-      id: Date.now(),
-      id_profesor: profesorSelected.id_profesor,
-      id_aula: aulaSelected.id_aula,
-      id_unidad_curricular: unidadCurricularSelected.id_unidad_curricular,
-      nombre_profesor: profesorSelected.nombres,
-      codigo_aula: aulaSelected.codigo_aula,
-      apellido_profesor: profesorSelected.apellidos,
-      nombre_unidad_curricular:
-        unidadCurricularSelected.nombre_unidad_curricular,
-      horas_clase: unidadCurricularSelected.horas_clase,
-      nueva_clase: true,
-    };
+      const nuevaClase = {
+        id: Date.now() + indexActual, // ID único por clase
+        id_profesor: profesorSelected.id_profesor,
+        id_aula: aulaSelected.id_aula,
+        id_unidad_curricular: unidadCurricularSelected.id_unidad_curricular,
+        nombre_profesor: profesorSelected.nombres,
+        codigo_aula: aulaSelected.codigo_aula,
+        apellido_profesor: profesorSelected.apellidos,
+        nombre_unidad_curricular:
+          unidadCurricularSelected.nombre_unidad_curricular,
+        horas_clase: horas_clase,
+        nueva_clase: true,
+        indiceClase: indexActual + 1, // Para tracking
+        totalClases: numClasesTotales,
+      };
 
-    setSelectedClass({ ...nuevaClase });
-    setClassToMove({ ...nuevaClase });
-    setProfesorSelected(null);
-    setAulaSelected(null);
-    setUnidadCurricularSelected(null);
 
-    // ALERTA AGREGADA
-    alert.success("Éxito", "Clase creada correctamente");
-  }, [
-    profesorSelected,
-    aulaSelected,
-    unidadCurricularSelected,
-    setSelectedClass,
-    setClassToMove,
-    alert, // ALERTA AGREGADA
-    setProfesorSelected,
-    setAulaSelected,
-    setUnidadCurricularSelected,
-  ]);
+      setSelectedClass({ ...nuevaClase });
+      setClassToMove({ ...nuevaClase });
 
-  // Función para limpiar selección
-  const limpiarSeleccion = useCallback(() => {
-    setSelectedClass(null);
-    setClassToMove(null);
-    setAvailableSlots([]);
+      // Solo limpiar cuando sea la ÚLTIMA clase
+      if (indexActual === numClasesTotales - 1) {
+        console.log("🧹 Limpiando selecciones - última clase creada");
+        setProfesorSelected(null);
+        setAulaSelected(null);
+        setUnidadCurricularSelected(null);
 
-    // ALERTA AGREGADA
-    alert.info("Información", "Selección limpiada");
-  }, [setSelectedClass, setClassToMove, setAvailableSlots, alert]); // ALERTA AGREGADA
+        alert.success(
+          "Éxito",
+          `Todas las clases (${numClasesTotales}) creadas correctamente`
+        );
+      } else {
+        console.log(
+          `📝 Clase ${
+            indexActual + 1
+          }/${numClasesTotales} creada - continuando...`
+        );
+      }
+    },
+    [
+      profesorSelected,
+      aulaSelected,
+      unidadCurricularSelected,
+      setSelectedClass,
+      setClassToMove,
+      setProfesorSelected,
+      setAulaSelected,
+      setUnidadCurricularSelected,
+      alert,
+    ]
+  );
 
   return {
     isSlotAvailable,
     handleSlotClick,
     crearClaseEnHorario,
     MoverClassEnHorario,
-    limpiarSeleccion,
   };
 };
 

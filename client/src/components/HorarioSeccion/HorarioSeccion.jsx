@@ -29,7 +29,8 @@ const HorarioSeccion = ({
   const theme = useTheme();
   const axios = useApi();
   const alert = useSweetAlert();
-  const { isCustom } = useCoordinador(pnf?.id_pnf);
+  //const { isCustom } = useCoordinador(pnf?.id_pnf);
+  const  isCustom  = true;
 
   // Props consolidados
   const componentProps = useMemo(
@@ -43,7 +44,6 @@ const HorarioSeccion = ({
     }),
     [pnf, trayecto, seccion, initialHorario, turno, isCustom]
   );
-  console.log("🚀 Renderizando HorarioSeccion con props:", componentProps);
 
   // 1. Estado principal
   const {
@@ -97,25 +97,116 @@ const HorarioSeccion = ({
     stateSetters
   );
 
-  // Handlers optimizados
+  // CORRECCIÓN: Handler para búsqueda libre DEBUGGEADA
+  const handleBusquedaLibreProfesor = useCallback(
+    (textoBusqueda) => {
+      console.log("🎯 handleBusquedaLibreProfesor llamado con:", textoBusqueda);
+
+      if (!textoBusqueda.trim()) {
+        console.log("⚠️ Texto de búsqueda vacío");
+        return;
+      }
+
+      if (!state.unidadCurricularSelected) {
+        console.log("❌ No hay unidad curricular seleccionada");
+        alert.warning("Primero seleccione una unidad curricular");
+        return;
+      }
+
+      console.log("🚀 Ejecutando búsqueda de profesores...");
+      console.log("📚 Unidad curricular:", state.unidadCurricularSelected);
+      console.log("🔎 Término de búsqueda:", textoBusqueda);
+
+      // La búsqueda se ejecutará y actualizará la lista de profesores
+      // Luego el usuario deberá seleccionar de la lista actualizada
+      dataActions
+        .fetchProfesores(state.unidadCurricularSelected, textoBusqueda)
+    },
+    [dataActions, state.unidadCurricularSelected, alert]
+  );
+  
+  const handleProfesorChange = useCallback(
+    (newValue) => {
+      console.log("🔄 handleProfesorChange llamado con:", newValue);
+
+      // 1. Limpiar selección
+      if (!newValue) {
+        console.log("🧹 Limpiando selección de profesor");
+        stateSetters.setProfesorSelected(null);
+        stateSetters.setAulas([]);
+        return;
+      }
+
+      // 2. Si es string (búsqueda libre)
+      if (typeof newValue === "string") {
+        console.log("🔍 Búsqueda libre detectada:", newValue);
+        handleBusquedaLibreProfesor(newValue);
+        return;
+      }
+
+      // 3. Si es objeto (profesor completo) - CASO MÁS COMÚN
+      if (typeof newValue === "object" && newValue.id_profesor) {
+        console.log("👨‍🏫 Profesor objeto seleccionado:", newValue);
+        stateSetters.setProfesorSelected(newValue);
+        dataActions.fetchAulas(newValue);
+        return;
+      }
+
+      // 4. Si es number (id_profesor) - VALIDAR que profesores existe
+      const profesor_id = newValue;
+      console.log("🔎 Buscando profesor por ID:", profesor_id);
+
+      // ✅ VALIDACIÓN CRÍTICA: Asegurar que profesores existe y es array
+      if (!profesores || !Array.isArray(profesores)) {
+        console.error(
+          "❌ profesores no está definido o no es un array:",
+          profesores
+        );
+        console.log("📋 Estado actual de profesores:", profesores);
+        alert.warning(
+          "Error: Lista de profesores no disponible. Intente nuevamente."
+        );
+        return;
+      }
+
+      const profesorEncontrado = profesores.find(
+        (profe) => profe.id_profesor === profesor_id
+      );
+
+      if (profesorEncontrado) {
+        console.log(
+          "✅ Profesor encontrado en lista local:",
+          profesorEncontrado
+        );
+        stateSetters.setProfesorSelected(profesorEncontrado);
+        dataActions.fetchAulas(profesorEncontrado);
+      } else {
+        console.log("❌ Profesor no encontrado en lista local:", profesor_id);
+        console.log("📋 Lista actual de profesores:", profesores);
+        alert.warning("Profesor no encontrado. Intente buscar nuevamente.");
+      }
+    },
+    [
+      profesores,
+      stateSetters,
+      handleBusquedaLibreProfesor,
+      alert,
+      dataActions
+    ]
+  );
+
+  // CORRECCIÓN 2: handleUnidadChange
   const handleUnidadChange = useCallback(
     (unidadId) => {
       const unidad = unidadesCurriculares.find(
         (u) => u.id_unidad_curricular === unidadId
       );
       stateSetters.setUnidadCurricularSelected(unidad);
+      stateSetters.setProfesorSelected(null); // ← Limpiar profesor anterior
+      stateSetters.setProfesores([]); // ← Limpiar lista de profesores
       dataActions.fetchProfesores(unidad);
     },
-    [unidadesCurriculares, stateSetters, dataActions.fetchProfesores]
-  );
-
-  const handleProfesorChange = useCallback(
-    (profesorId) => {
-      const profesor = profesores.find((p) => p.id_profesor === profesorId);
-      stateSetters.setProfesorSelected(profesor);
-      dataActions.fetchAulas(profesor);
-    },
-    [profesores, stateSetters, dataActions.fetchAulas]
+    [unidadesCurriculares, stateSetters, dataActions]
   );
 
   const handleAulaChange = useCallback(
@@ -167,7 +258,7 @@ const HorarioSeccion = ({
     } finally {
       stateSetters.setLoading(false);
     }
-  }, [stateSetters, alert, dataActions.fetchCambiosTableHorario]);
+  }, [stateSetters, alert, dataActions]);
 
   const handleCloseOverlay = useCallback(() => {
     setOverlayVisible(false);
@@ -227,6 +318,7 @@ const HorarioSeccion = ({
       );
     }
   }, [axios, seccion, setOverlayVisible, alert, horarioTitle]);
+  
   // Configuración de la tabla
   const tableConfig = useMemo(
     () => ({

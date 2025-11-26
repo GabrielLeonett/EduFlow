@@ -91,7 +91,7 @@ export default function GestionAulas() {
       },
       {
         element: "#aulas-container",
-        intro: "Aquí se muestran todas las aulas registradas en esta sede.",
+        intro: "Aquí se muestran todas las aulas registradas en este núcleo.",
         position: "right",
       },
       {
@@ -198,7 +198,7 @@ export default function GestionAulas() {
                 <CustomLabel
                   {...params}
                   label="Buscar aula"
-                  placeholder="Escribe código, tipo o sede..."
+                  placeholder="Escribe código, tipo o núcleo..."
                   InputProps={{
                     ...params.InputProps,
                     startAdornment: (
@@ -275,7 +275,7 @@ export default function GestionAulas() {
                   sx={{ width: "100%", margin: 0 }}
                 >
                   {aulas.map((aula) => (
-                    <Grid item key={aula.id_aula} xs={12} sm={6} md={4} lg={3}>
+                    <Grid key={aula.id_aula} xs={12} sm={6} md={4} lg={3}>
                       <CardAula aula={aula} />
                     </Grid>
                   ))}

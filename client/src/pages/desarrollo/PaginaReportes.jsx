@@ -106,7 +106,7 @@ const LogAccordion = ({ log }) => (
     </AccordionSummary>
     <AccordionDetails>
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Typography variant="subtitle2" gutterBottom>
             Información General
           </Typography>
@@ -131,7 +131,7 @@ const LogAccordion = ({ log }) => (
           </Box>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Typography variant="subtitle2" gutterBottom>
             Detalles
           </Typography>
@@ -148,7 +148,7 @@ const LogAccordion = ({ log }) => (
         </Grid>
 
         {log.stack && (
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Typography variant="subtitle2" gutterBottom>
               Stack Trace
             </Typography>
@@ -277,7 +277,7 @@ export default function PaginaReportes() {
           </Box>
 
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
+            <Grid xs={12} sm={4}>
               <FormControl fullWidth size="small">
                 <InputLabel>Estado</InputLabel>
                 <Select
@@ -295,7 +295,7 @@ export default function PaginaReportes() {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={4}>
+            <Grid xs={12} sm={4}>
               <FormControl fullWidth size="small">
                 <InputLabel>Status HTTP</InputLabel>
                 <Select
@@ -314,7 +314,7 @@ export default function PaginaReportes() {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={4}>
+            <Grid xs={12} sm={4}>
               <TextField
                 fullWidth
                 size="small"
@@ -330,7 +330,7 @@ export default function PaginaReportes() {
         {/* Estadísticas */}
         <Box sx={{ mb: 3 }}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={3}>
+            <Grid xs={12} sm={3}>
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" gutterBottom>
@@ -342,7 +342,7 @@ export default function PaginaReportes() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid xs={12} sm={3}>
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" gutterBottom>
@@ -354,7 +354,7 @@ export default function PaginaReportes() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid xs={12} sm={3}>
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" gutterBottom>
@@ -366,7 +366,7 @@ export default function PaginaReportes() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid xs={12} sm={3}>
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" gutterBottom>

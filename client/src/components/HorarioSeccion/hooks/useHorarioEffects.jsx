@@ -83,31 +83,149 @@ const useHorarioInitialization = (props, stateSetters) => {
   }, [horario, turno, obtenerClases]);
 };
 
-// Efecto para nueva clase completa
-const useNewClassEffect = (state, actions) => {
-  const { profesorSelected, aulaSelected, unidadCurricularSelected } = state;
+const dividirUnidadCurricular = (unidadCurricular, maxHorasPorClase = 3) => {
+  const horasTotales = unidadCurricular.horas_clase;
+  const horasFaltantes = unidadCurricular.faltan_horas_clase || horasTotales;
+
+  // Validaciones
+  if (horasFaltantes <= 0) {
+    console.log(
+      `✅ "${unidadCurricular.nombre_unidad_curricular}" ya está completa`
+    );
+    return [];
+  }
+
+  if (horasFaltantes > horasTotales) {
+    console.warn(
+      `⚠️ Horas faltantes (${horasFaltantes}) exceden horas totales (${horasTotales})`
+    );
+    return [horasFaltantes];
+  }
+
+  // Estrategias de división
+  if (horasFaltantes <= maxHorasPorClase) {
+    // Una sola clase con todas las horas faltantes
+    return [horasFaltantes];
+  }
+
+  if (horasFaltantes <= 6) {
+    // Dividir en dos clases balanceadas
+    const primeraClase = Math.ceil(horasFaltantes / 2);
+    const segundaClase = horasFaltantes - primeraClase;
+    return [primeraClase, segundaClase];
+  }
+
+  // Dividir en múltiples clases de máximo 3 horas
+  const divisiones = [];
+  let horasRestantes = horasFaltantes;
+
+  while (horasRestantes > 0) {
+    const horasClase = Math.min(horasRestantes, maxHorasPorClase);
+    divisiones.push(horasClase);
+    horasRestantes -= horasClase;
+  }
+
+  return divisiones;
+};
+
+// Efecto para nueva clase completa - VERSIÓN CORREGIDA
+const useNewClassEffect = (state, actions, stateSetters) => {
+  const {
+    profesorSelected,
+    aulaSelected,
+    unidadCurricularSelected,
+    procesoClases,
+    classToMove,
+    selectedClass,
+  } = state;
   const { calcularHorariosDisponibles, crearClaseEnHorario } = actions;
+  const { setProcesoClases } = stateSetters;
 
   useEffect(() => {
     if (
+      !procesoClases.enProgreso &&
       unidadCurricularSelected?.horas_clase &&
       profesorSelected?.id_profesor &&
       aulaSelected?.codigo_aula
     ) {
-      calcularHorariosDisponibles({
-        id_profesor: profesorSelected.id_profesor,
-        horas_clase: unidadCurricularSelected.horas_clase,
+      const horasClase = dividirUnidadCurricular(unidadCurricularSelected);
+
+      // Iniciar proceso secuencial
+      setProcesoClases({
+        enProgreso: true,
+        clasesPendientes: horasClase,
+        claseActualIndex: 0,
       });
-      crearClaseEnHorario();
     }
   }, [
     profesorSelected,
     aulaSelected,
     unidadCurricularSelected,
-    // Estas deben ser estables con useCallback
+    procesoClases.enProgreso,
+    setProcesoClases,
+  ]);
+
+  // Efecto para procesar clases secuencialmente
+  useEffect(() => {
+    if (procesoClases.enProgreso && procesoClases.claseActualIndex >= 0) {
+      const procesarSiguienteClase = async () => {
+        const { clasesPendientes, claseActualIndex } = procesoClases;
+        const horasClase = clasesPendientes[claseActualIndex];
+
+        if (horasClase) {
+          console.log(
+            `🔄 Procesando clase ${claseActualIndex + 1}/${
+              clasesPendientes.length
+            }`
+          );
+
+          if (classToMove === null && selectedClass === null) {
+            // 1. Calcular horarios disponibles para esta clase específica
+            await calcularHorariosDisponibles({
+              id_profesor: profesorSelected.id_profesor,
+              horas_clase: horasClase,
+              id_unidad_curricular: unidadCurricularSelected.id_unidad_curricular
+            });
+
+            // 3. Crear la clase
+            crearClaseEnHorario(
+              clasesPendientes.length,
+              claseActualIndex,
+              horasClase
+            );
+
+            // 4. Pasar a la siguiente clase o finalizar
+            if (claseActualIndex < clasesPendientes.length - 1) {
+              setProcesoClases((prev) => ({
+                ...prev,
+                claseActualIndex: prev.claseActualIndex + 1,
+              }));
+            } else {
+              // Proceso completado
+              console.log("✅ Todas las clases procesadas");
+              setProcesoClases({
+                enProgreso: false,
+                clasesPendientes: [],
+                claseActualIndex: -1,
+              });
+            }
+          }
+        }
+      };
+
+      procesarSiguienteClase();
+    }
+  }, [
+    procesoClases,
     calcularHorariosDisponibles,
     crearClaseEnHorario,
+    profesorSelected,
+    setProcesoClases,
+    classToMove,
+    selectedClass,
   ]);
+
+  return procesoClases.enProgreso;
 };
 
 // Efecto para recalcular cuando cambia clase seleccionada
@@ -128,7 +246,7 @@ const useHorarioEffects = (props, state, actions, stateSetters) => {
   useHorarioInitialization(props, stateSetters);
 
   // Efecto para nueva clase completa
-  useNewClassEffect(state, actions);
+  useNewClassEffect(state, actions, stateSetters);
 
   // Efecto para recalcular cuando cambia clase seleccionada
   useSelectedClassEffect(state, actions);

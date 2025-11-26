@@ -45,8 +45,8 @@ export default function RegisterSede() {
     await axios.post("/sedes", data);
 
     alert.success(
-      "Sede creada con éxito",
-      "Se ha registrado la sede exitosamente."
+      "Núcleo creada con éxito",
+      "Se ha registrado el núcleo exitosamente."
     );
 
     reset(); // 👈 Limpia el formulario después de registrar
@@ -58,7 +58,7 @@ export default function RegisterSede() {
       });
     } else {
       alert.error(
-        error.title || "Error al registrar la sede",
+        error.title || "Error al registrar úcleo",
         error.message || "No se pudo completar el registro. Intente nuevamente."
       );
     }
@@ -90,7 +90,7 @@ export default function RegisterSede() {
           gutterBottom
           sx={{ mt: 4, ml: 6 }} // 👈 Lo subimos un poco
         >
-          Registrar Sedes
+          Registrar Núcleo
         </Typography>
 
         <Box className="flex justify-center items-center flex-grow p-3">
@@ -110,31 +110,31 @@ export default function RegisterSede() {
           >
             <Box className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10 py-6">
               <CustomLabel
-                id="nombre de la sede"
+                id="nombre del núcleo"
                 name="nombre_sede"
-                label="Nombre de la Sede"
+                label="Nombre del Núcleo"
                 type="text"
                 variant="outlined"
                 {...register("nombre_sede")}
                 error={!!errors.nombre_sede}
                 helperText={
                   errors.nombre_sede?.message ||
-                  "Ingrese el nombre de la sede completos"
+                  "Ingrese el nombre del núcleo completos"
                 }
               />
 
               <CustomLabel
                 select
-                id="ciudad de la sede"
+                id="ciudad del núcleo"
                 name="ciudad_sede"
-                label="Ciudad de la Sede"
+                label="Ciudad del Núcleo"
                 type="text"
                 variant="outlined"
                 {...register("ciudad_sede")}
                 error={!!errors.ciudad_sede}
                 helperText={
                   errors.ciudad_sede?.message ||
-                  "Seleccione la ciudad donde estara la sede"
+                  "Seleccione la ciudad donde estara núcleo"
                 }
               >
                 <MenuItem value='Los Teques'>Los Teques</MenuItem>
@@ -144,16 +144,16 @@ export default function RegisterSede() {
               </CustomLabel>
 
               <CustomLabel
-                id="ubicacion de la sede"
+                id="ubicacion del núcleo"
                 name="ubicacion_sede"
-                label="Ubicación de la Sede"
+                label="Ubicación del núcleo"
                 type="text"
                 variant="outlined"
                 {...register("ubicacion_sede")}
                 error={!!errors.ubicacion_sede}
                 helperText={
                   errors.ubicacion_sede?.message ||
-                  "Ingrese la ubicación de la sede completas"
+                  "Ingrese la ubicación del núcleo completas"
                 }
               />
 

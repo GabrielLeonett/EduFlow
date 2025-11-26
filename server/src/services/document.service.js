@@ -286,12 +286,12 @@ class DocumentServices {
     turno = { hora_inicio: "07:00", hora_fin: "20:00" }
   ) {
     const diasSemana = [
-      "lunes",
-      "martes",
-      "miercoles",
-      "jueves",
-      "viernes",
-      "sabado",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
     ];
     const horasDisponibles = this.generarHorasDisponibles(turno);
 
@@ -463,11 +463,12 @@ class DocumentServices {
     }));
 
     // Filas con horarios y clases
-    horasDisponibles.forEach((hora) => {
+    horasDisponibles.forEach((hora, index) => {
+    const horas = `${UTILS.formatearHora(hora)} - ${UTILS.horariosAcademicos[index+1]}`
       const celdas = [
         this.crearCeldaEstilizada(
           this.crearParrafoEstilizado(
-            this.crearTextoEstilizado(UTILS.formatearHora(hora), {
+            this.crearTextoEstilizado(horas, {
               bold: true,
               size: ESTILOS.tamanos.hora,
             })
@@ -513,7 +514,7 @@ class DocumentServices {
               ? [
                   this.crearParrafoEstilizado(
                     this.crearTextoEstilizado(
-                      `Prof: ${clase.nombres_profesor?.split(" ")[0]} ${clase.apellido_profesor?.split(" ")[0]}`,
+                      `Prof: ${clase.nombre_profesor?.split(" ")[0]} ${clase.apellido_profesor?.split(" ")[0]}`,
                       { size: ESTILOS.tamanos.detalle }
                     )
                   ),
