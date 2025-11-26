@@ -102,6 +102,16 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
+      name: "Núcleos",
+      url: "/infraestructura/sedes",
+      roles: [
+        "Vicerrector",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+    },
+    {
       name: "Personal",
       roles: [
         "Vicerrector",
@@ -163,25 +173,15 @@ function ResponsiveAppBar({ backgroundColor }) {
     },
     {
       name: "Planificación de Horarios Académicos",
-          url: "/horarios/secciones",
-          roles: [
-            "Vicerrector",
-            "Profesor",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
+      url: "/horarios/secciones",
+      roles: [
+        "Vicerrector",
+        "Profesor",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
     },
-{
-          name: "Núcleos",
-          url: "/infraestructura/sedes",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
     {
       name: "Administración",
       roles: ["SuperAdmin"],

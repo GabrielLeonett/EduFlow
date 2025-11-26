@@ -3,10 +3,10 @@ export const UTILS = {
     const dias = [
       "lunes",
       "martes",
-      "miercoles",
+      "miércoles",
       "jueves",
       "viernes",
-      "sabado",
+      "sábado",
     ];
     return dias.indexOf(dia.toLowerCase());
   },
@@ -64,10 +64,10 @@ export const UTILS = {
     const dias = [
       "Lunes",
       "Martes",
-      "Miercoles",
+      "Miércoles",
       "Jueves",
       "Viernes",
-      "Sabado",
+      "Sábado",
     ];
     return dias[id] || "";
   },
@@ -180,7 +180,7 @@ export const UTILS = {
     "18:15",
     "19:00",
   ],
-  diasSemana: ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"],
+  diasSemana: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
 
   initialHours: {
     700: null,

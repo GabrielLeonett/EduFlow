@@ -179,7 +179,6 @@ export default class CurricularModel {
     try {
       console.log("Datos para registrar Unidad Curricular:", datos);
       const {
-        // id_trayecto, // NO SE UTILIZA YA QUE SE PASA COMO PARÁMETRO DIRECTO (idTrayecto)
         nombre_unidad_curricular,
         codigo_unidad_curricular,
         tipo_unidad,
@@ -189,16 +188,14 @@ export default class CurricularModel {
         semanas,
         areas_conocimiento = [],
         lineas_investigacion = [],
-        // Nota: `sinoptico` e `id_linea_investigacion` parecen faltar en el destructuring,
-        // por lo que se asumen valores por defecto (null o undefined) para la consulta.
-        sinoptico,
-        id_linea_investigacion,
-        hte,
-        hse,
-        hta,
-        hsa,
-        hti,
-        hsi,
+        sinoptico = null,
+        id_linea_investigacion = null,
+        hte = 0,
+        hse = 0,
+        hta = 0,
+        hsa = 0,
+        hti = 0,
+        hsi = 0,
       } = datos;
 
       // Validar que areas_conocimiento sea un array
@@ -206,52 +203,51 @@ export default class CurricularModel {
         throw new Error("El parámetro areas_conocimiento debe ser un array");
       }
 
-      // Validar que lineas_investigacion sea un array (asumiendo estructura similar)
+      // Validar que lineas_investigacion sea un array
       if (!Array.isArray(lineas_investigacion)) {
         throw new Error("El parámetro lineas_investigacion debe ser un array");
       }
 
       // Convertir areas_conocimiento a array de números
       const areasConocimientoArray = areas_conocimiento.map((area) =>
-        Number(area.id_area_conocimiento)
+        Number(area.id_area_conocimiento || area)
       );
 
       // Convertir lineas_investigacion a array de números
-      // **Asumiendo que el objeto tiene una propiedad id_linea_investigacion**
+      // Maneja tanto objetos como IDs directos
       const lineasInvestigacionArray = lineas_investigacion.map((linea) =>
-        Number(linea.id_linea_investigacion)
+        Number(linea.id_linea_investigacion || linea)
       );
 
-      // --- Consulta a la Función Almacenada (query) ---
+      // Si el array está vacío, lo convertimos a NULL para PostgreSQL
+      const lineasInvestigacionParam =
+        lineasInvestigacionArray.length > 0 ? lineasInvestigacionArray : null;
 
-      // La consulta ya está bien definida, simplemente necesita un valor por cada placeholder ($1, $2, etc.)
-      // La vamos a dejar como template string por claridad, pero usaremos $n en los parámetros.
+      // --- Consulta a la Función Almacenada ---
       const query = `CALL registrar_unidad_curricular_completo(
-       $1,  -- p_usuario_accion
-       $2,  -- p_id_trayecto
-       $3,  -- p_nombre_unidad_curricular
-       $4,  -- p_descripcion_unidad_curricular
-       $5,  -- p_carga_horas
-       $6,  -- p_codigo_unidad
-       $7,  -- p_areas_conocimiento (integer[])
-       $8,  -- p_lineas_investigacion (integer[])
-       $9,  -- p_sinoptico (text)
-       $10, -- p_id_linea_investigacion (bigint)
-       $11, -- p_creditos (smallint)
-       $12, -- p_semanas (smallint)
-       $13, -- p_tipo_unidad (character varying)
-       $14, -- p_hte (numeric)
-       $15, -- p_hse (numeric)
-       $16, -- p_hta (numeric)
-       $17, -- p_hsa (numeric)
-       $18, -- p_hti (numeric)
-       $19, -- p_hsi (numeric)
-       NULL
-     )`;
+      $1,  -- p_usuario_accion
+      $2,  -- p_id_trayecto
+      $3,  -- p_nombre_unidad_curricular
+      $4,  -- p_descripcion_unidad_curricular
+      $5,  -- p_carga_horas
+      $6,  -- p_codigo_unidad
+      $7,  -- p_areas_conocimiento (integer[])
+      $8,  -- p_lineas_investigacion (integer[]) - AHORA EN POSICIÓN CORRECTA
+      $9,  -- p_sinoptico (text)
+      $10, -- p_id_linea_investigacion (bigint)
+      $11, -- p_creditos (smallint)
+      $12, -- p_semanas (smallint)
+      $13, -- p_tipo_unidad (character varying)
+      $14, -- p_hte (numeric)
+      $15, -- p_hse (numeric)
+      $16, -- p_hta (numeric)
+      $17, -- p_hsa (numeric)
+      $18, -- p_hti (numeric)
+      $19, -- p_hsi (numeric)
+      $20  -- p_resultado (OUT parameter)
+    )`;
 
-      // --- Array de Parámetros (params) ---
-
-      // Deben coincidir en orden con los placeholders ($1, $2, $3, etc.) de la consulta.
+      // --- Array de Parámetros ---
       const params = [
         usuario_accion, // $1
         idTrayecto, // $2
@@ -260,22 +256,24 @@ export default class CurricularModel {
         carga_horas_academicas, // $5
         codigo_unidad_curricular, // $6
         areasConocimientoArray, // $7
-        lineasInvestigacionArray, // $8 (Usamos el array de líneas de investigación)
-        sinoptico, // $9 (Usamos null si no viene en los datos)
-        id_linea_investigacion, // $10 (Usamos null si no viene en los datos)
+        lineasInvestigacionParam, // $8 - AHORA EN POSICIÓN CORRECTA
+        sinoptico, // $9
+        id_linea_investigacion, // $10
         creditos, // $11
         semanas, // $12
         tipo_unidad, // $13
-        hte, // $14 (Horas Teóricas Estudiantiles)
-        hse, // $15 (Horas Seminario Estudiantiles)
-        hta, // $16 (Horas Teóricas Académicas)
-        hsa, // $17 (Horas Seminario Académicas)
-        hti, // $18 (Horas Taller Investigación)
-        hsi, // $19 (Horas Seminario Investigación)
+        hte, // $14
+        hse, // $15
+        hta, // $16
+        hsa, // $17
+        hti, // $18
+        hsi, // $19
+        null, // $20 - Para el parámetro OUT
       ];
 
       console.log("Parámetros para el procedimiento:", params);
 
+      // Ejecutar el procedimiento
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
@@ -475,13 +473,13 @@ export default class CurricularModel {
 
       // Validar que areas_conocimiento sea un array
       if (areas_conocimiento && !Array.isArray(areas_conocimiento)) {
-        console.log(areas_conocimiento)
+        console.log(areas_conocimiento);
         throw new Error("El parámetro areas_conocimiento debe ser un array");
       }
-      
+
       // Validar que lineas_investigacion sea un array
       if (lineas_investigacion && !Array.isArray(lineas_investigacion)) {
-        console.log(lineas_investigacion)
+        console.log(lineas_investigacion);
         throw new Error("El parámetro lineas_investigacion debe ser un array");
       }
 

@@ -180,7 +180,7 @@ export default class EmailService {
   /**
    * @async
    * @method verificarEmailConAPI
-   * @description Verifica un email usando AbstractAPI Email Reputation
+   * @description Verifica un email usando AbstractAPI Email Reputation con manejo robusto de errores
    * @param {string} email - Dirección de correo a verificar
    * @returns {Promise<Object>} Resultado de la verificación
    */
@@ -188,21 +188,43 @@ export default class EmailService {
     try {
       const API_KEY = process.env.EMAIL_VERIFICATION_API_KEY;
 
+      // Si no hay API key, usar validación local inmediatamente
       if (!API_KEY) {
+        console.warn(
+          "⚠️ [EmailService] No hay API key, usando validación local"
+        );
         return this.validarEmailLocal(email);
       }
+
+      console.log(`🌐 [EmailService] Verificando email con API: ${email}`);
+
+      // Timeout para evitar esperas infinitas
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
 
       const response = await fetch(
         `https://emailreputation.abstractapi.com/v1/?api_key=${API_KEY}&email=${encodeURIComponent(
           email
-        )}`
+        )}`,
+        {
+          signal: controller.signal,
+          headers: {
+            Accept: "application/json",
+          },
+        }
       );
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         console.warn(
-          `⚠️ API respondió con status: ${response.status}, usando validación local`
+          `⚠️ [EmailService] API respondió con status: ${response.status}`
         );
-        return this.validarEmailLocal(email);
+        // Si es error del servidor (5xx) o rate limiting (429), usar validación local
+        if (response.status >= 500 || response.status === 429) {
+          return this.validarEmailLocal(email);
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -210,34 +232,47 @@ export default class EmailService {
       // Debug: Ver respuesta completa de la API
       if (process.env.NODE_ENV === "development") {
         console.log(
-          "📨 Respuesta completa de AbstractAPI:",
+          "📨 [EmailService] Respuesta API:",
           JSON.stringify(data, null, 2)
         );
       }
 
-      // CORRECCIÓN: Usar los campos correctos de la API de Reputation
+      // Verificar estructura de respuesta
+      if (!data || typeof data !== "object") {
+        console.warn("⚠️ [EmailService] Respuesta API inválida");
+        return this.validarEmailLocal(email);
+      }
+
+      // Usar los campos correctos de la API de Reputation
       const esValido = data.email_deliverability?.is_format_valid === true;
       const esEntregable = data.email_deliverability?.status === "deliverable";
       const noEsDesechable = data.email_quality?.is_disposable === false;
 
       return {
-        existe: esValido && esEntregable && noEsDesechable, // CORREGIDO
-        valido: esValido, // CORREGIDO
+        existe: esValido && esEntregable && noEsDesechable,
+        valido: esValido,
         calidad: parseFloat(data.email_quality?.score) || 0,
         mensaje: this.generarMensajeReputacion(data),
         datos: data,
         verificadoCon: "api_reputacion_email",
       };
     } catch (error) {
-      console.warn(
-        `⚠️ Error en API de email reputation: ${error.message}, usando validación local`
-      );
-      return {
-        existe: false, // CORREGIDO
-        valido: false, // CORREGIDO
-        datos: error,
-        verificadoCon: "api_reputacion_email",
-      };
+      console.warn(`⚠️ [EmailService] Error en API: ${error.message}`);
+
+      // Clasificar el tipo de error
+      if (error.name === "AbortError") {
+        console.warn(
+          "⏰ [EmailService] Timeout en API, usando validación local"
+        );
+      } else if (
+        error.message.includes("network") ||
+        error.message.includes("fetch")
+      ) {
+        console.warn("🌐 [EmailService] Error de red, usando validación local");
+      }
+
+      // Para cualquier error de API, usar validación local como respaldo
+      return this.validarEmailLocal(email);
     }
   }
 
@@ -421,6 +456,7 @@ export default class EmailService {
    * @async
    * @method verificarYValidarEmails
    * @description Verifica y valida uno o múltiples emails antes del envío
+   * Implementa validación local como respaldo cuando la API falla
    * @param {string|string[]} destinatarios - Email o array de emails a verificar
    * @returns {Promise<Object>} Resultado de la verificación
    */
@@ -430,43 +466,131 @@ export default class EmailService {
       : [destinatarios];
     const errores = [];
     const emailsValidos = [];
+    const resultadosIndividuales = [];
+    let apiDisponible = true;
+
+    console.log(`🔍 [EmailService] Verificando ${emails.length} email(s)`);
 
     for (const email of emails) {
-      // Validación básica de formato primero
-      const validacionFormato = this.validarFormatoEmail(email);
+      try {
+        // Validación básica de formato primero (siempre local)
+        const validacionFormato = this.validarFormatoEmail(email);
 
-      if (!validacionFormato.valido) {
-        errores.push({
+        if (!validacionFormato.valido) {
+          const error = {
+            email: email,
+            mensaje: validacionFormato.mensaje,
+            tipo: "formato_invalido",
+            metodo: "validacion_local",
+          };
+          errores.push(error);
+          resultadosIndividuales.push({ email, valido: false, error });
+          continue;
+        }
+
+        let verificacion;
+        let metodoVerificacion = "api_reputacion_email";
+
+        // Intentar verificación con API primero
+        if (apiDisponible) {
+          try {
+            verificacion = await this.verificarEmailConAPI(email);
+            metodoVerificacion = verificacion.verificadoCon;
+
+            // Si la API falló fatalmente, desactivar para próximos emails
+            if (verificacion.verificadoCon === "validacion_local") {
+              apiDisponible = false;
+              console.warn(
+                `⚠️ [EmailService] API no disponible, usando validación local para email: ${email}`
+              );
+            }
+          } catch (apiError) {
+            // Error fatal en API, usar validación local
+            apiDisponible = false;
+            console.warn(
+              `⚠️ [EmailService] Error en API, cambiando a validación local: ${apiError.message}`
+            );
+            verificacion = this.validarEmailLocal(email);
+            metodoVerificacion = "validacion_local_fallback";
+          }
+        } else {
+          // API no disponible, usar solo validación local
+          verificacion = this.validarEmailLocal(email);
+          metodoVerificacion = "validacion_local_fallback";
+        }
+
+        // Evaluar el resultado de la verificación
+        const esValido = verificacion.valido && verificacion.existe;
+
+        if (!esValido) {
+          const error = {
+            email: email,
+            mensaje: verificacion.mensaje,
+            tipo: "email_no_verificado",
+            metodo: metodoVerificacion,
+            detalles: verificacion,
+            calidad: verificacion.calidad || 0,
+          };
+          errores.push(error);
+          resultadosIndividuales.push({ email, valido: false, error });
+        } else {
+          emailsValidos.push(email);
+          resultadosIndividuales.push({
+            email,
+            valido: true,
+            metodo: metodoVerificacion,
+            calidad: verificacion.calidad || 0.5,
+            mensaje: verificacion.mensaje,
+          });
+
+          console.log(
+            `✅ [EmailService] Email válido: ${email} (${metodoVerificacion})`
+          );
+        }
+      } catch (error) {
+        // Error inesperado en el proceso de verificación
+        console.error(
+          `💥 [EmailService] Error inesperado verificando ${email}:`,
+          error
+        );
+
+        const errorObj = {
           email: email,
-          mensaje: validacionFormato.mensaje,
-          tipo: "formato_invalido",
-        });
-        continue;
-      }
+          mensaje: "Error inesperado en verificación",
+          tipo: "error_proceso",
+          metodo: "error",
+          detalles: error.message,
+        };
 
-      // Verificación con API
-      const verificacion = await this.verificarEmailConAPI(email);
-
-      if (!verificacion.existe || !verificacion.valido) {
-        errores.push({
-          email: email,
-          mensaje: verificacion.mensaje,
-          tipo: "email_no_verificado",
-          detalles: verificacion,
-        });
-      } else {
-        emailsValidos.push(email);
+        errores.push(errorObj);
+        resultadosIndividuales.push({ email, valido: false, error: errorObj });
       }
     }
 
-    return {
+    // Resumen final
+    const resultadoFinal = {
       todosValidos: errores.length === 0,
       emailsValidos: emailsValidos,
       errores: errores,
       totalVerificados: emails.length,
       totalValidos: emailsValidos.length,
       totalErrores: errores.length,
+      metodoPrincipal: apiDisponible
+        ? "api_reputacion_email"
+        : "validacion_local",
+      apiDisponible: apiDisponible,
+      resultadosIndividuales: resultadosIndividuales,
     };
+
+    console.log(`📊 [EmailService] Resumen verificación:`, {
+      total: resultadoFinal.totalVerificados,
+      validos: resultadoFinal.totalValidos,
+      errores: resultadoFinal.totalErrores,
+      metodo: resultadoFinal.metodoPrincipal,
+      apiDisponible: resultadoFinal.apiDisponible,
+    });
+
+    return resultadoFinal;
   }
 
   /**

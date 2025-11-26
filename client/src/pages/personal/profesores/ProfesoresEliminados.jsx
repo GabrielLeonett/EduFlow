@@ -128,7 +128,7 @@ export default function GestionProfesores() {
 
       <Box mt={12} p={3}>
         <Typography variant="h3" fontWeight={600} mb={1}>
-          Profesores Eliminados
+          Control de Estatus Docente
         </Typography>
         <Typography variant="body2" color="text.secondary" mb={3}>
           Lista de profesores eliminados y opciones de restauración

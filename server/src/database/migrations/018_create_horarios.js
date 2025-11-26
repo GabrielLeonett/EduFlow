@@ -28,10 +28,10 @@ export async function up(knex) {
       .enum("dia_semana", [
         "Lunes",
         "Martes",
-        "Miercoles",
+        "Miércoles",
         "Jueves",
         "Viernes",
-        "Sabado",
+        "Sábado",
       ])
       .notNullable()
       .comment("Día de la semana (domingo excluido por ser no lectivo)");

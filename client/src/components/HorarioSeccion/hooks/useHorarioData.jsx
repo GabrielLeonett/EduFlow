@@ -93,30 +93,6 @@ const calcularHorasAsignadas = (tableHorario, idUnidadCurricular) => {
   return totalHoras;
 };
 
-// Función para verificar si un profesor ya está asignado a otra unidad curricular
-const verificarProfesorEnOtraUnidad = (
-  profesor,
-  tableHorario,
-  unidadCurricularActual
-) => {
-  // Verificar si el profesor ya está asignado en el horario a una unidad curricular diferente
-  for (const dia of tableHorario) {
-    for (const hora of Object.values(dia.horas)) {
-      if (
-        hora?.datos_clase?.id_profesor === profesor.id_profesor &&
-        hora.datos_clase.id_unidad_curricular !==
-          unidadCurricularActual.id_unidad_curricular
-      ) {
-        return {
-          estaAsignado: true,
-          unidadCurricularAsignada: hora.datos_clase.id_unidad_curricular,
-        };
-      }
-    }
-  }
-  return { estaAsignado: false, unidadCurricularAsignada: null };
-};
-
 // Función para validar si las unidades curriculares están inicializadas
 const validarUnidadesCurricularesInicializadas = (unidades) => {
   return (
@@ -251,34 +227,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         );
 
         if (profesores && Array.isArray(profesores) && profesores.length > 0) {
-          // Verificar cada profesor para ver si ya está asignado a otra unidad curricular
-          const profesoresVerificados = profesores.map((profesor) => {
-            const verificacion = verificarProfesorEnOtraUnidad(
-              profesor,
-              tableHorario,
-              unidadCurricular
-            );
-
-            if (verificacion.estaAsignado) {
-              // Marcar como no válido si ya está asignado a otra unidad
-              return {
-                ...profesor,
-                es_valido: false,
-                razon_invalidez: `Ya está asignado a otra unidad curricular (ID: ${verificacion.unidadCurricularAsignada})`,
-                disponibilidades: profesor.disponibilidades || [],
-                dedicacion_actual: profesor.dedicacion_actual || null,
-                areas_coincidentes: profesor.areas_coincidentes || null,
-                areas_conocimiento: profesor.areas_conocimiento || null,
-                horas_disponibles_semanales:
-                  profesor.horas_disponibles_semanales || null,
-              };
-            }
-
-            // Mantener el profesor como está si no está asignado a otra unidad
-            return profesor;
-          });
-
-          setProfesores(profesoresVerificados);
+          setProfesores(profesores);
         } else {
           const confirm = await alert.confirm(
             "¿Seguir Buscando?",
@@ -299,34 +248,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
               Array.isArray(profesores) &&
               profesores.length > 0
             ) {
-              // Verificar cada profesor para ver si ya está asignado a otra unidad curricular
-              const profesoresVerificados = profesores.map((profesor) => {
-                const verificacion = verificarProfesorEnOtraUnidad(
-                  profesor,
-                  tableHorario,
-                  unidadCurricular
-                );
-
-                if (verificacion.estaAsignado) {
-                  // Marcar como no válido si ya está asignado a otra unidad
-                  return {
-                    ...profesor,
-                    es_valido: false,
-                    razon_invalidez: `Ya está asignado a otra unidad curricular (ID: ${verificacion.unidadCurricularAsignada})`,
-                    disponibilidades: profesor.disponibilidades || [],
-                    dedicacion_actual: profesor.dedicacion_actual || null,
-                    areas_coincidentes: profesor.areas_coincidentes || null,
-                    areas_conocimiento: profesor.areas_conocimiento || null,
-                    horas_disponibles_semanales:
-                      profesor.horas_disponibles_semanales || null,
-                  };
-                }
-
-                // Mantener el profesor como está si no está asignado a otra unidad
-                return profesor;
-              });
-
-              setProfesores(profesoresVerificados);
+              setProfesores(profesores);
             } else {
               alert.warning(
                 "No se encontraron profesores disponibles para asignar este horario"
@@ -724,10 +646,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     datosNewHorario
                   );
 
-
                   if (respuesta && respuesta.horario) {
                     // Limpiar flags y actualizar con ID del servidor
- 
+                    console.log(respuesta)
+
                     resultados.push({
                       tipo: "creacion",
                       success: true,

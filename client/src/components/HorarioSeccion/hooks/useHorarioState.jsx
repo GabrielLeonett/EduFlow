@@ -47,7 +47,7 @@ const useHorarioState = () => {
 
   // Estado de la tabla de horario
   const [tableHorario, setTableHorario] = useState(
-    ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"].map(
+    ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"].map(
       (dia) => ({ dia, horas: { ...UTILS.initialHours } })
     )
   );

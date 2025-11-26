@@ -141,12 +141,12 @@ export const UTILS = {
 
   obtenerDiaNombre: (diaIndex) => {
     const dias = [
-      "lunes",
-      "martes",
-      "miercoles",
-      "jueves",
-      "viernes",
-      "sabado",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
     ];
     return dias[diaIndex] || "";
   },

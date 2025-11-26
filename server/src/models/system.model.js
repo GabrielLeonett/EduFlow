@@ -155,7 +155,7 @@ export default class SystemModel {
   FROM generate_series(0, 17) as n
 ),
 dias_semana AS (
-  SELECT unnest(ARRAY['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado']) as dia
+  SELECT unnest(ARRAY['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']) as dia
 ),
 -- Calcular el máximo de horarios activos en cualquier intervalo para normalizar
 max_horarios AS (
@@ -217,10 +217,10 @@ ORDER BY
   CASE dia
     WHEN 'Lunes' THEN 1
     WHEN 'Martes' THEN 2
-    WHEN 'Miercoles' THEN 3
+    WHEN 'Miércoles' THEN 3
     WHEN 'Jueves' THEN 4
     WHEN 'Viernes' THEN 5
-    WHEN 'Sabado' THEN 6
+    WHEN 'Sábado' THEN 6
   END,
   hora_inicio;
       `);

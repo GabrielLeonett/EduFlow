@@ -21,6 +21,7 @@ import {
   Logout as LogoutIcon,
   Search as SearchIcon,
   Block as BlockIcon,
+  
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import CustomButton from "../../customButton";
@@ -180,8 +181,6 @@ const ClassForm = ({
           {/* Profesor - Solo se muestra si hay unidad seleccionada */}
           {unidadCurricularSelected && (
             <Grid size={{ xs: 12, lg: 6 }}>
-              {console.log(profesores)}
-
               {/* Definir componentes de grupo localmente */}
               <Box sx={{ position: "relative" }}>
                 <CustomAutocomplete

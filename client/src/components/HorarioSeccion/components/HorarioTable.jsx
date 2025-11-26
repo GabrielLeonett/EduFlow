@@ -18,6 +18,8 @@ import {
   Info as InfoIcon,
   Schedule as ScheduleIcon,
   Class as ClassIcon,
+  Warning as WarningIcon,
+  CheckCircle as CheckCircleIcon ,
 } from "@mui/icons-material";
 import Clase from "./clase";
 import { UTILS } from "../../../utils/utils";

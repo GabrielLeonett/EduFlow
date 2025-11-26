@@ -142,7 +142,7 @@ export default function GestionHorariosSecciones() {
             }}
           >
             <ScheduleIcon fontSize="large" />
-            Gestión de Horarios
+            Planificación de Horarios Académicos
           </Typography>
           <Typography variant="h6" color="text.secondary">
             Visualiza el horario académico por sección

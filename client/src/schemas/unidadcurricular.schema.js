@@ -87,8 +87,7 @@ export const unidadcurricularSchema = z.object({
     lineas_investigacion: z.array(lineaInvestigacionSchema, {
         invalid_type_error: "Las líneas de investigación deben ser una lista (array).",
         required_error: "Las líneas de investigación son obligatorias.",
-    })
-    .min(1, "Debe seleccionar al menos una Línea de Investigación."),
+    }).optional(),
 
     // --- DISTRIBUCIÓN DE HORAS ---
     hte: hourSchema, // Horas Teóricas Presenciales

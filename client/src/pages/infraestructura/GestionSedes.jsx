@@ -82,31 +82,15 @@ export default function GestionSedes() {
     <>
       <ResponsiveAppBar backgroundColor />
 
-      <Box
-        sx={{
-          mt: 12,
-          backgroundColor: theme.palette.background.default,
-        }}
-      >
+      <Box mt={12} p={3}>
+        <Typography variant="h3" fontWeight={600} mb={1}>
+          Núcleos
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mb={3}>
+          Visualizar, Editar y Crear Núcleos
+        </Typography>
         {/* Encabezado */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <Typography
-            variant="h3"
-            component="h1"
-            sx={{
-              fontWeight: "bold",
-            }}
-          >
-            Núcleos
-          </Typography>
-        </Box>
+
 
         {/* 👉 Loading */}
         {loading && (

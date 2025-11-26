@@ -7,12 +7,16 @@ import {
   useTheme,
   Avatar,
   Stack,
+  Chip,
+  Tooltip,
 } from "@mui/material";
 import { Link } from "@mui/material";
 import CustomButton from "./customButton";
-import CustomChip from "./CustomChip";
-import { LocationOn as LocationOnIcon, Visibility as VisibilityIcon } from "@mui/icons-material";
-import SchoolIcon from "@mui/icons-material/School";
+import { 
+  LocationOn as LocationOnIcon, 
+  Visibility as VisibilityIcon,
+  School as SchoolIcon 
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 export default function CardSede({ sede }) {
@@ -20,141 +24,218 @@ export default function CardSede({ sede }) {
   const navigate = useNavigate();
 
   return (
-    <Grid container justifyContent="center">
-      <Box sx={{ maxWidth: "lg", width: "100%", px: 3 }}>
-        <Grid container justifyContent="center">
-          <Grid xs={12} sm={10} md={8} lg={6}>
-            <Card
+    <Grid item xs={12} sm={6} md={4} lg={3}>
+      <Card
+        sx={{
+          height: '420px', // Altura fija para consistencia
+          boxShadow: 2,
+          borderRadius: 3,
+          overflow: "hidden",
+          transition: "all 0.3s ease-in-out",
+          border: `1px solid ${theme.palette.divider}`,
+          "&:hover": {
+            boxShadow: 6,
+            transform: "translateY(-4px)",
+            borderColor: theme.palette.primary.light,
+          },
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Header con ícono y título */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "flex-start",
+            p: 2.5,
+            gap: 2,
+            backgroundColor: theme.palette.primary.main,
+            color: 'white',
+            minHeight: 100, // Altura fija para el header
+          }}
+        >
+          <Avatar
+            sx={{
+              backgroundColor: 'white',
+              color: theme.palette.primary.main,
+              width: 48,
+              height: 48,
+              flexShrink: 0,
+              mt: 0.5,
+            }}
+          >
+            <SchoolIcon />
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}> {/* minWidth: 0 para evitar overflow */}
+            <Tooltip title={sede.nombre_sede} arrow>
+              <Typography
+                variant="h6"
+                component="h3"
+                sx={{
+                  fontWeight: 600,
+                  color: 'white',
+                  lineHeight: 1.3,
+                  mb: 1,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  minHeight: '2.6em', // 2 líneas de altura
+                }}
+              >
+                {sede.nombre_sede}
+              </Typography>
+            </Tooltip>
+            <Tooltip title={sede.ubicacion_sede} arrow>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'white',
+                  opacity: 0.9,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  minHeight: '2.4em', // 2 líneas de altura
+                }}
+              >
+                <LocationOnIcon fontSize="small" />
+                {sede.ubicacion_sede}
+              </Typography>
+            </Tooltip>
+          </Box>
+        </Box>
+
+        <CardContent sx={{ 
+          p: 2.5, 
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column',
+          gap: 2,
+        }}>
+          {/* PNFs Disponibles */}
+          <Box sx={{ flex: 1, minHeight: 0 }}>
+            <Typography
+              variant="subtitle2"
+              component="h4"
               sx={{
-                boxShadow: 4,
-                borderRadius: 3,
-                overflow: "hidden",
-                transition: "all 0.3s ease-in-out",
-                "&:hover": {
-                  boxShadow: 8,
-                  transform: "translateY(-4px)",
+                fontWeight: 600,
+                mb: 1.5,
+                color: theme.palette.text.primary,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <SchoolIcon fontSize="small" color="primary" />
+              PNFs Disponibles
+            </Typography>
+
+            <Stack 
+              direction="row" 
+              flexWrap="wrap" 
+              gap={1}
+              sx={{ 
+                maxHeight: 120, // Altura máxima para los chips
+                overflow: 'auto',
+                '&::-webkit-scrollbar': {
+                  width: 4,
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: theme.palette.grey[400],
+                  borderRadius: 2,
                 },
               }}
             >
-              <Avatar
-                variant="square"
-                sx={{
-                  width: "100%",
-                  height: 160,
-                  backgroundColor: theme.palette.primary.main,
-                  borderRadius: 0,
-                }}
-              >
-                <SchoolIcon sx={{ fontSize: 60, color: "white" }} />
-              </Avatar>
-
-              <CardContent sx={{ p: 4 }}>
-                {/* Header con título y botón */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    mb: 3,
-                  }}
-                >
-                  <Typography
-                    variant="h5"
-                    component="h3"
-                    sx={{
-                      fontWeight: 700,
-                      color: theme.palette.text.primary,
-                      flex: 1,
-                      mr: 2,
+              {sede.pnfs?.slice(0, 6).map((pnf, index) => (
+                <Tooltip key={index} title={pnf.nombre_pnf} arrow>
+                  <Chip
+                    label={pnf.nombre_pnf}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    sx={{ 
+                      fontWeight: 500,
+                      borderWidth: 1.5,
+                      maxWidth: '100%',
+                      '& .MuiChip-label': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }
                     }}
-                  >
-                    {sede.nombre_sede}
-                  </Typography>
-
-                  <Link
-                    href={sede.google_sede}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ textDecoration: "none" }}
-                  >
-                    <CustomButton
-                      variant="contained"
-                      startIcon={<LocationOnIcon />}
-                      sx={{
-                        minWidth: "auto",
-                        px: 2,
-                        py: 1,
-                      }}
-                    >
-                      Ir
-                    </CustomButton>
-                  </Link>
-                </Box>
-
-                {/* Ubicación */}
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    mb: 3,
-                    lineHeight: 1.6,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                  }}
+                  />
+                </Tooltip>
+              ))}
+              {sede.pnfs?.length > 6 && (
+                <Chip
+                  label={`+${sede.pnfs.length - 6} más`}
+                  size="small"
+                  color="default"
+                  variant="outlined"
+                />
+              )}
+              {(!sede.pnfs || sede.pnfs.length === 0) && (
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{ fontStyle: 'italic' }}
                 >
-                  <LocationOnIcon fontSize="small" color="primary" />
-                  {sede.ubicacion_sede}
+                  No hay PNFs asignados
                 </Typography>
+              )}
+            </Stack>
+          </Box>
 
+          {/* Acciones - Siempre en la parte inferior */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 1, 
+            flexWrap: 'wrap',
+            mt: 'auto', // Empuja los botones hacia abajo
+            pt: 1,
+          }}>
+            <CustomButton
+              variant="contained"
+              startIcon={<VisibilityIcon />}
+              fullWidth
+              onClick={() => navigate(`/infraestructura/sedes/${sede.id_sede}/aulas`)}
+              sx={{ 
+                minHeight: 40,
+                fontSize: '0.875rem',
+              }}
+            >
+              Ver Núcleo
+            </CustomButton>
+
+            {sede.google_sede && (
+              <Link
+                href={sede.google_sede}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ textDecoration: 'none', width: '100%' }}
+              >
                 <CustomButton
-                  variant="contained"
-                  startIcon={<VisibilityIcon />}
-                  sx={{
-                    minWidth: "auto",
-                    px: 2,
-                    py: 1,
+                  variant="outlined"
+                  startIcon={<LocationOnIcon />}
+                  fullWidth
+                  sx={{ 
+                    minHeight: 40,
+                    fontSize: '0.875rem',
                   }}
-                  onClick={() => navigate(`/infraestructura/sedes/${sede.id_sede}/aulas`)}
                 >
-                  Ver Núcleo
+                  Ubicación
                 </CustomButton>
-
-                {/* PNFs */}
-                <Box>
-                  <Typography
-                    variant="h6"
-                    component="h4"
-                    sx={{
-                      fontWeight: 600,
-                      mb: 2,
-                      color: theme.palette.text.primary,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                    }}
-                  >
-                    <SchoolIcon fontSize="small" />
-                    PNFs Disponibles
-                  </Typography>
-
-                  <Stack direction="row" flexWrap="wrap" gap={1}>
-                    {sede.pnfs.map((pnf, i) => (
-                      <CustomChip
-                        key={i}
-                        label={pnf.nombre_pnf}
-                        size="mediun"
-                        color="primary"
-                        variant="outlined"
-                      />
-                    ))}
-                  </Stack>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Box>
+              </Link>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
     </Grid>
   );
 }

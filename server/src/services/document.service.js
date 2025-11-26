@@ -286,12 +286,12 @@ class DocumentServices {
     turno = { hora_inicio: "07:00", hora_fin: "20:00" }
   ) {
     const diasSemana = [
-      "lunes",
-      "martes",
-      "miercoles",
-      "jueves",
-      "viernes",
-      "sabado",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
     ];
     const horasDisponibles = this.generarHorasDisponibles(turno);
 
