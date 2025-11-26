@@ -80,25 +80,25 @@ export default function CardProfesorEliminado({ prof }) {
   </Typography>
 
   <Grid container spacing={1.5}>
-    <Grid item xs={12} sm={6}>
+    <Grid xs={12} sm={6}>
       <Typography variant="body2">
         <strong>Cédula:</strong> {prof.cedula}
       </Typography>
     </Grid>
 
-    <Grid item xs={12} sm={6}>
+    <Grid xs={12} sm={6}>
       <Typography variant="body2">
         <strong>Género:</strong> {prof.genero}
       </Typography>
     </Grid>
 
-    <Grid item xs={12} sm={6}>
+    <Grid xs={12} sm={6}>
       <Typography variant="body2">
         <strong>Email:</strong> {prof.email}
       </Typography>
     </Grid>
 
-    <Grid item xs={12} sm={6}>
+    <Grid xs={12} sm={6}>
       <Typography variant="body2">
         <strong>Teléfono:</strong>{" "}
         {prof.telefono_movil || "No especificado"}
@@ -119,28 +119,28 @@ export default function CardProfesorEliminado({ prof }) {
 
           <AccordionDetails>
             <Grid container spacing={1}>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Typography variant="body2">
                   <strong>Categoría:</strong>{" "}
                   {prof.ultima_categoria || "No especificada"}
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Typography variant="body2">
                   <strong>Dedicación:</strong>{" "}
                   {prof.ultima_dedicacion || "No especificada"}
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Typography variant="body2">
                   <strong>Tiempo de servicio:</strong>{" "}
                   {prof.tiempo_servicio || 0} años
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Typography variant="body2">
                   <strong>Reingreso:</strong>{" "}
                   {prof.tiene_reingreso ? "Sí" : "No"}
@@ -162,27 +162,27 @@ export default function CardProfesorEliminado({ prof }) {
 
           <AccordionDetails>
             <Grid container spacing={1}>
-              <Grid item xs={12}>
+              <Grid xs={12}>
                 <Typography variant="body2">
                   <strong>Motivo:</strong> {prof.razon || "No especificado"}
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Typography variant="body2">
                   <strong>Fecha eliminación:</strong>{" "}
                   {new Date(prof.fecha_eliminacion).toLocaleDateString()}
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Typography variant="body2">
                   <strong>Eliminado por:</strong> {prof.nombre_usuario_accion}
                 </Typography>
               </Grid>
 
               {prof.observaciones && (
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <Typography variant="body2">
                     <strong>Observaciones:</strong> {prof.observaciones}
                   </Typography>

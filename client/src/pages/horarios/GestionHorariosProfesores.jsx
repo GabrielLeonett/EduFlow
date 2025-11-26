@@ -59,7 +59,7 @@ export default function GestionHorariosProfesores() {
         {/* Layout principal con sidebar de filtros y contenido */}
         <Grid container spacing={4}>
           {/* Contenido principal */}
-          <Grid item xs={12} md={8} lg={9}>
+          <Grid xs={12} md={8} lg={9}>
             {/* HorarioAula */}
             {horario ? (
               <HorarioProfesor

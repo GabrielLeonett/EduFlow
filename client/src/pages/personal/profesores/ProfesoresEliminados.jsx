@@ -231,7 +231,7 @@ export default function GestionProfesores() {
               <>
                 <Grid container spacing={3} sx={{ width: "100%", margin: 0 }}>
                   {profesores.map((profesor) => (
-                    <Grid item key={profesor.cedula || profesor.id}>
+                    <Grid key={profesor.cedula || profesor.id}>
                       <CardProfesorEliminado prof={profesor} />
                     </Grid>
                   ))}

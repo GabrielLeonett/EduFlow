@@ -169,7 +169,7 @@ export const UTILS = {
     "17:30",
     "18:15",
     "19:00",
-    "19:45",
+     
   ],
 
   sumar45Minutos: (horaInicio, bloques) => {

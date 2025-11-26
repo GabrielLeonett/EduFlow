@@ -248,7 +248,7 @@ export default function Coordinadores() {
               <>
                 <Grid container spacing={3} sx={{ width: "100%", margin: 0 }}>
                   {coordinadores.map((coordinador) => (
-                    <Grid item key={coordinador.id_coordinador || coordinador.cedula}>
+                    <Grid key={coordinador.id_coordinador || coordinador.cedula}>
                       <CardCoordinador
                         coordinador={coordinador}
                         isSearch={!!id_coordinador}

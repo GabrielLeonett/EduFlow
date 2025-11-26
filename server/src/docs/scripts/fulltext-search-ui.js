@@ -69,7 +69,7 @@ window.SearcherDisplay = (function($) {
 
             for (var idx = 0; idx < results.length; idx++) {
                 var result = results[idx],
-                       item = document.createElement("li"),
+                       = document.createElement("li"),
                        link = document.createElement("a");
 
                 link.href = result.id;

@@ -117,7 +117,7 @@ export default class ProfesorController {
   static async mostrarProfesor(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      ProfesorService.obtenerTodos(req.query)
+      ProfesorService.obtenerProfesores(req.query)
     );
   }
 
@@ -137,7 +137,7 @@ export default class ProfesorController {
 
   /**
    * @name mostrarDisponibilidad
-   * @description Obtener disponibilida de un profesor 
+   * @description Obtener disponibilida de un profesor
    * @param {Object} req - Objeto de solicitud Express
    * @param {Object} res - Objeto de respuesta Express
    * @returns {void}
@@ -248,16 +248,56 @@ export default class ProfesorController {
   }
 
   /**
-   * @name registrarDisponibilidad
-   * @description Registrar disponibilidad docente
+   * @name crearDisponibilidad
+   * @description Crear nueva disponibilidad docente
    * @param {Object} req - Objeto de solicitud Express
    * @param {Object} res - Objeto de respuesta Express
    * @returns {void}
    */
-  static async registrarDisponibilidad(req, res) {
+  static async crearDisponibilidad(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      ProfesorService.registrarDisponibilidad(req.params.id, req.body, req.user)
+      ProfesorService.crearDisponibilidad(
+        req.params.id_profesor,
+        req.body,
+        req.user
+      )
+    );
+  }
+
+  /**
+   * @name actualizarDisponibilidad
+   * @description Actualizar disponibilidad docente existente
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async actualizarDisponibilidad(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.actualizarDisponibilidad(
+        req.params.id_profesor,
+        req.body,
+        req.user
+      )
+    );
+  }
+
+  /**
+   * @name eliminarDisponibilidad
+   * @description Eliminar disponibilidad docente
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async eliminarDisponibilidad(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.eliminarDisponibilidad(
+        req.params.id_profesor,
+        req.params.id_disponibilidad,
+        req.user
+      )
     );
   }
 

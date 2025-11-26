@@ -249,7 +249,7 @@ export default function ModalEditarRolesAdmin({
             const esActual = isRoleActual(rol);
 
             return (
-              <Grid item lg={6} md={6} xs={12} sm={6} key={rol.id_rol}>
+              <Grid lg={6} md={6} xs={12} sm={6} key={rol.id_rol}>
                 <CustomButton
                   tipo={seleccionado ? "primary" : "outlined"}
                   onClick={() => handleRoleSelect(rol)}

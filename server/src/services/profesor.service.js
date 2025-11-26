@@ -263,14 +263,21 @@ export default class ProfesorService {
    * @param {Object} queryParams - Parámetros de consulta
    * @returns {Object} Resultado de la operación
    */
-  static async obtenerTodos(queryParams = {}) {
+  static async obtenerProfesores(queryParams = {}) {
     try {
       // Validar parámetros de consulta
-      const allowedParams = ["page", "limit", "sort_order", "search"];
+      const allowedParams = [
+        "page",
+        "limit",
+        "sort_order",
+        "search",
+        "id_profesor",
+      ];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
         allowedParams
       );
+      console.log("parametros de busqueda: ", queryParams);
 
       if (!queryValidation.isValid) {
         return FormatterResponseService.validationError(
@@ -279,29 +286,60 @@ export default class ProfesorService {
         );
       }
 
-      const respuestaModel = await ProfesorModel.obtenerTodos(allowedParams);
+      // Llamar al MODELO (no a sí mismo)
+      const respuestaModel = await ProfesorModel.obtenerTodos(queryParams);
 
-      // Parsear los campos JSON en cada profesor
-      const profesoresProcesados = respuestaModel.data.profesores.map(
-        (profesor) => ({
-          ...profesor,
-          areas_de_conocimiento: profesor.areas_de_conocimiento
-            ? JSON.parse(profesor.areas_de_conocimiento)
+      // Verificar si es búsqueda por ID único
+      if (queryParams.id_profesor && respuestaModel.data.profesor) {
+        // Es un solo profesor (búsqueda por ID)
+        const profesorProcesado = {
+          ...respuestaModel.data.profesor,
+          areas_de_conocimiento: respuestaModel.data.profesor
+            .areas_de_conocimiento
+            ? JSON.parse(respuestaModel.data.profesor.areas_de_conocimiento)
             : [],
-          disponibilidad: profesor.disponibilidad
-            ? JSON.parse(profesor.disponibilidad)
+          disponibilidad: respuestaModel.data.profesor.disponibilidad
+            ? JSON.parse(respuestaModel.data.profesor.disponibilidad)
             : [],
-          pre_grados: profesor.pre_grados
-            ? JSON.parse(profesor.pre_grados)
+          pre_grados: respuestaModel.data.profesor.pre_grados
+            ? JSON.parse(respuestaModel.data.profesor.pre_grados)
             : [],
-          pos_grados: profesor.pos_grados
-            ? JSON.parse(profesor.pos_grados)
+          pos_grados: respuestaModel.data.profesor.pos_grados
+            ? JSON.parse(respuestaModel.data.profesor.pos_grados)
             : [],
-        })
-      );
+        };
 
-      // Reemplazar los datos en la respuesta
-      respuestaModel.data.profesores = profesoresProcesados;
+        return FormatterResponseService.success(
+          { profesor: profesorProcesado },
+          "Profesor obtenido exitosamente",
+          {
+            status: 200,
+            title: "Profesor Encontrado",
+          }
+        );
+      }
+
+      // Parsear los campos JSON en cada profesor (búsqueda múltiple)
+      if (Array.isArray(respuestaModel.data.profesores)) {
+        const profesoresProcesados = respuestaModel.data.profesores.map(
+          (profesor) => ({
+            ...profesor,
+            areas_de_conocimiento: profesor.areas_de_conocimiento
+              ? JSON.parse(profesor.areas_de_conocimiento)
+              : [],
+            disponibilidad: profesor.disponibilidad
+              ? JSON.parse(profesor.disponibilidad)
+              : [],
+            pre_grados: profesor.pre_grados
+              ? JSON.parse(profesor.pre_grados)
+              : [],
+            pos_grados: profesor.pos_grados
+              ? JSON.parse(profesor.pos_grados)
+              : [],
+          })
+        );
+        respuestaModel.data.profesores = profesoresProcesados;
+      }
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -830,7 +868,9 @@ export default class ProfesorService {
       const profesores = await ProfesorModel.obtenerTodos({
         search: datos.id_profesor,
       });
-      const profesor = profesores.data.profesores.find((profe)=> profe.id_profesor === datos.id_profesor)
+      const profesor = profesores.data.profesores.find(
+        (profe) => profe.id_profesor === datos.id_profesor
+      );
 
       if (!profesor) {
         return FormatterResponseService.notFound("Profesor", datos.id_profesor);
@@ -1365,22 +1405,35 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method registrarDisponibilidad
+   * @method crearDisponibilidad
    * @description Crear una nueva disponibilidad docente
-   * @param {number} idProfesor - ID del profesor
+   * @param {number} id_profesor - ID del profesor
    * @param {Object} datos - Datos de la disponibilidad
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Promise<Object>} Resultado de la operación
    */
-  static async registrarDisponibilidad(idProfesor, datos, user_action) {
+  static async crearDisponibilidad(id_profesor, datos, user_action) {
     try {
       console.log(
-        "🔍 [registrarDisponibilidad] Iniciando creación de disponibilidad..."
+        "🔍 [crearDisponibilidad] Iniciando creación de disponibilidad..."
       );
-      console.log("Datos recibidos:", datos);
+      console.log("ID Profesor:", id_profesor, "Datos:", datos);
+
+      // Validar ID del profesor
+      const idProfesorValidation = ValidationService.validateId(
+        id_profesor,
+        "profesor"
+      );
+      if (!idProfesorValidation.isValid) {
+        return FormatterResponseService.validationError(
+          idProfesorValidation.errors,
+          "ID de profesor inválido"
+        );
+      }
 
       // Validar datos de disponibilidad
-      const validation = ValidationService.validateDisponibilidadDocente(datos);
+      const validation =
+        ValidationService.validatePartialDisponibilidadDocente(datos);
       if (!validation.isValid) {
         return FormatterResponseService.validationError(
           validation.errors,
@@ -1389,19 +1442,19 @@ export default class ProfesorService {
       }
 
       // Validar ID de usuario
-      const idValidation = ValidationService.validateId(
+      const idUsuarioValidation = ValidationService.validateId(
         user_action.id,
         "usuario"
       );
-      if (!idValidation.isValid) {
+      if (!idUsuarioValidation.isValid) {
         return FormatterResponseService.validationError(
-          idValidation.errors,
+          idUsuarioValidation.errors,
           "ID de usuario inválido"
         );
       }
 
       const respuestaModel = await ProfesorModel.crearDisponibilidad(
-        idProfesor,
+        id_profesor,
         datos,
         user_action.id
       );
@@ -1415,11 +1468,7 @@ export default class ProfesorService {
       return FormatterResponseService.success(
         {
           message: "Disponibilidad creada exitosamente",
-          disponibilidad: {
-            dia_semana: datos.dia_semana,
-            hora_inicio: datos.hora_inicio,
-            hora_fin: datos.hora_fin,
-          },
+          disponibilidad: respuestaModel.data,
         },
         "Disponibilidad creada exitosamente",
         {
@@ -1429,6 +1478,177 @@ export default class ProfesorService {
       );
     } catch (error) {
       console.error("💥 Error en servicio crear disponibilidad:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method actualizarDisponibilidad
+   * @description Actualizar una disponibilidad docente existente
+   * @param {number} id_profesor - ID del profesor
+   * @param {Object} datos - Datos de la disponibilidad (debe incluir id_disponibilidad)
+   * @param {object} user_action - Usuario que realiza la acción
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async actualizarDisponibilidad(id_profesor, datos, user_action) {
+    try {
+      console.log(
+        "🔍 [actualizarDisponibilidad] Iniciando actualización de disponibilidad..."
+      );
+      console.log("ID Profesor:", id_profesor, "Datos:", datos);
+
+      // Validar que tenga id_disponibilidad para actualizar
+      if (!datos.id_disponibilidad) {
+        return FormatterResponseService.validationError(
+          ["El campo id_disponibilidad es requerido para actualizar"],
+          "ID de disponibilidad requerido"
+        );
+      }
+
+      // Validar ID del profesor
+      const idProfesorValidation = ValidationService.validateId(
+        id_profesor,
+        "profesor"
+      );
+      if (!idProfesorValidation.isValid) {
+        return FormatterResponseService.validationError(
+          idProfesorValidation.errors,
+          "ID de profesor inválido"
+        );
+      }
+
+      // Validar datos de disponibilidad
+      const validation =
+        ValidationService.validatePartialDisponibilidadDocente(datos);
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Error de validación en actualización de disponibilidad"
+        );
+      }
+
+      // Validar ID de usuario
+      const idUsuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!idUsuarioValidation.isValid) {
+        return FormatterResponseService.validationError(
+          idUsuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      const respuestaModel = await ProfesorModel.actualizarDisponibilidad(
+        datos.id_disponibilidad,
+        datos,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      console.log("🎉 Disponibilidad actualizada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Disponibilidad actualizada exitosamente",
+          disponibilidad: respuestaModel.data,
+        },
+        "Disponibilidad actualizada exitosamente",
+        {
+          status: 200,
+          title: "Disponibilidad Actualizada",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio actualizar disponibilidad:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method eliminarDisponibilidad
+   * @description Eliminar una disponibilidad docente
+   * @param {number} id_profesor - ID del profesor
+   * @param {number} id_disponibilidad - ID de la disponibilidad a eliminar
+   * @param {object} user_action - Usuario que realiza la acción
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async eliminarDisponibilidad(
+    id_profesor,
+    id_disponibilidad,
+    user_action
+  ) {
+    try {
+      console.log(
+        "🔍 [eliminarDisponibilidad] Iniciando eliminación de disponibilidad..."
+      );
+      console.log(
+        "ID Profesor:",
+        id_profesor,
+        "ID Disponibilidad:",
+        id_disponibilidad
+      );
+
+      // Validar IDs
+      const idProfesorValidation = ValidationService.validateId(
+        id_profesor,
+        "profesor"
+      );
+      const idDisponibilidadValidation = ValidationService.validateId(
+        id_disponibilidad,
+        "disponibilidad"
+      );
+      const idUsuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+
+      if (
+        !idProfesorValidation.isValid ||
+        !idDisponibilidadValidation.isValid ||
+        !idUsuarioValidation.isValid
+      ) {
+        const errors = [
+          ...idProfesorValidation.errors,
+          ...idDisponibilidadValidation.errors,
+          ...idUsuarioValidation.errors,
+        ];
+        return FormatterResponseService.validationError(
+          errors,
+          "IDs inválidos en eliminación de disponibilidad"
+        );
+      }
+
+      const respuestaModel = await ProfesorModel.eliminarDisponibilidad(
+        id_disponibilidad,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      console.log("🗑️ Disponibilidad eliminada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Disponibilidad eliminada exitosamente",
+        },
+        "Disponibilidad eliminada exitosamente",
+        {
+          status: 200,
+          title: "Disponibilidad Eliminada",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio eliminar disponibilidad:", error);
       throw error;
     }
   }
