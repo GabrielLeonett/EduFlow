@@ -333,6 +333,8 @@ export default class HorarioModel {
         hora_inicio,
       } = datos;
 
+      console.log('Datos para crear horarios: ', datos)
+
       const { rows } = await pg.query(
         "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, TRUE, $8, NULL)",
         [
@@ -346,7 +348,6 @@ export default class HorarioModel {
           horas_clase,
         ]
       );
-      console.log(rows);
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Horario creado exitosamente"

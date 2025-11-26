@@ -160,7 +160,7 @@ export const useSlotCalculations = () => {
         const horasFiltradas = Object.keys(UTILS.initialHours)
           .map(Number)
           .filter(
-            (horaHHMM) => horaHHMM >= horaHHMMInicio && horaHHMM <= horaHHMMFin
+            (horaHHMM) => horaHHMM >= horaHHMMInicio && horaHHMM < horaHHMMFin
           )
           .sort((a, b) => a - b);
 
@@ -238,12 +238,6 @@ export const useSlotCalculations = () => {
 
             // Si la celda tiene datos, verificamos diferentes casos
             const datosCelda = celda.datos_clase;
-
-            // CASO 1: Es la misma clase que estamos editando (mismo ID)
-            if (datosCelda.id === clase.id) {
-              console.log(`      ✅ Disponible (misma clase)`);
-              return true;
-            }
 
             // CASO 2: Mismo profesor pero DIFERENTE clase - NO disponible
             if (datosCelda.id_profesor === clase.id_profesor) {

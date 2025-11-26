@@ -526,7 +526,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   const fetchCambiosTableHorario = useCallback(
     async (alert) => {
       try {
-        const resultados = [];
         let hayConflictos = false;
 
         // 1. PRIMERO: Eliminar horarios (si hay)
@@ -535,26 +534,23 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
             try {
               const respuesta = await axios.delete(`/horarios/${id_horario}`);
               if (respuesta.data && respuesta.success) {
-                resultados.push({
-                  tipo: "eliminacion",
-                  success: true,
-                  data: respuesta.data,
-                });
+                // ✅ ACTUALIZAR INMEDIATAMENTE: Remover del tableHorario
+                setTableHorario(prev => prev.map(dia => {
+                  const nuevasHoras = { ...dia.horas };
+                  Object.keys(nuevasHoras).forEach(clave => {
+                    const celda = nuevasHoras[clave];
+                    if (celda?.datos_clase?.id_horario === id_horario) {
+                      nuevasHoras[clave] = null; // Eliminar celda
+                    }
+                  });
+                  return { ...dia, horas: nuevasHoras };
+                }));
+
                 alert.success(respuesta.title, respuesta.message);
               } else {
-                resultados.push({
-                  tipo: "eliminacion",
-                  success: false,
-                  error: respuesta.data,
-                });
                 alert.error(respuesta.title, respuesta.message);
               }
             } catch (error) {
-              resultados.push({
-                tipo: "eliminacion",
-                success: false,
-                error: error.response?.data || error,
-              });
               alert.error("Error", "No se pudo eliminar el horario");
             }
           }
@@ -562,7 +558,9 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         }
 
         // 2. LUEGO: Procesar cambios en tableHorario
-        for (const dia of tableHorario) {
+        const nuevoTableHorario = [...tableHorario]; // Copia para ir actualizando
+
+        for (const dia of nuevoTableHorario) {
           const horasObjeto = dia.horas;
 
           for (const clave of Object.keys(horasObjeto)) {
@@ -587,47 +585,30 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                   );
 
                   if (respuesta.horario) {
-                    resultados.push({
-                      tipo: "actualizacion",
-                      success: true,
-                    });
+                    // ✅ ACTUALIZAR INMEDIATAMENTE: Actualizar datos en tableHorario
+                    celda.datos_clase = {
+                      ...celda.datos_clase,
+                      ...respuesta.horario, // Datos actualizados del servidor
+                      clase_move: false, // Quitar flag
+                      conflictos: undefined // Limpiar conflictos si existían
+                    };
+
                     alert.success(
-                      "Actualizacion exitosa",
-                      `Se actualizo satisfactoriamente el horario${datos_clase.id}`
+                      "Actualización exitosa",
+                      `Se actualizó satisfactoriamente el horario`
+                    );
+                  } else if (respuesta.data?.conflictos) {
+                    // ❌ Manejar conflictos - mantener en tableHorario con flag de conflicto
+                    celda.datos_clase.conflictos = respuesta.data.conflictos;
+                    hayConflictos = true;
+                    alert.warning(
+                      "Conflictos detectados",
+                      `Se encontraron ${respuesta.data.conflictos.length} conflictos al mover la clase`
                     );
                   } else {
-                    // Manejar conflictos - CORREGIDO AQUÍ
-                    if (
-                      respuesta.data &&
-                      respuesta.data &&
-                      respuesta.data.conflictos
-                    ) {
-                      console.log(
-                        "🔄 Conflictos detectados:",
-                        respuesta.data.conflictos
-                      );
-                      datos_clase.conflictos = respuesta.data.conflictos;
-                      hayConflictos = true;
-                      resultados.push({
-                        tipo: "actualizacion",
-                        success: false,
-                        conflictos: respuesta.data.conflictos,
-                      });
-
-                      // Mostrar alerta específica de conflictos
-                      alert.warning(
-                        "Conflictos detectados",
-                        `Se encontraron ${respuesta.data.conflictos.length} conflictos al mover la clase`
-                      );
-                    } else {
-                      resultados.push({
-                        tipo: "actualizacion",
-                        success: false,
-                        error: respuesta.data,
-                      });
-                      alert.error(respuesta.title, respuesta.message);
-                    }
+                    alert.error(respuesta.title, respuesta.message);
                   }
+
                 } else if (datos_clase.nueva_clase) {
                   // ✅ CREAR nueva clase
                   console.log("Creando nueva clase:", datos_clase);
@@ -641,106 +622,63 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     horas_clase: datos_clase.horas_clase,
                   };
 
-                  const respuesta = await axios.post(
-                    "/horarios",
-                    datosNewHorario
-                  );
+                  const respuesta = await axios.post("/horarios", datosNewHorario);
 
                   if (respuesta && respuesta.horario) {
-                    // Limpiar flags y actualizar con ID del servidor
-                    console.log(respuesta)
+                    // ✅ ACTUALIZAR INMEDIATAMENTE: Reemplazar datos temporales con datos reales del servidor
+                    celda.datos_clase = {
+                      ...celda.datos_clase,
+                      ...respuesta.horario, // Datos reales con ID del servidor
+                      id_horario: respuesta.horario.id_horario || respuesta.horario.id,
+                      nueva_clase: false, // Quitar flag
+                      conflictos: undefined // Limpiar conflictos
+                    };
 
-                    resultados.push({
-                      tipo: "creacion",
-                      success: true,
-                      data: respuesta.horario,
-                    });
                     alert.success(respuesta.title, respuesta.message);
                   } else {
-                    resultados.push({
-                      tipo: "creacion",
-                      success: false,
-                      error: respuesta.data,
-                    });
                     alert.error(respuesta.title, respuesta.message);
                   }
                 }
               } catch (error) {
                 console.log("Error en operación de clase:", error);
                 const errorData = error.response?.data || error.data;
-                console.log("💥 Error capturado:", errorData);
 
-                // CORRECCIÓN PARA ERRORES 409 CON CONFLICTOS
+                // ❌ Manejar errores con conflictos
                 if (error?.status === 409 && errorData.data?.conflictos) {
-                  console.log(
-                    "🔄 Conflictos en error 409:",
-                    errorData.data.conflictos
-                  );
-                  datos_clase.conflictos = errorData.data.conflictos;
+                  celda.datos_clase.conflictos = errorData.data.conflictos;
                   hayConflictos = true;
-                  resultados.push({
-                    tipo: datos_clase.clase_move ? "actualizacion" : "creacion",
-                    success: false,
-                    conflictos: errorData.data.conflictos,
-                  });
-
                   alert.warning(
                     "Conflictos detectados",
                     `No se pudo mover la clase debido a ${errorData.data.conflictos.length} conflictos`
                   );
+                } else if (errorData.conflictos) {
+                  celda.datos_clase.conflictos = errorData.conflictos;
+                  hayConflictos = true;
                 } else {
-                  resultados.push({
-                    tipo: datos_clase.clase_move ? "actualizacion" : "creacion",
-                    success: false,
-                    error: errorData,
-                  });
-                  console.log(errorData);
-                  if (errorData.conflictos) {
-                    datos_clase.conflictos = errorData.conflictos;
-                    hayConflictos = true;
-                  } else {
-                    alert.error("Error", "Error al procesar la clase");
-                  }
+                  alert.error("Error", "Error al procesar la clase");
                 }
               }
             }
           }
         }
 
-        // 3. Actualizar el estado local con los cambios
+        // 3. ACTUALIZAR EL ESTADO GLOBAL
+        setTableHorario(nuevoTableHorario);
+
+        // 4. Limpiar flags globales si no hay conflictos
         if (!hayConflictos) {
-          // Solo limpiar flags si no hay conflictos
-          const nuevoTableHorario = tableHorario.map((dia) => {
-            const nuevasHoras = { ...dia.horas };
-            Object.keys(nuevasHoras).forEach((clave) => {
-              if (nuevasHoras[clave]?.datos_clase) {
-                // Limpiar flags pero mantener otros datos
-                nuevasHoras[clave].datos_clase.clase_move = false;
-                nuevasHoras[clave].datos_clase.nueva_clase = false;
-                delete nuevasHoras[clave].datos_clase.conflictos;
-              }
-            });
-            return { ...dia, horas: nuevasHoras };
-          });
-
-          setTableHorario(nuevoTableHorario);
-        }
-
-        // 4. Resumen final
-        if (hayConflictos) {
-          alert.warning(
-            "Proceso completado con conflictos",
-            "Revisa los conflictos en las clases marcadas"
-          );
-        } else if (resultados.some((r) => r.success)) {
+          setHayCambios(false);
           alert.success(
             "Cambios guardados exitosamente",
             "Todos los cambios se aplicaron correctamente"
           );
-          setHayCambios(false);
+        } else {
+          alert.warning(
+            "Proceso completado con conflictos",
+            "Revisa los conflictos en las clases marcadas"
+          );
         }
 
-        return resultados;
       } catch (error) {
         console.error("Error general en fetchCambiosTableHorario:", error);
         alert.error("Error crítico", "Ocurrió un error inesperado");

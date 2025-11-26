@@ -42,25 +42,12 @@ export default function Coordinadores() {
   const [loading, setLoading] = useState(true);
   const { id_coordinador } = useParams();
 
-  const [coordinadores, setCoordinadores] = useState([]);
-  const [coordinadoresFiltrados, setCoordinadoresFiltrados] = useState([]);
-  const [coordinadorSearch, setCoordinadorSearch] = useState(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-  });
-  const [sortOrder, setSortOrder] = useState("nombre");
-  const [loading, setLoading] = useState(true);
-
   // Función para cargar coordinadores
   const fetchCoordinadores = useCallback(async () => {
     setLoading(true);
     try {
-      const endpoint = `/coordinadores?page=${pagination.page}&limit=${
-        pagination.limit
-      }&sort=${sortOrder}&search=${coordinadorSearch || ""}`;
+      const endpoint = `/coordinadores?page=${pagination.page}&limit=${pagination.limit
+        }&sort=${sortOrder}&search=${coordinadorSearch || ""}`;
       const data = await axios.get(endpoint);
 
       let coordinadoresData = data.coordinadores || [];

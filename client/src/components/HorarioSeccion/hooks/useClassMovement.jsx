@@ -49,6 +49,9 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
   const handleCancelMoveRequest = useCallback(() => {
     setClassToMove(null);
     setSelectedClass(null);
+    setAulaSelected(null);
+    setProfesorSelected(null)
+    setUnidadCurricularSelected(null)
     setOriginalSlot(null);
   }, [setClassToMove, setOriginalSlot, setSelectedClass]);
 
