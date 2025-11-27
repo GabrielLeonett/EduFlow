@@ -79,41 +79,44 @@ export default class AdminModel {
   static async obtenerTodos(queryParams = {}) {
     try {
       let query = `
-        SELECT 
-          cedula,
-          nombres,
-          apellidos,
-          imagen,
-          direccion,
-          telefono_movil,
-          telefono_local,
-          fecha_nacimiento,
-          genero,
-          email,
-          activo,
-          primera_vez,
-          last_login,
-          created_at,
-          updated_at,
-          roles,
-          id_roles,
-          nombre_roles
-        FROM public.vista_usuarios 
-        WHERE 1=1
-      `;
+      SELECT 
+        cedula,
+        nombres,
+        apellidos,
+        imagen,
+        direccion,
+        telefono_movil,
+        telefono_local,
+        fecha_nacimiento,
+        genero,
+        email,
+        activo,
+        primera_vez,
+        last_login,
+        created_at,
+        updated_at,
+        roles,
+        id_roles,
+        nombre_roles
+      FROM public.vista_usuarios 
+      WHERE 1=1
+    `;
       const params = [];
+      let paramCount = 0;
 
       // --- 1. Aplicar Filtros ---
 
       // Filtro por Rol (buscar en el array de roles)
       if (queryParams.rol) {
-        query += ` AND ? = ANY(id_roles)`;
+        paramCount++;
+        query += ` AND $${paramCount} = ANY(id_roles)`;
         params.push(parseInt(queryParams.rol));
       }
 
       // Filtro por Estado (activo/inactivo)
       if (queryParams.estado !== undefined && queryParams.estado !== "") {
-        query += ` AND activo = ?`;
+        paramCount++;
+        query += ` AND activo = $${paramCount}`;
         params.push(
           queryParams.estado === "true" || queryParams.estado === true
         );
@@ -121,25 +124,31 @@ export default class AdminModel {
 
       // Filtro por Cédula (búsqueda parcial)
       if (queryParams.cedula) {
-        query += ` AND cedula::text LIKE ?`;
+        paramCount++;
+        query += ` AND cedula::text LIKE $${paramCount}`;
         params.push(`%${queryParams.cedula}%`);
       }
 
       // Filtro por Nombre (búsqueda parcial)
       if (queryParams.nombre) {
-        query += ` AND (nombres ILIKE ? OR apellidos ILIKE ?)`;
+        paramCount++;
+        query += ` AND (nombres ILIKE $${paramCount}`;
+        paramCount++;
+        query += ` OR apellidos ILIKE $${paramCount})`;
         params.push(`%${queryParams.nombre}%`, `%${queryParams.nombre}%`);
       }
 
       // Filtro por Email (búsqueda parcial)
       if (queryParams.email) {
-        query += ` AND email ILIKE ?`;
+        paramCount++;
+        query += ` AND email ILIKE $${paramCount}`;
         params.push(`%${queryParams.email}%`);
       }
 
       // Filtro por Género
       if (queryParams.genero) {
-        query += ` AND genero = ?`;
+        paramCount++;
+        query += ` AND genero = $${paramCount}`;
         params.push(queryParams.genero);
       }
 
@@ -181,9 +190,17 @@ export default class AdminModel {
           ? (parseInt(queryParams.page) - 1) * limit
           : 0;
 
-        query += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset);
+        paramCount++;
+        query += ` LIMIT $${paramCount}`;
+        params.push(limit);
+
+        paramCount++;
+        query += ` OFFSET $${paramCount}`;
+        params.push(offset);
       }
+
+      console.log("🔍 Query ejecutada:", query);
+      console.log("🔍 Parámetros:", params);
 
       // 🚀 Ejecutar la consulta con parámetros
       const { rows } = await pg.query(query, params);
@@ -193,6 +210,7 @@ export default class AdminModel {
         "Administradores obtenidos exitosamente"
       );
     } catch (error) {
+      console.error("❌ Error en obtenerTodos:", error);
       error.details = { path: "AdminModel.obtenerTodos" };
       throw FormatterResponseModel.respuestaError(
         error,

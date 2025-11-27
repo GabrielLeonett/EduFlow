@@ -54,6 +54,7 @@ import RegistrarAula from "./pages/infraestructura/RegistrarAula";
 import PanelAdministracion from "./pages/administracion/PanelAdministracion";
 import PanelRespaldos from "./pages/administracion/PanelRespaldos.jsx";
 import ReportesEstadisticas from "./pages/administracion/ReportesEstadisticas.jsx";
+import AuditoriaPage from "./pages/administracion/AuditoriaSistema.jsx";
 
 // Desarrollo y Pruebas
 import PaginaPruebas from "./pages/desarrollo/PaginaPruebas";
@@ -336,6 +337,14 @@ export default function App() {
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
                     <GestionAdministradores />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/auditoria"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <AuditoriaPage />
                   </ProtectedViews>
                 }
               />

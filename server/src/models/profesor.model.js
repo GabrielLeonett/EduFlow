@@ -118,12 +118,12 @@ export default class ProfesorModel {
       // Si se proporciona un ID específico, buscar solo ese profesor
       if (id_profesor) {
         const specificQuery = `
-          SELECT * FROM profesores_informacion_completa 
-          WHERE id_profesor = $1
-        `;
+        SELECT * FROM profesores_informacion_completa 
+        WHERE id_profesor = $1
+      `;
 
         const specificResult = await client.query(specificQuery, [id_profesor]);
-        console.log(specificResult);
+
         if (specificResult.rows.length === 0) {
           return FormatResponseModel.respuestaPostgres(
             { profesor: null },
@@ -155,49 +155,58 @@ export default class ProfesorModel {
       const sortField = allowedSortFields[sort_order] || "nombres";
       const orderBy = `${sortField} ASC`;
 
-      // Construir consulta base - CORREGIDO
+      // Construir consulta base
       let whereClause = "";
       let queryParamsArray = [];
+      let paramCount = 0;
 
-      if (search) {
-        // Verificar si el search es exactamente un ID de profesor
+      if (search && search.trim() !== "") {
+        // Verificar si el search es exactamente un ID de profesor (solo números)
         const isProfesorId = /^\d+$/.test(search.trim());
 
         if (isProfesorId) {
           // Si es un ID, buscar EXCLUSIVAMENTE por ID
           whereClause = `WHERE id_profesor = $1`;
-          queryParamsArray = [parseInt(search)];
+          queryParamsArray = [parseInt(search.trim())];
+          paramCount = 1;
         } else {
           // Si no es un ID, buscar en nombres, apellidos y cédula
-          whereClause = `WHERE (nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula = $3)`;
-          queryParamsArray = [`%${search}%`, `%${search}%`, `${search}`];
+          whereClause = `WHERE (nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula::text ILIKE $3)`;
+          queryParamsArray = [
+            `%${search.trim()}%`,
+            `%${search.trim()}%`,
+            `%${search.trim()}%`,
+          ];
+          paramCount = 3;
         }
       }
 
       // Consulta para los datos
       const dataQuery = `
-    SELECT * FROM profesores_informacion_completa 
-    ${whereClause}
-    ORDER BY ${orderBy} 
-    LIMIT $${whereClause ? queryParamsArray.length + 1 : 1} 
-    OFFSET $${whereClause ? queryParamsArray.length + 2 : 2}
-  `;
+      SELECT * FROM profesores_informacion_completa 
+      ${whereClause}
+      ORDER BY ${orderBy} 
+      LIMIT $${paramCount + 1} 
+      OFFSET $${paramCount + 2}
+    `;
 
       // Consulta para el total
       const countQuery = `
-    SELECT COUNT(*) as total FROM profesores_informacion_completa 
-    ${whereClause}
-  `;
+      SELECT COUNT(*) as total FROM profesores_informacion_completa 
+      ${whereClause}
+    `;
 
       // Parámetros para las consultas
       const dataParams = whereClause
         ? [...queryParamsArray, parseInt(limit), offset]
         : [parseInt(limit), offset];
 
+      const countParams = whereClause ? queryParamsArray : [];
+
       // Ejecutar consultas en paralelo
       const [dataResult, countResult] = await Promise.all([
         client.query(dataQuery, dataParams),
-        client.query(countQuery, whereClause ? queryParamsArray : []),
+        client.query(countQuery, countParams),
       ]);
 
       const total = parseInt(countResult.rows[0].total);
@@ -243,6 +252,7 @@ export default class ProfesorModel {
    */
   static async mostrarProfesoresEliminados(queryParams) {
     try {
+      console.log('Query params: ', queryParams)
       const {
         page = 1,
         limit = 20,
@@ -253,52 +263,56 @@ export default class ProfesorModel {
       // Calcular offset
       const offset = (page - 1) * limit;
 
-      // Validar y mapear campos de ordenamiento
-      const allowedSortFields = {
-        nombres: "nombres",
-        apellidos: "apellidos",
-        cedula: "cedula",
-        fecha_creacion: "fecha_creacion",
-        categoria: "categoria",
-        dedicacion: "dedicacion",
-      };
+      // Ordenamiento simple
+      const orderBy = `${sort_order} ASC`;
 
-      const sortField = allowedSortFields[sort_order] || "nombres";
-      const orderBy = `${sortField} ASC`;
+      // Consulta base SIN búsqueda primero para probar
+      let dataQuery = `
+      SELECT * FROM vista_profesores_eliminados 
+      ORDER BY ${orderBy} 
+      LIMIT $1 
+      OFFSET $2
+    `;
 
-      // Construir consulta base
-      let whereClause = "";
-      let queryParamsArray = [];
+      let countQuery = `
+      SELECT COUNT(*) as total FROM vista_profesores_eliminados 
+    `;
 
-      if (search) {
-        whereClause = `WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3`;
-        queryParamsArray = [`%${search}%`, `%${search}%`, `%${search}%`];
+      let dataParams = [parseInt(limit), offset];
+      let countParams = [];
+
+      // Solo agregar búsqueda si hay término
+      if (search && search.trim() !== "") {
+        dataQuery = `
+        SELECT * FROM vista_profesores_eliminados 
+        WHERE (nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula::text ILIKE $3)
+        ORDER BY ${orderBy} 
+        LIMIT $4 
+        OFFSET $5
+      `;
+
+        countQuery = `
+        SELECT COUNT(*) as total FROM vista_profesores_eliminados 
+        WHERE (nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula::text ILIKE $3)
+      `;
+
+        dataParams = [
+          `%${search}%`,
+          `%${search}%`,
+          `%${search}%`,
+          parseInt(limit),
+          offset,
+        ];
+        countParams = [`%${search}%`, `%${search}%`, `%${search}%`];
       }
 
-      // Consulta para los datos
-      const dataQuery = `
-      SELECT * FROM vista_profesores_eliminados 
-      ${whereClause}
-      ORDER BY ${orderBy} 
-      LIMIT $${whereClause ? queryParamsArray.length + 1 : 1} 
-      OFFSET $${whereClause ? queryParamsArray.length + 2 : 2}
-    `;
+      console.log("🔍 Ejecutando query:", dataQuery);
+      console.log("🔍 Con parámetros:", dataParams);
 
-      // Consulta para el total
-      const countQuery = `
-      SELECT COUNT(*) as total FROM vista_profesores_eliminados 
-      ${whereClause}
-    `;
-
-      // Parámetros para las consultas
-      const dataParams = whereClause
-        ? [...queryParamsArray, parseInt(limit), offset]
-        : [parseInt(limit), offset];
-
-      // Ejecutar consultas en paralelo
+      // Ejecutar consultas
       const [dataResult, countResult] = await Promise.all([
         client.query(dataQuery, dataParams),
-        client.query(countQuery, whereClause ? queryParamsArray : []),
+        client.query(countQuery, countParams),
       ]);
 
       const total = parseInt(countResult.rows[0].total);
@@ -316,16 +330,17 @@ export default class ProfesorModel {
             hasPrev: page > 1,
           },
         },
-        "Profesores obtenidos exitosamente"
+        "Profesores eliminados obtenidos exitosamente"
       );
     } catch (error) {
+      console.error("❌ Error en mostrarProfesoresEliminados:", error);
       error.details = {
-        path: "ProfesorModel.obtenerTodos",
+        path: "ProfesorModel.mostrarProfesoresEliminados",
         queryParams,
       };
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener los profesores"
+        "Error al obtener los profesores eliminados"
       );
     }
   }

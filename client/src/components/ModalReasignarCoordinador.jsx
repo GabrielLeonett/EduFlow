@@ -114,24 +114,23 @@ export default function ModalReasignarCoordinador({
         setCargando(false);
         return;
       }
-
       // Preparar datos para reasignación
       const datosReasignacion = {
-        id_profesor: coordinador.cedula,
+        id_profesor: coordinador.id_profesor,
         id_pnf: pnfSeleccionado.id_pnf,
       };
 
       // Enviar request de reasignación
-      const response = await axios.put(`/coordinadores/${coordinador.cedula}/reasignar-pnf`, datosReasignacion);
-      
-      if (response.success) {
+      const response = await axios.put(`/coordinadores/${coordinador.id_profesor}/reasignar-pnf`, datosReasignacion);
+      if (response) {
         alert.toast({
           title: "Coordinador reasignado",
           message: `El coordinador ha sido reasignado exitosamente al PNF ${pnfSeleccionado.nombre_pnf}`,
           config: { icon: "success" },
         });
 
-        onReasignar(response.data);
+
+        onReasignar(response.coordinador);
         onClose();
       }
     } catch (error) {

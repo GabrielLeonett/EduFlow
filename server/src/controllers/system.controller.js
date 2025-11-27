@@ -25,7 +25,7 @@ export default class SystemController {
         success: resultado.success,
         message: resultado.message,
         data: resultado.data,
-        timestamp: resultado.timestamp
+        timestamp: resultado.timestamp,
       });
     } catch (error) {
       console.error("❌ Error en crearRespaldo controller:", error);
@@ -54,7 +54,7 @@ export default class SystemController {
         success: resultado.success,
         message: resultado.message,
         data: resultado.data,
-        timestamp: resultado.timestamp
+        timestamp: resultado.timestamp,
       });
     } catch (error) {
       console.error("❌ Error en listarRespaldos controller:", error);
@@ -83,7 +83,7 @@ export default class SystemController {
           status: 400,
           title: "Datos Inválidos",
           message: "El nombre del archivo de backup es requerido",
-          error: "backupFileName es obligatorio"
+          error: "backupFileName es obligatorio",
         });
       }
 
@@ -93,7 +93,7 @@ export default class SystemController {
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.data
+        data: resultado.data,
       });
     } catch (error) {
       console.error("❌ Error en restaurarRespaldo controller:", error);
@@ -123,7 +123,7 @@ export default class SystemController {
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.data
+        data: resultado.data,
       });
     } catch (error) {
       console.error("❌ Error en limpiarRespaldosAntiguos controller:", error);
@@ -137,6 +137,20 @@ export default class SystemController {
   }
 
   /**
+   * @name obtenerAuditoria
+   * @description Eliminar respaldos antiguos del sistema
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async obtenerAuditoria(req, res) {
+    return FormatterResponseController.manejarServicio(
+      res,
+      await SystemServices.obtenerAuditoriaCompleta(req.query)
+    );
+  }
+
+  /**
    * @name eliminarRespaldo
    * @description Eliminar un respaldo específico del sistema
    * @param {Object} req - Objeto de solicitud Express
@@ -147,13 +161,15 @@ export default class SystemController {
     try {
       const { backupFileName } = req.params;
 
-      console.log(`🧹 Solicitando eliminación del respaldo: ${backupFileName}...`);
+      console.log(
+        `🧹 Solicitando eliminación del respaldo: ${backupFileName}...`
+      );
       const resultado = await SystemServices.eliminarRespaldo(backupFileName);
 
       return FormatterResponseController.respuestaServicio(res, {
         success: resultado.success,
         message: resultado.message,
-        data: resultado.data
+        data: resultado.data,
       });
     } catch (error) {
       console.error("❌ Error en eliminarRespaldo controller:", error);
@@ -182,33 +198,35 @@ export default class SystemController {
           status: 400,
           title: "Datos Inválidos",
           message: "El nombre del archivo de backup es requerido",
-          error: "backupFileName es obligatorio"
+          error: "backupFileName es obligatorio",
         });
       }
 
-      const backupsDir = path.join(process.cwd(), 'src', 'database', 'backups');
+      const backupsDir = path.join(process.cwd(), "src", "database", "backups");
       const backupPath = path.join(backupsDir, backupFileName);
 
       // Verificar que el archivo existe
-      if (!await fs.pathExists(backupPath)) {
+      if (!(await fs.pathExists(backupPath))) {
         return FormatterResponseController.respuestaError(res, {
           status: 404,
           title: "Archivo No Encontrado",
           message: `El archivo de backup ${backupFileName} no existe`,
-          error: "Archivo no encontrado"
+          error: "Archivo no encontrado",
         });
       }
 
       // Configurar headers para descarga
-      res.setHeader('Content-Type', 'application/sql');
-      res.setHeader('Content-Disposition', `attachment; filename="${backupFileName}"`);
-      
+      res.setHeader("Content-Type", "application/sql");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${backupFileName}"`
+      );
+
       // Stream el archivo al cliente
       const fileStream = fs.createReadStream(backupPath);
       fileStream.pipe(res);
 
       console.log(`📥 Descargando respaldo: ${backupFileName}`);
-
     } catch (error) {
       console.error("❌ Error en descargarRespaldo controller:", error);
       return FormatterResponseController.respuestaError(res, {
@@ -238,10 +256,13 @@ export default class SystemController {
         success: resultado.success,
         message: resultado.message,
         data: resultado.data,
-        timestamp: resultado.timestamp
+        timestamp: resultado.timestamp,
       });
     } catch (error) {
-      console.error("❌ Error en obtenerReportesEstadisticas controller:", error);
+      console.error(
+        "❌ Error en obtenerReportesEstadisticas controller:",
+        error
+      );
       return FormatterResponseController.respuestaError(res, {
         status: 500,
         title: "Error del Controlador",
@@ -267,7 +288,7 @@ export default class SystemController {
         success: resultado.success,
         message: resultado.message,
         data: resultado.data,
-        timestamp: resultado.timestamp
+        timestamp: resultado.timestamp,
       });
     } catch (error) {
       console.error("❌ Error en obtenerMetricasSistema controller:", error);
@@ -296,7 +317,7 @@ export default class SystemController {
         success: resultado.success,
         message: resultado.message,
         data: resultado.data,
-        timestamp: resultado.timestamp
+        timestamp: resultado.timestamp,
       });
     } catch (error) {
       console.error("❌ Error en obtenerMetricasAcademicas controller:", error);
@@ -325,7 +346,7 @@ export default class SystemController {
         success: resultado.success,
         message: resultado.message,
         data: resultado.data,
-        timestamp: resultado.timestamp
+        timestamp: resultado.timestamp,
       });
     } catch (error) {
       console.error("❌ Error en obtenerMapaCalorHorarios controller:", error);
@@ -354,7 +375,7 @@ export default class SystemController {
         success: resultado.success,
         message: resultado.message,
         data: resultado.data,
-        timestamp: resultado.timestamp
+        timestamp: resultado.timestamp,
       });
     } catch (error) {
       console.error("❌ Error en obtenerEstadoSistema controller:", error);
@@ -383,7 +404,7 @@ export default class SystemController {
         success: resultado.success,
         message: resultado.message,
         data: resultado.data,
-        timestamp: resultado.timestamp
+        timestamp: resultado.timestamp,
       });
     } catch (error) {
       console.error("❌ Error en obtenerInformacionSistema controller:", error);
@@ -398,7 +419,7 @@ export default class SystemController {
 
   // ❌ MÉTODOS ELIMINADOS (ya no existen en el servicio):
   // - obtenerEstadisticasRapidas()
-  // - obtenerMetricasRendimiento() 
+  // - obtenerMetricasRendimiento()
   // - obtenerLogsSistema() (con consulta personalizada)
 
   /**
@@ -411,7 +432,7 @@ export default class SystemController {
   static async obtenerLogsSistema(req, res) {
     try {
       console.log("📝 Solicitando logs del sistema...");
-      
+
       // Usar las métricas del sistema que ya incluyen información de logs
       const resultado = await SystemServices.obtenerMetricasSistema();
 
@@ -420,7 +441,7 @@ export default class SystemController {
           success: false,
           message: "No se pudieron obtener los logs del sistema",
           data: null,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -433,9 +454,9 @@ export default class SystemController {
         data: {
           eventos: logsInfo.eventos || [],
           totalEventos: logsInfo.totalEventos || 0,
-          totalTiposEventos: logsInfo.totalTiposEventos || 0
+          totalTiposEventos: logsInfo.totalTiposEventos || 0,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.error("❌ Error en obtenerLogsSistema controller:", error);

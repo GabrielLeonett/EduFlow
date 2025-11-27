@@ -132,7 +132,7 @@ export default class UserController {
   static async obtenerPerfil(req, res) {
     return FormatterResponseController.manejarServicio(
       res,
-      UserService.obtenerPerfil(req.user?.userId || req.user?.id)
+      UserService.obtenerPerfil(req.user?.id)
     );
   }
 

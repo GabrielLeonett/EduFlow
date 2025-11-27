@@ -82,7 +82,7 @@ export default class UserModel {
    */
   static async obtenerUsuarioPorId(id) {
     try {
-      const query = "SELECT * FROM users WHERE cedula = $1";
+      const query = "SELECT * FROM vista_usuarios WHERE cedula = $1";
       const values = [id];
 
       const { rows } = await client.query(query, values);
@@ -109,7 +109,7 @@ export default class UserModel {
    */
   static async obtenerUsuarioPorEmail(correo) {
     try {
-      const query = "SELECT * FROM users WHERE email = $1";
+      const query = "SELECT * FROM vista_usuarios WHERE email = $1";
       const values = [correo];
 
       const { rows } = await client.query(query, values);

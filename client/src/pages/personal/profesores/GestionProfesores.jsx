@@ -7,6 +7,7 @@ import {
   Stack,
   Pagination,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import {
   PersonAdd as PersonAddIcon,
@@ -15,10 +16,9 @@ import {
 } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ResponsiveAppBar from "../../../components/navbar";
 import CardProfesor from "../../../components/cardProfesor";
-import SkeletonProfesores from "../../../components/SkeletonProfesores";
 import CustomButton from "../../../components/customButton";
 import { useTour } from "../../../hook/useTour";
 import CustomAutocomplete from "../../../components/CustomAutocomplete";
@@ -26,7 +26,7 @@ import CustomLabel from "../../../components/customLabel";
 
 export default function GestionProfesores() {
   const axios = useApi(false);
-  const navigate = useNavigate();
+  const navigate = useParams();
 
   const [profesores, setProfesores] = useState([]);
   const [profesorSearch, setProfesorSearch] = useState(null);
@@ -40,6 +40,8 @@ export default function GestionProfesores() {
   });
   const [sortOrder, setSortOrder] = useState("nombres");
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState(null);
   const { id_profesor } = useParams();
 
   // Función para buscar profesores
@@ -70,7 +72,7 @@ export default function GestionProfesores() {
   // Efecto para cargar profesores cuando cambian los parámetros
   useEffect(() => {
     fetchProfesores();
-  }, [pagination.page, pagination.limit, sortOrder, profesorSearch]);
+  }, [fetchProfesores]);
 
   const { startTour, resetTour } = useTour(
     [
@@ -125,16 +127,6 @@ export default function GestionProfesores() {
     }));
   };
 
-  // Manejar cambio en el autocomplete de búsqueda
-  const handleSearchChange = (event, newValue) => {
-    setProfesorSearch(newValue?.id_profesor);
-    // Resetear a página 1 cuando se realiza una búsqueda
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }));
-  };
-
   return (
     <>
       <ResponsiveAppBar backgroundColor />
@@ -158,20 +150,50 @@ export default function GestionProfesores() {
             flexWrap: "wrap",
           }}
         >
-          {/* Búsqueda por nombre */}
+          {/* Búsqueda por nombre, apellido o cédula */}
           <Box sx={{ flexGrow: 1, minWidth: 300 }}>
             <CustomAutocomplete
+              freeSolo
               options={profesores}
-              getOptionLabel={(profesor) =>
-                `${profesor.nombres} ${profesor.apellidos}`
-              }
-              value={null}
-              onChange={handleSearchChange}
+              inputValue={searchInput}
+              onInputChange={(event, newValue) => {
+                setSearchInput(newValue);
+
+                // Clear previous timeout
+                if (searchTimeout) clearTimeout(searchTimeout);
+
+                // Set new timeout for debounced search
+                const timeout = setTimeout(() => {
+                  if (newValue.length > 2 || newValue.length === 0) {
+                    setProfesorSearch(newValue);
+                    // Resetear a página 1 cuando se realiza una búsqueda
+                    setPagination((prev) => ({
+                      ...prev,
+                      page: 1,
+                    }));
+                  }
+                }, 1000);
+
+                setSearchTimeout(timeout);
+              }}
+              onChange={(event, newValue) => {
+                if (newValue && typeof newValue !== "string") {
+                  // User selected an option
+                  console.log("Profesor seleccionado:", newValue);
+                  // Puedes hacer algo con el profesor seleccionado
+                }
+              }}
+              getOptionLabel={(option) => {
+                if (typeof option === "string") {
+                  return option;
+                }
+                return `${option.nombres} ${option.apellidos} - ${option.cedula}`;
+              }}
               renderInput={(params) => (
                 <CustomLabel
                   {...params}
                   label="Buscar profesor"
-                  placeholder="Nombre, apellido o cédula"
+                  placeholder="Nombre, apellido o cédula..."
                   InputProps={{
                     ...params.InputProps,
                     startAdornment: (
@@ -182,10 +204,13 @@ export default function GestionProfesores() {
                   }}
                 />
               )}
-              isOptionEqualToValue={(option, value) =>
-                option.id_profesor === value?.id_profesor
-              }
               filterOptions={(options, { inputValue }) => {
+                // Si el input está vacío, mostrar opciones recientes o populares
+                if (!inputValue) {
+                  return options.slice(0, 5); // Mostrar solo las primeras 5
+                }
+
+                // Filtrar opciones locales
                 return options.filter(
                   (option) =>
                     option.nombres
@@ -195,11 +220,16 @@ export default function GestionProfesores() {
                       ?.toLowerCase()
                       .includes(inputValue.toLowerCase()) ||
                     option.cedula
-                      ?.toLowerCase()
+                      ?.toString()
+                      .toLowerCase()
                       .includes(inputValue.toLowerCase())
                 );
               }}
-              noOptionsText="No se encontraron profesores"
+              noOptionsText={
+                searchInput.length > 2
+                  ? "Presiona Enter para buscar"
+                  : "Escribe al menos 3 caracteres"
+              }
             />
           </Box>
 
@@ -223,24 +253,14 @@ export default function GestionProfesores() {
         </Box>
 
         {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              alignContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <SkeletonProfesores />
-            <SkeletonProfesores />
-            <SkeletonProfesores />
+          <Box className="flex justify-center items-center h-64">
+            <CircularProgress />
           </Box>
         ) : (
           <Box id="profesores-container">
             {profesores.length === 0 ? (
-              <Typography textAlign="center" my={4}>
-                No hay más profesores registrados
+              <Typography align="center" variant="h6" sx={{ mt: 4 }}>
+                No se encontraron profesores registrados.
               </Typography>
             ) : (
               <>

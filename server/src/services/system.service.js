@@ -188,9 +188,9 @@ class SystemServices {
       console.log("🧹 Limpiando respaldos antiguos...");
 
       const dias = parseInt(queryParams.dias) || 30;
-      
+
       const respuestaRespaldos = await this.listarRespaldos();
-      
+
       if (FormatterResponseService.isError(respuestaRespaldos)) {
         return respuestaRespaldos;
       }
@@ -382,7 +382,7 @@ class SystemServices {
   static async obtenerReportesEstadisticas() {
     try {
       console.log("📊 Generando reportes estadísticos del sistema...");
-      
+
       const respuestaModel = await SystemModel.reportesEstadisticas();
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -415,6 +415,44 @@ class SystemServices {
   /**
    * @static
    * @async
+   * @method obtenerAuditoriaCompleta
+   * @description Obtener registros de auditoría con filtros avanzados
+   * @param {Object} queryParams - Parámetros de filtrado para auditoría
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerAuditoriaCompleta(queryParams = {}) {
+    try {
+      console.log("🔍 Obteniendo registros de auditoría...");
+
+      const respuestaModel = await SystemModel.obtenerAuditoria(queryParams);
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      return FormatterResponseService.success(
+        respuestaModel.data || respuestaModel,
+        "Registros de auditoría obtenidos exitosamente",
+        {
+          status: 200,
+          title: "Auditoría del Sistema",
+        }
+      );
+    } catch (error) {
+      console.error("❌ Error en obtenerAuditoriaCompleta:", error);
+      return FormatterResponseService.error(
+        `Error al obtener registros de auditoría: ${error.message}`,
+        {
+          status: 500,
+          title: "Error en Auditoría",
+        }
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method obtenerMetricasSistema
    * @description Obtener métricas generales del sistema
    * @returns {Object} Resultado de la operación
@@ -422,7 +460,7 @@ class SystemServices {
   static async obtenerMetricasSistema() {
     try {
       console.log("⚡ Obteniendo métricas del sistema...");
-      
+
       const respuestaModel = await SystemModel.obtenerMetricasSistema();
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -462,7 +500,7 @@ class SystemServices {
   static async obtenerMetricasAcademicas() {
     try {
       console.log("📚 Obteniendo métricas académicas...");
-      
+
       const respuestaModel = await SystemModel.obtenerMetricasAcademicas();
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -502,7 +540,7 @@ class SystemServices {
   static async obtenerMapaCalorHorarios() {
     try {
       console.log("🔥 Generando mapa de calor de horarios...");
-      
+
       const respuestaModel = await SystemModel.obtenerMapaCalorOcupacion();
 
       if (FormatterResponseService.isError(respuestaModel)) {

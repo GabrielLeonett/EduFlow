@@ -4,19 +4,20 @@ import SystemController from "../controllers/system.controller.js";
 
 // Destructuración de los métodos del controlador de System
 const {
-    crearRespaldo,
-    listarRespaldos,
-    restaurarRespaldo,
-    limpiarRespaldosAntiguos,
-    descargarRespaldo,
-    eliminarRespaldo,
-    obtenerReportesEstadisticas,
-    obtenerMetricasSistema,
-    obtenerMetricasAcademicas,
-    obtenerMapaCalorHorarios,
-    obtenerEstadoSistema,
-    obtenerInformacionSistema,
-    obtenerLogsSistema
+  crearRespaldo,
+  listarRespaldos,
+  restaurarRespaldo,
+  limpiarRespaldosAntiguos,
+  descargarRespaldo,
+  eliminarRespaldo,
+  obtenerAuditoria,
+  obtenerReportesEstadisticas,
+  obtenerMetricasSistema,
+  obtenerMetricasAcademicas,
+  obtenerMapaCalorHorarios,
+  obtenerEstadoSistema,
+  obtenerInformacionSistema,
+  obtenerLogsSistema,
 } = SystemController;
 
 // Creación del router para las rutas del Sistema
@@ -40,13 +41,13 @@ export const SystemRouter = Router();
  * curl -X POST 'system/backup'
  */
 SystemRouter.post(
-    "/system/backup",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-    ]),
-    crearRespaldo
+  "/system/backup",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  crearRespaldo
 );
 
 /**
@@ -62,14 +63,14 @@ SystemRouter.post(
  * curl -X GET 'system/backups'
  */
 SystemRouter.get(
-    "/system/backups",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    listarRespaldos
+  "/system/backups",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  listarRespaldos
 );
 
 /**
@@ -89,12 +90,9 @@ SystemRouter.get(
  *   }'
  */
 SystemRouter.post(
-    "/system/restore",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-    ]),
-    restaurarRespaldo
+  "/system/restore",
+  middlewareAuth(["SuperAdmin", "Vicerrector"]),
+  restaurarRespaldo
 );
 
 /**
@@ -110,13 +108,13 @@ SystemRouter.post(
  * curl -X DELETE 'system/backups/cleanup?dias=30'
  */
 SystemRouter.delete(
-    "/system/backups/cleanup",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-    ]),
-    limpiarRespaldosAntiguos
+  "/system/backups/cleanup",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  limpiarRespaldosAntiguos
 );
 
 /**
@@ -132,13 +130,13 @@ SystemRouter.delete(
  * curl -X DELETE 'system/backups/sistema_universitario_backup_2024-01-15T10-30-00Z.sql'
  */
 SystemRouter.delete(
-    "/system/backups/:backupFileName",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-    ]),
-    eliminarRespaldo
+  "/system/backups/:backupFileName",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  eliminarRespaldo
 );
 
 /**
@@ -156,14 +154,14 @@ SystemRouter.delete(
  *   --output backup.sql
  */
 SystemRouter.get(
-    "/system/backups/download/:backupFileName",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    descargarRespaldo
+  "/system/backups/download/:backupFileName",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  descargarRespaldo
 );
 
 /**
@@ -185,14 +183,14 @@ SystemRouter.get(
  * curl -X GET 'system/reportes/estadisticas'
  */
 SystemRouter.get(
-    "/system/reportes/estadisticas",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    obtenerReportesEstadisticas
+  "/system/reportes/estadisticas",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  obtenerReportesEstadisticas
 );
 
 /**
@@ -209,15 +207,15 @@ SystemRouter.get(
  * curl -X GET 'system/metricas/sistema'
  */
 SystemRouter.get(
-    "/system/metricas/sistema",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-        "Profesor",
-    ]),
-    obtenerMetricasSistema
+  "/system/metricas/sistema",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  obtenerMetricasSistema
 );
 
 /**
@@ -234,15 +232,15 @@ SystemRouter.get(
  * curl -X GET 'system/metricas/academicas'
  */
 SystemRouter.get(
-    "/system/metricas/academicas",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-        "Profesor",
-    ]),
-    obtenerMetricasAcademicas
+  "/system/metricas/academicas",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  obtenerMetricasAcademicas
 );
 
 /**
@@ -258,14 +256,14 @@ SystemRouter.get(
  * curl -X GET 'system/mapa-calor/horarios'
  */
 SystemRouter.get(
-    "/system/mapa-calor/horarios",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    obtenerMapaCalorHorarios
+  "/system/mapa-calor/horarios",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  obtenerMapaCalorHorarios
 );
 
 /**
@@ -281,14 +279,14 @@ SystemRouter.get(
  * curl -X GET 'system/estado'
  */
 SystemRouter.get(
-    "/system/estado",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    obtenerEstadoSistema
+  "/system/estado",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  obtenerEstadoSistema
 );
 
 /**
@@ -305,15 +303,15 @@ SystemRouter.get(
  * curl -X GET 'system/info'
  */
 SystemRouter.get(
-    "/system/info",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-        "Profesor",
-    ]),
-    obtenerInformacionSistema
+  "/system/info",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  obtenerInformacionSistema
 );
 
 /**
@@ -328,13 +326,13 @@ SystemRouter.get(
  * curl -X GET 'system/logs'
  */
 SystemRouter.get(
-    "/system/logs",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-    ]),
-    obtenerLogsSistema
+  "/system/logs",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  obtenerLogsSistema
 );
 
 /**
@@ -360,12 +358,9 @@ SystemRouter.get(
  *   }'
  */
 SystemRouter.post(
-    "/system/backup/manual",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-    ]),
-    crearRespaldo
+  "/system/backup/manual",
+  middlewareAuth(["SuperAdmin", "Vicerrector"]),
+  crearRespaldo
 );
 
 /**
@@ -381,14 +376,14 @@ SystemRouter.post(
  * curl -X GET 'api/system/backups'
  */
 SystemRouter.get(
-    "/api/system/backups",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    listarRespaldos
+  "/api/system/backups",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  listarRespaldos
 );
 
 /**
@@ -404,14 +399,14 @@ SystemRouter.get(
  * curl -X GET 'api/system/estadisticas'
  */
 SystemRouter.get(
-    "/api/system/estadisticas",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    obtenerMetricasSistema
+  "/api/system/estadisticas",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  obtenerMetricasSistema
 );
 
 /**
@@ -427,14 +422,14 @@ SystemRouter.get(
  * curl -X GET 'api/system/status'
  */
 SystemRouter.get(
-    "/api/system/status",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    obtenerEstadoSistema
+  "/api/system/status",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  obtenerEstadoSistema
 );
 
 /**
@@ -450,12 +445,28 @@ SystemRouter.get(
  * curl -X GET 'api/system/metricas'
  */
 SystemRouter.get(
-    "/api/system/metricas",
-    middlewareAuth([
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-    ]),
-    obtenerMetricasSistema
+  "/api/system/metricas",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  obtenerMetricasSistema
+);
+
+/**
+ * @name GET /auditory/system
+ * @description Obtner la auditoria del sistema
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ * @returns {Object} obtiene la auditoria del sistema
+ * @example
+ * curl -X GET '/auditory/system'
+ */
+SystemRouter.get(
+  "/auditory/system",
+  middlewareAuth(["SuperAdmin", "Vicerrector"]),
+  obtenerAuditoria
 );

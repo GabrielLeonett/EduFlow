@@ -1,6 +1,7 @@
 import ValidationService from "./validation.service.js";
 import NotificationService from "./notification.service.js";
 import CoordinadorModel from "../models/coordinador.model.js";
+import CurricularModel from "../models/curricular.model.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
 import { loadEnv } from "../utils/utilis.js";
 
@@ -144,8 +145,7 @@ export default class CoordinadorService {
 
       // 1. Validar datos de reasignación
       console.log("✅ Validando datos de reasignación...");
-      const validation =
-        ValidationService.validatePartialCoordinador(datos);
+      const validation = ValidationService.validatePartialCoordinador(datos);
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
@@ -173,29 +173,13 @@ export default class CoordinadorService {
       // 3. Validar que el coordinador existe y está activo
       console.log("👤 Validando existencia del coordinador...");
       const coordinadorValidation =
-        await CoordinadorService.validarCoordinadorActivo(
-          datos.cedula_profesor
-        );
+        await CoordinadorModel.validarCoordinadorActivo(datos.id_profesor);
 
       if (!coordinadorValidation.existe) {
         console.error("❌ Coordinador no encontrado o inactivo");
         return FormatterResponseService.validationError(
           ["El coordinador especificado no existe o no está activo"],
           "Coordinador no válido para reasignación"
-        );
-      }
-
-      // 4. Validar que el PNF destino existe
-      console.log("🏫 Validando PNF destino...");
-      const pnfValidation = await PnfService.validarPnfExistente(
-        datos.id_pnf_nuevo
-      );
-
-      if (!pnfValidation.existe) {
-        console.error("❌ PNF destino no encontrado");
-        return FormatterResponseService.validationError(
-          ["El PNF destino especificado no existe"],
-          "PNF destino no válido"
         );
       }
 
@@ -211,13 +195,13 @@ export default class CoordinadorService {
       // 6. Validar que no hay otro coordinador activo en el PNF destino
       console.log("🔍 Verificando coordinador en PNF destino...");
       const coordinadorDestino =
-        await CoordinadorService.obtenerCoordinadorPorPnf(datos.id_pnf_nuevo);
+        await CoordinadorModel.obtenerCoordinadorPorPnf(datos.id_pnf_nuevo); // Corregido: datos.id_pnf_nuevo
 
       if (coordinadorDestino && coordinadorDestino.activo) {
         console.error("❌ Ya existe coordinador activo en PNF destino");
         return FormatterResponseService.validationError(
           [
-            `Ya existe un coordinador activo en el PNF destino: ${coordinadorDestino.nombre}`,
+            `Ya existe un coordinador activo en el PNF destino: ${coordinadorDestino.nombre_pnf}`,
           ],
           "PNF destino ya tiene coordinador asignado"
         );
@@ -235,29 +219,59 @@ export default class CoordinadorService {
         return respuestaModel;
       }
 
+      // Extraer datos de la respuesta del modelo
+      const datosCoordinador = respuestaModel.data.coordinador;
+      const pnf_anterior = datosCoordinador.pnf_anterior; // { id_pnf, nombre_pnf }
+      const pnf_nuevo = datosCoordinador.pnf_nuevo; // { id_pnf, nombre_pnf }
+
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📊 Respuesta del modelo:", respuestaModel);
+        console.log("🏷️ Coordinador:", datosCoordinador);
+        console.log("🏷️ PNF Anterior:", pnf_anterior);
+        console.log("🏷️ PNF Nuevo:", pnf_nuevo);
       }
 
-      // 8. Enviar notificación
+      // 9. Enviar notificación
       console.log("🔔 Enviando notificaciones de reasignación...");
       const notificationService = new NotificationService();
+      
+      // Notificación para roles administrativos
       await notificationService.crearNotificacionMasiva({
         titulo: "Coordinador Reasignado",
         tipo: "coordinador_reasignado",
-        contenido: `El coordinador ${coordinadorValidation.nombre} ha sido reasignado del PNF ${coordinadorValidation.pnf_nombre_actual} al PNF ${pnfValidation.nombre}`,
+        contenido: `El coordinador ${coordinadorValidation.nombre} ha sido reasignado del PNF "${pnf_anterior.nombre_pnf}" al PNF "${pnf_nuevo.nombre_pnf}"`,
         metadatos: {
           coordinador_cedula: datos.cedula_profesor,
           coordinador_nombre: coordinadorValidation.nombre,
-          pnf_anterior_id: coordinadorValidation.pnf_actual,
-          pnf_anterior_nombre: coordinadorValidation.pnf_nombre_actual,
-          pnf_nuevo_id: datos.id_pnf_nuevo,
-          pnf_nuevo_nombre: pnfValidation.nombre,
+          coordinador_email: coordinadorValidation.email,
+          pnf_anterior_id: pnf_anterior.id_pnf,
+          pnf_anterior_nombre: pnf_anterior.nombre_pnf,
+          pnf_nuevo_id: pnf_nuevo.id_pnf,
+          pnf_nuevo_nombre: pnf_nuevo.nombre_pnf,
           usuario_reasignador: user_action.id,
+          usuario_reasignador_nombre: user_action.nombre || "Sistema",
           fecha_reasignacion: new Date().toISOString(),
         },
         roles_ids: [7, 8, 9, 10], // IDs de roles administrativos
-        users_ids: [datos.cedula_profesor], // Notificar al coordinador reasignado
+        users_ids: [],
+      });
+
+      // Notificación específica para el coordinador reasignado
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Ha sido reasignado a nuevo PNF",
+        tipo: "coordinador_reasignado_personal",
+        contenido: `Ha sido reasignado como coordinador del PNF "${pnf_nuevo.nombre_pnf}". Anteriormente coordinaba el PNF "${pnf_anterior.nombre_pnf}".`,
+        metadatos: {
+          pnf_anterior_id: pnf_anterior.id_pnf,
+          pnf_anterior_nombre: pnf_anterior.nombre_pnf,
+          pnf_nuevo_id: pnf_nuevo.id_pnf,
+          pnf_nuevo_nombre: pnf_nuevo.nombre_pnf,
+          usuario_reasignador: user_action.id,
+          usuario_reasignador_nombre: user_action.nombre || "Sistema",
+          fecha_reasignacion: new Date().toISOString(),
+        },
+        roles_ids: [],
+        users_ids: [datosCoordinador.id_coordinador], // Notificar específicamente al coordinador por su cédula
       });
 
       console.log("🎉 Coordinador reasignado exitosamente");
@@ -266,17 +280,22 @@ export default class CoordinadorService {
         {
           message: "Coordinador reasignado exitosamente",
           coordinador: {
-            cedula: datos.cedula_profesor,
+            cedula: datosCoordinador.id_coordinador,
             nombre: coordinadorValidation.nombre,
+            email: coordinadorValidation.email,
             pnf_anterior: {
-              id: coordinadorValidation.pnf_actual,
-              nombre: coordinadorValidation.pnf_nombre_actual,
+              id_pnf: pnf_anterior.id_pnf,
+              nombre_pnf: pnf_anterior.nombre_pnf,
             },
             pnf_nuevo: {
-              id: datos.id_pnf_nuevo,
-              nombre: pnfValidation.nombre,
+              id_pnf: pnf_nuevo.id_pnf,
+              nombre_pnf: pnf_nuevo.nombre_pnf,
             },
             fecha_reasignacion: new Date().toISOString(),
+            reasignado_por: {
+              id: user_action.id,
+              nombre: user_action.nombre || "Sistema",
+            },
           },
         },
         "Coordinador reasignado exitosamente",

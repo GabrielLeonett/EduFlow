@@ -6,6 +6,8 @@ import {
   Stack,
   Pagination,
   MenuItem,
+  CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import { Search as SearchIcon, Route as RouteIcon } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
@@ -15,7 +17,6 @@ import CardProfesorEliminado from "../../../components/CardProfesorEliminado";
 import CustomAutocomplete from "../../../components/CustomAutocomplete";
 import CustomLabel from "../../../components/customLabel";
 import { useTour } from "../../../hook/useTour";
-import { Tooltip } from "@mui/material";
 import CustomButton from "../../../components/customButton";
 
 export default function GestionProfesores() {
@@ -33,6 +34,8 @@ export default function GestionProfesores() {
   });
   const [sortOrder, setSortOrder] = useState("nombres");
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   // Función para buscar profesores
   const fetchProfesores = useCallback(async () => {
@@ -62,7 +65,7 @@ export default function GestionProfesores() {
   // Efecto para cargar profesores cuando cambian los parámetros
   useEffect(() => {
     fetchProfesores();
-  }, [pagination.page, pagination.limit, sortOrder, profesorSearch]);
+  }, [fetchProfesores]);
 
   // Manejar cambio de página
   const handlePageChange = (event, page) => {
@@ -82,45 +85,36 @@ export default function GestionProfesores() {
     }));
   };
 
-  // Manejar cambio en el autocomplete de búsqueda
-  const handleSearchChange = (event, newValue) => {
-    setProfesorSearch(newValue?.id_profesor);
-    // Resetear a página 1 cuando se realiza una búsqueda
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }));
-  };
-
   const { startTour, resetTour } = useTour(
-      [
-    {
-      intro: "👋 Bienvenido. Aquí puedes ver los profesores eliminados.",
-    },
-    {
-      element: "#filtros-busqueda",
-      intro: "Aquí puedes buscar y filtrar los profesores eliminados.",
-      position: "bottom",
-    },
-    {
-      element: "#profesores-container",
-      intro:
-        "En esta sección se listan los profesores eliminados. Puedes restaurarlos.",
-      position: "right",
-    },
-    {
-      element: "#btn-reiniciar-tour",
-      intro: "Haz clic aquí si deseas volver a ver este tutorial.",
-      position: "left",
-    },
-  ],
-  "tourProfesoresEliminados"
-);
-    useEffect(() => {
-      if (!loading && profesores.length > 0) {
-        startTour();
-      }
-    }, [loading, profesores, startTour]);
+    [
+      {
+        intro: "👋 Bienvenido. Aquí puedes ver los profesores eliminados.",
+      },
+      {
+        element: "#filtros-busqueda",
+        intro: "Aquí puedes buscar y filtrar los profesores eliminados.",
+        position: "bottom",
+      },
+      {
+        element: "#profesores-container",
+        intro:
+          "En esta sección se listan los profesores eliminados. Puedes restaurarlos.",
+        position: "right",
+      },
+      {
+        element: "#btn-reiniciar-tour",
+        intro: "Haz clic aquí si deseas volver a ver este tutorial.",
+        position: "left",
+      },
+    ],
+    "tourProfesoresEliminados"
+  );
+
+  useEffect(() => {
+    if (!loading && profesores.length > 0) {
+      startTour();
+    }
+  }, [loading, profesores, startTour]);
 
   return (
     <>
@@ -145,20 +139,50 @@ export default function GestionProfesores() {
             flexWrap: "wrap",
           }}
         >
-          {/* Búsqueda por nombre */}
+          {/* Búsqueda por nombre, apellido o cédula */}
           <Box sx={{ flexGrow: 1, minWidth: 300 }}>
             <CustomAutocomplete
+              freeSolo
               options={profesores}
-              getOptionLabel={(profesor) =>
-                `${profesor.nombres} ${profesor.apellidos}`
-              }
-              value={null}
-              onChange={handleSearchChange}
+              inputValue={searchInput}
+              onInputChange={(event, newValue) => {
+                setSearchInput(newValue);
+
+                // Clear previous timeout
+                if (searchTimeout) clearTimeout(searchTimeout);
+
+                // Set new timeout for debounced search
+                const timeout = setTimeout(() => {
+                  if (newValue.length > 2 || newValue.length === 0) {
+                    setProfesorSearch(newValue);
+                    // Resetear a página 1 cuando se realiza una búsqueda
+                    setPagination((prev) => ({
+                      ...prev,
+                      page: 1,
+                    }));
+                  }
+                }, 1000);
+
+                setSearchTimeout(timeout);
+              }}
+              onChange={(event, newValue) => {
+                if (newValue && typeof newValue !== "string") {
+                  // User selected an option
+                  console.log("Profesor seleccionado:", newValue);
+                  // Puedes hacer algo con el profesor seleccionado
+                }
+              }}
+              getOptionLabel={(option) => {
+                if (typeof option === "string") {
+                  return option;
+                }
+                return `${option.nombres} ${option.apellidos} - ${option.cedula}`;
+              }}
               renderInput={(params) => (
                 <CustomLabel
                   {...params}
                   label="Buscar profesor"
-                  placeholder="Nombre, apellido o cédula"
+                  placeholder="Nombre, apellido o cédula..."
                   InputProps={{
                     ...params.InputProps,
                     startAdornment: (
@@ -169,10 +193,13 @@ export default function GestionProfesores() {
                   }}
                 />
               )}
-              isOptionEqualToValue={(option, value) =>
-                option.id_profesor === value?.id_profesor
-              }
               filterOptions={(options, { inputValue }) => {
+                // Si el input está vacío, mostrar opciones recientes o populares
+                if (!inputValue) {
+                  return options.slice(0, 5); // Mostrar solo las primeras 5
+                }
+
+                // Filtrar opciones locales
                 return options.filter(
                   (option) =>
                     option.nombres
@@ -182,11 +209,16 @@ export default function GestionProfesores() {
                       ?.toLowerCase()
                       .includes(inputValue.toLowerCase()) ||
                     option.cedula
-                      ?.toLowerCase()
+                      ?.toString()
+                      .toLowerCase()
                       .includes(inputValue.toLowerCase())
                 );
               }}
-              noOptionsText="No se encontraron profesores"
+              noOptionsText={
+                searchInput.length > 2
+                  ? "Presiona Enter para buscar"
+                  : "Escribe al menos 3 caracteres"
+              }
             />
           </Box>
 
@@ -210,30 +242,28 @@ export default function GestionProfesores() {
         </Box>
 
         {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              alignContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            cargando...
+          <Box className="flex justify-center items-center h-64">
+            <CircularProgress />
           </Box>
         ) : (
           <Box id="profesores-container">
             {profesores.length === 0 ? (
-              <Typography textAlign="center" my={4}>
-                No hay más profesores registrados
+              <Typography align="center" variant="h6" sx={{ mt: 4 }}>
+                {profesorSearch
+                  ? "No se encontraron profesores que coincidan con la búsqueda"
+                  : "No hay profesores eliminados registrados"}
               </Typography>
             ) : (
               <>
-                <Grid container spacing={3} sx={{ width: "100%", margin: 0 }}>
+                <Grid
+                  container
+                  spacing={3}
+                  sx={{ width: "100%", margin: 0 }}
+                  justifyContent={"start"}
+                  alignContent={'start'}
+                >
                   {profesores.map((profesor) => (
-                    <Grid key={profesor.cedula || profesor.id}>
-                      <CardProfesorEliminado prof={profesor} />
-                    </Grid>
+                    <CardProfesorEliminado prof={profesor} />
                   ))}
                 </Grid>
 
@@ -281,29 +311,30 @@ export default function GestionProfesores() {
           </Typography>
         )}
       </Box>
+
       <Tooltip title="Tutorial" placement="left-start">
-                <CustomButton
-                  id="btn-reiniciar-tour"
-                  variant="contained"
-                  onClick={resetTour}
-                  sx={{
-                    position: "fixed",
-                    bottom: 128,
-                    right: 24,
-                    minWidth: "auto",
-                    width: 48,
-                    height: 48,
-                    borderRadius: "50%",
-                    zIndex: 9999,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  aria-label="Ver tutorial"
-                >
-                  <RouteIcon />
-                </CustomButton>
-              </Tooltip>
+        <CustomButton
+          id="btn-reiniciar-tour"
+          variant="contained"
+          onClick={resetTour}
+          sx={{
+            position: "fixed",
+            bottom: 78,
+            right: 24,
+            minWidth: "auto",
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          aria-label="Ver tutorial"
+        >
+          <RouteIcon />
+        </CustomButton>
+      </Tooltip>
     </>
   );
 }

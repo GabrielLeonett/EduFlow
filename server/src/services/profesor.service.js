@@ -384,7 +384,7 @@ export default class ProfesorService {
       }
 
       const respuestaModel = await ProfesorModel.mostrarProfesoresEliminados(
-        allowedParams
+        queryParams
       );
 
       if (FormatterResponseService.isError(respuestaModel)) {

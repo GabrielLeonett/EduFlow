@@ -11,6 +11,7 @@ const {
   VerificarToken,
   desactivarUsuario,
   activarUsuario,
+  obtenerPerfil,
 } = UserController;
 
 export const UserRouter = Router();
@@ -45,6 +46,17 @@ UserRouter.get(
   "/auth/verify",
   middlewareAuth(null, { required: true }),
   verificarUsers
+);
+
+/**
+ * @name GET /profile
+ * @description Verificar token de autenticación y obtener datos del usuario
+ * @middleware Requiere autenticación (cualquier rol)
+ */
+UserRouter.get(
+  "/profile",
+  middlewareAuth(null, { required: true }),
+  obtenerPerfil
 );
 
 /**
@@ -97,7 +109,7 @@ UserRouter.put(
  */
 UserRouter.delete(
   "/user/:id_usuario/desactivar",
-  middlewareAuth(['SuperAdmin','Vicerrector'], { required: true }),
+  middlewareAuth(["SuperAdmin", "Vicerrector"], { required: true }),
   desactivarUsuario
 );
 
@@ -108,6 +120,6 @@ UserRouter.delete(
  */
 UserRouter.put(
   "/user/:id_usuario/activar",
-  middlewareAuth(['SuperAdmin','Vicerrector'], { required: true }),
+  middlewareAuth(["SuperAdmin", "Vicerrector"], { required: true }),
   activarUsuario
 );

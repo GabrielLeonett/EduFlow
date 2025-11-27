@@ -6,6 +6,9 @@ import {
   MenuItem,
   InputAdornment,
   Tooltip,
+  CircularProgress,
+  Stack,
+  Pagination,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import Navbar from "../../../components/navbar";
@@ -18,20 +21,46 @@ import useApi from "../../../hook/useApi";
 import useSweetAlert from "../../../hook/useSweetAlert";
 import { Route as RouteIcon } from "@mui/icons-material";
 import { useTour } from "../../../hook/useTour";
+import CustomAutocomplete from "../../../components/CustomAutocomplete";
 
 export default function GestionAdministradores() {
   const axios = useApi();
   const navigate = useNavigate();
   const alert = useSweetAlert();
+  
   const [usuarios, setUsuarios] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
+  const [adminSearch, setAdminSearch] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
   const [filtroRol, setFiltroRol] = useState("todos");
+  const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   const pedirUsuario = useCallback(async () => {
+    setLoading(true);
     try {
-      const { administradores } = await axios.get("/admins");
-      console.log(administradores);
-      setUsuarios(administradores || []);
+      const endpoint = `/admins?page=${pagination.page}&limit=${
+        pagination.limit
+      }&search=${adminSearch || ""}&rol=${filtroRol !== "todos" ? filtroRol : ""}`;
+      
+      const response = await axios.get(endpoint);
+      console.log("Administradores cargados:", response);
+      
+      const usuariosData = response.administradores || [];
+      const paginationData = response.pagination || {};
+
+      setUsuarios(usuariosData);
+      setPagination((prev) => ({
+        ...prev,
+        ...paginationData,
+      }));
     } catch (error) {
       console.log("❌ Error completo:", error);
       if (error.error?.totalErrors > 0) {
@@ -41,21 +70,33 @@ export default function GestionAdministradores() {
       } else {
         alert.error(error.title, error.message);
       }
+      setUsuarios([]);
+    } finally {
+      setLoading(false);
     }
-  }, [axios, alert]);
+  }, [axios, alert, pagination.page, pagination.limit, adminSearch, filtroRol]);
 
   useEffect(() => {
     pedirUsuario();
   }, []);
 
-  // Filtrado
-  const usuariosFiltrados = usuarios.filter((u) => {
-    const matchBusqueda =
-      u.nombres.toLowerCase().includes(busqueda.toLowerCase()) ||
-      u.correo.toLowerCase().includes(busqueda.toLowerCase());
-    const matchRol = filtroRol === "todos" ? true : u.rol === filtroRol;
-    return matchBusqueda && matchRol;
-  });
+  // Manejar cambio de página
+  const handlePageChange = (event, page) => {
+    setPagination((prev) => ({
+      ...prev,
+      page: page,
+    }));
+  };
+
+  // Manejar cambio de rol
+  const handleRolChange = (event) => {
+    setFiltroRol(event.target.value);
+    // Resetear a página 1 cuando cambia el filtro
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+    }));
+  };
 
   // 🔹 Definición del tour con Intro.js
   const { startTour, resetTour } = useTour(
@@ -63,6 +104,11 @@ export default function GestionAdministradores() {
       {
         intro:
           "👋 Bienvenido al módulo de gestión de administradores. Te mostraré dónde está todo.",
+      },
+      {
+        element: "#filtros-busqueda",
+        intro: "Aquí puedes buscar y filtrar los administradores.",
+        position: "bottom",
       },
       {
         element: "#admin-container",
@@ -92,10 +138,10 @@ export default function GestionAdministradores() {
 
   // ✅ Ejecutar el tour solo cuando ya cargaron los administradores
   useEffect(() => {
-    if (usuarios.length > 0) {
+    if (!loading && usuarios.length > 0) {
       startTour();
     }
-  }, [usuarios]);
+  }, [loading, usuarios]);
 
   return (
     <>
@@ -109,8 +155,9 @@ export default function GestionAdministradores() {
           del sistema.
         </Typography>
 
-        {/* Filtros */}
+        {/* Filtros y Búsqueda */}
         <Box
+          id="filtros-busqueda"
           display="flex"
           alignItems="center"
           justifyContent="space-between"
@@ -118,47 +165,194 @@ export default function GestionAdministradores() {
           gap={2}
           mb={3}
         >
+          {/* Búsqueda por nombre o correo */}
+          <Box sx={{ flexGrow: 1, minWidth: 300 }}>
+            <CustomAutocomplete
+              freeSolo
+              options={usuarios}
+              inputValue={searchInput}
+              onInputChange={(event, newValue) => {
+                setSearchInput(newValue);
+
+                // Clear previous timeout
+                if (searchTimeout) clearTimeout(searchTimeout);
+
+                // Set new timeout for debounced search
+                const timeout = setTimeout(() => {
+                  if (newValue.length > 2 || newValue.length === 0) {
+                    setAdminSearch(newValue);
+                    // Resetear a página 1 cuando se realiza una búsqueda
+                    setPagination((prev) => ({
+                      ...prev,
+                      page: 1,
+                    }));
+                  }
+                }, 1000);
+
+                setSearchTimeout(timeout);
+              }}
+              onChange={(event, newValue) => {
+                if (newValue && typeof newValue !== "string") {
+                  // User selected an option
+                  console.log("Administrador seleccionado:", newValue);
+                  // Puedes hacer algo con el administrador seleccionado
+                }
+              }}
+              getOptionLabel={(option) => {
+                if (typeof option === "string") {
+                  return option;
+                }
+                // Manejar array de roles: [{id_rol, nombre_rol}]
+                const rolesNombres = option.roles && Array.isArray(option.roles) 
+                  ? option.roles.map(rol => rol.nombre_rol).join(", ")
+                  : "Sin roles";
+                return `${option.nombres} ${option.apellidos} - ${rolesNombres}`;
+              }}
+              renderInput={(params) => (
+                <CustomLabel
+                  {...params}
+                  label="Buscar administrador"
+                  placeholder="Nombre, apellido o correo electrónico..."
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: "text.secondary" }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+              filterOptions={(options, { inputValue }) => {
+                // Si el input está vacío, mostrar opciones recientes o populares
+                if (!inputValue) {
+                  return options.slice(0, 5); // Mostrar solo las primeras 5
+                }
+
+                // Filtrar opciones locales
+                return options.filter(
+                  (option) =>
+                    option.nombres
+                      ?.toLowerCase()
+                      .includes(inputValue.toLowerCase()) ||
+                    option.apellidos
+                      ?.toLowerCase()
+                      .includes(inputValue.toLowerCase()) ||
+                    option.email
+                      ?.toLowerCase()
+                      .includes(inputValue.toLowerCase()) ||
+                    // Buscar también en nombres de roles
+                    (option.roles && Array.isArray(option.roles) && 
+                      option.roles.some(rol => 
+                        rol.nombre_rol
+                          ?.toLowerCase()
+                          .includes(inputValue.toLowerCase())
+                      ))
+                );
+              }}
+              noOptionsText={
+                searchInput.length > 2
+                  ? "Presiona Enter para buscar"
+                  : "Escribe al menos 3 caracteres"
+              }
+            />
+          </Box>
+
+          {/* Filtro por rol */}
           <CustomLabel
-            variant="outlined"
-            size="small"
-            placeholder="Buscar usuario..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <CustomLabel
+            sx={{ minWidth: 200 }}
             select
             size="small"
             value={filtroRol}
-            onChange={(e) => setFiltroRol(e.target.value)}
+            onChange={handleRolChange}
+            label="Filtrar por rol"
           >
-            <MenuItem value="todos">Todos</MenuItem>
-            <MenuItem value="usuario">Usuarios</MenuItem>
-            <MenuItem value="admin">Administradores</MenuItem>
+            <MenuItem value="todos">Todos los roles</MenuItem>
+            <MenuItem value="1">Profesor</MenuItem>
+            <MenuItem value="2">Coordinador</MenuItem>
+            <MenuItem value="7">Director/a de Gestión Curricular</MenuItem>
+            <MenuItem value="8">Director/a de Gestión Permanente y Docente</MenuItem>
+            <MenuItem value="9">Secretari@ Vicerrect@r</MenuItem>
+            <MenuItem value="10">Vicerrector</MenuItem>
+            <MenuItem value="20">SuperAdmin</MenuItem>
           </CustomLabel>
         </Box>
 
-        {/* Tarjetas de usuario */}
-        <Grid container spacing={3} id="admin-container">
-          {usuariosFiltrados.map((usuario, index) => (
-            <Grid
-              size={{ xs: 12, sm: 6, md: 4 }}
-              key={usuario.id}
-              {...(index === 0 ? { id: "admin-card-ejemplo" } : {})}
-            >
-              <CardAdmin
-                usuario={usuario}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        {loading ? (
+          <Box className="flex justify-center items-center h-64">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Box id="admin-container">
+            {usuarios.length === 0 ? (
+              <Typography align="center" variant="h6" sx={{ mt: 4 }}>
+                {adminSearch || filtroRol !== "todos"
+                  ? "No se encontraron administradores que coincidan con los filtros"
+                  : "No hay administradores registrados"}
+              </Typography>
+            ) : (
+              <>
+                {/* Tarjetas de usuario */}
+                <Grid container spacing={3}>
+                  {usuarios.map((usuario, index) => (
+                    <Grid
+                      item
+                      xs={12}
+                      sm={6}
+                      md={4}
+                      key={usuario.cedula || usuario.id}
+                      {...(index === 0 ? { id: "admin-card-ejemplo" } : {})}
+                    >
+                      <CardAdmin usuario={usuario} />
+                    </Grid>
+                  ))}
+                </Grid>
+
+                {/* Paginación */}
+                {pagination.totalPages > 1 && (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      alignContent: "center",
+                      justifyContent: "center",
+                      my: 3,
+                    }}
+                  >
+                    <Stack>
+                      <Pagination
+                        count={pagination.totalPages}
+                        page={pagination.page}
+                        onChange={handlePageChange}
+                        color="primary"
+                        shape="rounded"
+                        showFirstButton
+                        showLastButton
+                        size="large"
+                      />
+                    </Stack>
+                  </Box>
+                )}
+              </>
+            )}
+          </Box>
+        )}
+
+        {/* Información de paginación */}
+        {usuarios.length > 0 && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            textAlign="center"
+            mt={2}
+          >
+            Mostrando {(pagination.page - 1) * pagination.limit + 1} -{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} de{" "}
+            {pagination.total} administradores
+          </Typography>
+        )}
       </Box>
+
       <Tooltip title={"Registrar Administrador"} placement="left-start">
         <CustomButton
           id="btn-registrar-admin"
@@ -183,6 +377,7 @@ export default function GestionAdministradores() {
           <PersonAddIcon />
         </CustomButton>
       </Tooltip>
+
       <Tooltip title={"Tutorial"} placement="left-start">
         <CustomButton
           id="btn-reiniciar-tour"
@@ -201,7 +396,7 @@ export default function GestionAdministradores() {
             alignItems: "center",
             justifyContent: "center",
           }}
-          aria-label={"Registrar Profesor"}
+          aria-label={"Ver tutorial"}
         >
           <RouteIcon />
         </CustomButton>

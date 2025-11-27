@@ -666,7 +666,7 @@ export default function CardCoordinador({ coordinador, isSearch }) {
         open={openModalReasignar}
         onClose={() => setOpenModalReasignar(false)}
         coordinador={{
-          cedula: coordinadorActual?.cedula,
+          id_profesor: coordinadorActual?.id_profesor,
           nombre_completo: `${coordinadorActual?.nombres} ${coordinadorActual?.apellidos}`,
           pnf_actual: {
             id_pnf: coordinadorActual?.id_pnf,
