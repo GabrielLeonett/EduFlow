@@ -78,7 +78,7 @@ import MiPerfil from "./pages/MiPerfil";
 import CambiarContraseña from "./pages/cambiarContraseña";
 import EditarAula from "./pages/EditarAula";
 import RecuperarContraseña from "./pages/RecuperarContraseña.jsx";
-import CoordinadoresDestituidosView from "./pages/personal/coordinador/CoordinadoresDestituidosView.jsx"
+import CoordinadoresDestituidos from "./pages/personal/coordinador/CoordinadoresDestituidosView.jsx";
 
 // Roles comunes para reutilización
 const ROLES = {
@@ -134,7 +134,6 @@ export default function App() {
                 path="/accesibilidad"
                 element={<DeclaracionAccesibilidad />}
               />
-
               {/* === GESTIÓN DE PERSONAL ACADÉMICO === */}
               <Route
                 path="/academico/profesores/:id_profesor?"
@@ -168,7 +167,6 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-
               {/* === GESTIÓN DE COORDINACIÓN === */}
               <Route
                 path="/coordinacion/coordinadores"
@@ -186,7 +184,6 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-
               {/* === PROGRAMAS NACIONALES DE FORMACIÓN === */}
               <Route
                 path="/formacion/programas"
@@ -229,7 +226,6 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-
               <Route
                 path="/horarios/secciones"
                 element={
@@ -246,7 +242,6 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-
               <Route
                 path="/horarios/profesores/:id_profesor"
                 element={
@@ -255,7 +250,6 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-
               {/* === GESTIÓN DE INFRAESTRUCTURA === */}
               <Route
                 path="/infraestructura/sedes"
@@ -289,7 +283,6 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-
               {/* === ADMINISTRACIÓN DEL SISTEMA === */}
               <Route
                 path="/administracion"
@@ -299,15 +292,12 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-
               {/* === RUTAS DE DESARROLLO === */}
               <Route path="/desarrollo/pruebas" element={<PaginaPruebas />} />
               {/* === RUTAS DE DESARROLLO === */}
               <Route path="/desarrollo/reportes" element={<PaginaReportes />} />
-
               {/* === RUTA PARA PÁGINA NO ENCONTRADA === */}
               <Route path="*" element={<PaginaNoEncontrada />} />
-
               <Route
                 path="/perfil"
                 element={
@@ -357,18 +347,19 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-
-              <Route path="/recuperar-contrasena" element={<RecuperarContraseña />} />
-
               <Route
-                path="/personal/coordinadores-destituidos"
+                path="/recuperar-contrasena"
+                element={<RecuperarContraseña />}
+              />
+              <Route
+                path="/personal/coordinadores/destituidos"
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
-                    <CoordinadoresDestituidosView />
+                    <CoordinadoresDestituidos />
                   </ProtectedViews>
                 }
               />
-
+              CoordinadoresDestituidos
             </Routes>
           </AuthProvider>
         </Router>
