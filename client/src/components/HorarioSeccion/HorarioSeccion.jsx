@@ -30,7 +30,7 @@ const HorarioSeccion = ({
   const axios = useApi();
   const alert = useSweetAlert();
   //const { isCustom } = useCoordinador(pnf?.id_pnf);
-  const  isCustom  = true;
+  const isCustom = true;
 
   // Props consolidados
   const componentProps = useMemo(
@@ -124,7 +124,7 @@ const HorarioSeccion = ({
     },
     [dataActions, state.unidadCurricularSelected, alert]
   );
-  
+
   const handleProfesorChange = useCallback(
     (newValue) => {
       console.log("🔄 handleProfesorChange llamado con:", newValue);
@@ -242,22 +242,9 @@ const HorarioSeccion = ({
   }, [setCustom, stateSetters]);
 
   const handleSave = useCallback(async () => {
-    try {
-      stateSetters.setLoading(true);
-      await dataActions.fetchCambiosTableHorario(alert);
-      alert.success(
-        "horario guardado",
-        "Los cambios se han guardado exitosamente."
-      );
-    } catch (error) {
-      console.error("Error al guardar:", error);
-      alert.error(
-        "Error al guardar",
-        "No se pudieron guardar los cambios. Intente nuevamente."
-      );
-    } finally {
-      stateSetters.setLoading(false);
-    }
+    stateSetters.setLoading(true);
+    await dataActions.fetchCambiosTableHorario(alert);
+    stateSetters.setLoading(false);
   }, [stateSetters, alert, dataActions]);
 
   const handleCloseOverlay = useCallback(() => {
@@ -318,7 +305,7 @@ const HorarioSeccion = ({
       );
     }
   }, [axios, seccion, setOverlayVisible, alert, horarioTitle]);
-  
+
   // Configuración de la tabla
   const tableConfig = useMemo(
     () => ({
