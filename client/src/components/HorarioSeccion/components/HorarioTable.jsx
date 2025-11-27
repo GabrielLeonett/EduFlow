@@ -19,7 +19,7 @@ import {
   Schedule as ScheduleIcon,
   Class as ClassIcon,
   Warning as WarningIcon,
-  CheckCircle as CheckCircleIcon ,
+  CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import Clase from "./clase";
 import { UTILS } from "../../../utils/utils";
@@ -378,10 +378,10 @@ const HorarioTable = ({
           </TableHead>
 
           <TableBody>
-            {horasOrdenadas.map((hora, index) => (
+            {horasOrdenadas.map((hora) => (
               <TableRow
-                key={hora}
-                sx={{ "&:last-child td": { borderBottom: 0 } }}
+              key={hora}
+              sx={{ "&:last-child td": { borderBottom: 0 } }}
               >
                 {/* Celda de Hora */}
                 <TableCell
@@ -398,9 +398,11 @@ const HorarioTable = ({
                   }}
                 >
                   <Typography variant="body2" color="text.primary">
-                    {UTILS.formatearHora(hora)} - {" "}
+                    {UTILS.formatearHora(hora)} -{" "}
                     {UTILS.formatearHora(
-                      Object.keys(UTILS.initialHours)[index + 1]
+                      Object.keys(UTILS.initialHours)[
+                        Object.keys(UTILS.initialHours).map(Number).indexOf(hora) + 1
+                      ]
                     )}
                   </Typography>
                 </TableCell>

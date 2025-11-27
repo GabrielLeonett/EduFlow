@@ -16,7 +16,6 @@ import {
   CardContent,
   useMediaQuery,
   LinearProgress,
-  Tooltip,
   Alert,
 } from "@mui/material";
 import ResponsiveAppBar from "../../../components/navbar";
@@ -43,19 +42,66 @@ export default function DisponibilidadProfesor() {
   const [horasDocenciaSemanales, setHorasDocenciaSemanales] = useState(0);
   const [loading, setLoading] = useState(false);
   const [existingDisponibilidades, setExistingDisponibilidades] = useState([]);
-  const timeBlocks = UTILS.initialHours;
-
-  // 🔥 FUNCIÓN PARA CALCULAR HORAS SELECCIONADAS
+  const timeBlocks = Object.keys(UTILS.initialHours).filter(
+    (hora) => UTILS.initialHours[hora] !== "ignorar"
+  );
+  // 🔥 FUNCIÓN PARA CALCULAR HORAS SELECCIONADAS - ACTUALIZADA
   const calcularHorasSeleccionadas = useCallback((bloques) => {
-    let totalHoras = 0;
+    let totalMinutos = 0;
 
     Object.values(bloques).forEach((bloquesDia) => {
-      // Cada bloque representa 1 hora académica (45 minutos)
-      const horasBloquesDia = bloquesDia.length * 0.75; // 45 minutos = 0.75 horas
-      totalHoras += horasBloquesDia;
+      if (bloquesDia.length === 0) return;
+
+      // Ordenar y eliminar duplicados
+      const bloquesOrdenados = [...new Set(bloquesDia)].sort(
+        (a, b) => parseInt(a) - parseInt(b)
+      );
+
+      console.log("🔍 Bloques únicos ordenados:", bloquesOrdenados);
+
+      // Calcular minutos para cada bloque
+      for (let i = 0; i < bloquesOrdenados.length; i++) {
+        const horaActual = parseInt(bloquesOrdenados[i]);
+
+        // Si NO es el primer bloque del día, calcular diferencia con el anterior
+        if (i > 0) {
+          const horaAnterior = parseInt(bloquesOrdenados[i - 1]);
+
+          // Convertir a minutos y calcular diferencia
+          const minutosActual =
+            Math.floor(horaActual / 100) * 60 + (horaActual % 100);
+          const minutosAnterior =
+            Math.floor(horaAnterior / 100) * 60 + (horaAnterior % 100);
+
+          const diferenciaMinutos = minutosActual - minutosAnterior;
+
+          console.log(
+            `   ${horaAnterior} → ${horaActual} = ${diferenciaMinutos}min`
+          );
+
+          // Solo sumar si la diferencia es positiva (evitar valores negativos)
+          if (diferenciaMinutos > 0) {
+            totalMinutos += diferenciaMinutos;
+          } else {
+            // Si hay duplicados o horas iguales, sumar 45 minutos
+            totalMinutos += 45;
+            console.log(`   ⚠️  Diferencia negativa, usando 45min por defecto`);
+          }
+        } else {
+          // Para el primer bloque del día, asumir 45 minutos
+          console.log(`   ${horaActual} = 45min (primer bloque)`);
+          totalMinutos += 45;
+        }
+      }
     });
 
-    return totalHoras;
+    console.log(
+      "📊 Total minutos:",
+      totalMinutos,
+      "Total horas:",
+      totalMinutos / 60
+    );
+    return totalMinutos / 60;
   }, []);
 
   // 🔥 CALCULOS REACTIVOS - ELIMINAMOS LOS ESTADOS INDIVIDUALES
@@ -185,23 +231,26 @@ export default function DisponibilidadProfesor() {
     const current = selectedBlocks[day] || [];
     const estaAgregando = !current.includes(hour);
 
-    if (estaAgregando) {
-      // 🔥 CALCULAR DIRECTAMENTE SIN LLAMAR FUNCIONES EXTRA
-      const horasPorAgregar = 0.75; // 45 minutos = 0.75 horas
-      const nuevasHoras = horasRegistradas + horasPorAgregar;
+    // Cada bloque siempre representa 45 minutos (0.75 horas)
+    const horasPorCambiar = 0.75;
 
-      if (nuevasHoras > horasDocenciaSemanales) {
-        alert.info(
-          "Límite alcanzado",
-          `No puedes agregar más horas. Ya has cubierto ${horasRegistradas.toFixed(
-            1
-          )} de ${horasDocenciaSemanales} horas (${porcentajeCumplimiento.toFixed(
-            0
-          )}%)`,
-          { timer: 2000 }
-        );
-        return;
-      }
+    // Calcular nuevas horas totales
+    const nuevasHoras = estaAgregando
+      ? horasRegistradas + horasPorCambiar
+      : horasRegistradas - horasPorCambiar;
+
+    // Validar solo cuando se está agregando
+    if (estaAgregando && nuevasHoras > horasDocenciaSemanales) {
+      alert.info(
+        "Límite alcanzado",
+        `No puedes agregar más horas. Ya has cubierto ${horasRegistradas.toFixed(
+          1
+        )} de ${horasDocenciaSemanales} horas (${porcentajeCumplimiento.toFixed(
+          0
+        )}%)`,
+        { timer: 2000 }
+      );
+      return;
     }
 
     const updated = estaAgregando
@@ -241,65 +290,62 @@ export default function DisponibilidadProfesor() {
   };
 
   // 🔥 FUNCIÓN PARA AGRUPAR BLOQUES CONSECUTIVOS - CORREGIDA
-  const agruparBloquesConsecutivos = useCallback((bloques) => {
-    if (!bloques || bloques.length === 0) return [];
+  const agruparBloquesConsecutivos = useCallback(
+    (bloques) => {
+      if (!bloques || bloques.length === 0) return [];
 
-    // Ordenar los bloques
-    const bloquesOrdenados = [...bloques].sort((a, b) => {
-      const horaA = parseInt(a);
-      const horaB = parseInt(b);
-      return horaA - horaB;
-    });
+      // Ordenar los bloques numéricamente
+      const bloquesOrdenados = [...bloques].sort(
+        (a, b) => parseInt(a) - parseInt(b)
+      );
 
-    const rangos = [];
-    let inicio = bloquesOrdenados[0];
-    let fin = bloquesOrdenados[0];
+      const rangos = [];
+      let inicio = parseInt(bloquesOrdenados[0]);
+      let fin = parseInt(bloquesOrdenados[0]);
 
-    // 🔥 NUEVA FUNCIÓN PARA CÁLCULOS (formato 24h)
-    const convertirHoraMilitarAMinutos = (horaMilitar) => {
-      const horas = Math.floor(horaMilitar / 100);
-      const minutos = horaMilitar % 100;
-      return horas * 60 + minutos;
-    };
+      // Función para encontrar el índice en timeBlocks
+      const encontrarSiguienteEnSecuencia = (horaActual) => {
+        const indexActual = timeBlocks.indexOf(horaActual.toString());
+        return indexActual !== -1 && indexActual + 1 < timeBlocks.length
+          ? parseInt(timeBlocks[indexActual + 1])
+          : null;
+      };
 
-    for (let i = 1; i < bloquesOrdenados.length; i++) {
-      const horaActual = bloquesOrdenados[i];
+      for (let i = 1; i < bloquesOrdenados.length; i++) {
+        const horaActual = parseInt(bloquesOrdenados[i]);
+        const siguienteEnSecuencia = encontrarSiguienteEnSecuencia(fin);
 
-      // 🔥 USAR LAS NUEVAS FUNCIONES PARA CÁLCULOS
-      const finMinutos = convertirHoraMilitarAMinutos(fin);
-      const actualMinutos = convertirHoraMilitarAMinutos(horaActual);
+        // Si la hora actual es exactamente la siguiente en timeBlocks
+        if (
+          siguienteEnSecuencia !== null &&
+          horaActual === siguienteEnSecuencia
+        ) {
+          fin = horaActual;
+        } else {
+          // Terminar el rango actual
+          const finRango = encontrarSiguienteEnSecuencia(fin) || fin;
+          rangos.push({
+            inicio: inicio,
+            fin: finRango,
+          });
 
-      // Si la diferencia es de 45 minutos (1 bloque), es consecutivo
-      if (actualMinutos - finMinutos === 45) {
-        fin = horaActual;
-      } else {
-        // Terminar el rango actual y empezar uno nuevo
-        const finConMinutos = UTILS.sumar45Minutos(fin, 1);
-
-        const rango = {
-          inicio: inicio, // 🔥 USAR
-          fin: finConMinutos, // 🔥 USAR formatearHora24
-        };
-
-        rangos.push(rango);
-
-        inicio = horaActual;
-        fin = horaActual;
+          // Iniciar nuevo rango
+          inicio = horaActual;
+          fin = horaActual;
+        }
       }
-    }
 
-    // Procesar el último rango
-    const finConMinutos = UTILS.sumar45Minutos(fin, 1);
+      // Agregar el último rango
+      const ultimoFin = encontrarSiguienteEnSecuencia(fin) || fin;
+      rangos.push({
+        inicio: inicio,
+        fin: ultimoFin,
+      });
 
-    const ultimoRango = {
-      inicio: inicio, // 🔥 USAR
-      fin: finConMinutos, // 🔥 USAR formatearHora24
-    };
-
-    rangos.push(ultimoRango);
-
-    return rangos;
-  }, []);
+      return rangos;
+    },
+    [timeBlocks]
+  );
 
   // 🔥 FUNCIÓN PARA FORMATEAR RESUMEN - CON USECALLBACK
   const getResumenPorDias = useCallback(() => {
@@ -530,10 +576,17 @@ export default function DisponibilidadProfesor() {
               {day}
             </Typography>
             <Grid container spacing={1}>
-              {Object.keys(timeBlocks).map((hour) => (
+              {timeBlocks.map((hour) => (
                 <Grid size={4} key={hour}>
                   <Chip
-                    label={UTILS.formatearHora(hour)}
+                    label={`${UTILS.formatearHora(hour)} -
+                    ${UTILS.formatearHora(
+                      Object.keys(UTILS.initialHours)[
+                        Object.keys(UTILS.initialHours).indexOf(
+                          hour.toString()
+                        ) + 1
+                      ]
+                    )}`}
                     onClick={() => toggleBlock(day, hour)}
                     color={
                       selectedBlocks[day]?.includes(hour)
@@ -590,7 +643,7 @@ export default function DisponibilidadProfesor() {
         </TableRow>
       </TableHead>
       <TableBody>
-        {Object.keys(timeBlocks).map((hour) => (
+        {timeBlocks.map((hour) => (
           <TableRow
             key={hour}
             sx={{
@@ -602,10 +655,16 @@ export default function DisponibilidadProfesor() {
             <TableCell
               sx={{
                 fontWeight: "bold",
+                width: 200,
                 borderRight: `1px solid ${theme.palette.divider}`,
               }}
             >
-              {UTILS.formatearHora(hour)}
+              {UTILS.formatearHora(hour)} -{" "}
+              {UTILS.formatearHora(
+                Object.keys(UTILS.initialHours)[
+                  Object.keys(UTILS.initialHours).indexOf(hour.toString()) + 1
+                ]
+              )}
             </TableCell>
             {DAYS.map((day) => (
               <TableCell
