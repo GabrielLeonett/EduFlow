@@ -38,6 +38,35 @@ export default class CoordinadorModel {
       );
     }
   }
+  /**
+   * @static
+   * @async
+   * @method reasignarCoordinador
+   * @description Reasigna un coordinador existente a otro PNF mediante un procedimiento almacenado
+   * @param {Object} datos - Datos de reasignación del coordinador
+   * @param {number} id_usuario - ID del usuario que realiza la acción
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async reasignarCoordinador(datos, id_usuario) {
+    try {
+      const query = `CALL reasignar_coordinador($1, $2, $3)`;
+      const params = [id_usuario, datos.cedula_profesor, datos.id_pnf_nuevo];
+      console.log("📋 Parámetros reasignación:", params);
+
+      const { rows } = await pg.query(query, params);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Coordinador reasignado correctamente"
+      );
+    } catch (error) {
+      error.details = { path: "CoordinadorModel.reasignarCoordinador" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al reasignar coordinador"
+      );
+    }
+  }
 
   /**
    * @static

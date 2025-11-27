@@ -25,12 +25,14 @@ import {
   Edit as EditIcon,
   School as SchoolIcon,
   Badge as BadgeIcon,
+  SwapHoriz as SwapHorizIcon,
 } from "@mui/icons-material";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
 import ModalDestitucion from "./ModalDestitucion.jsx";
 import ModalEditarCampoProfesor from "./ModalEditarCampoProfesor.jsx";
+import ModalReasignarCoordinador from "./ModalReasignarCoordinador.jsx"; // ✅ Nuevo modal importado
 import CustomButton from "./customButton.jsx";
 import CustomChip from "./CustomChip.jsx";
 import useSweetAlert from "../hook/useSweetAlert.jsx";
@@ -45,6 +47,7 @@ export default function CardCoordinador({ coordinador, isSearch }) {
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [openModalEliminar, setOpenModalEliminar] = useState(false);
   const [openModalEditar, setOpenModalEditar] = useState(false);
+  const [openModalReasignar, setOpenModalReasignar] = useState(false); // ✅ Nuevo estado para modal de reasignación
   const [campoEditando, setCampoEditando] = useState(null);
   const [valorEditando, setValorEditando] = useState("");
   const [coordinadorEditado, setCoordinadorEditado] = useState(false);
@@ -147,6 +150,30 @@ export default function CardCoordinador({ coordinador, isSearch }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // ✅ Función para manejar la reasignación exitosa
+  const handleReasignacionExitosa = (resultado) => {
+    console.log("Coordinador reasignado:", resultado);
+    
+    // Actualizar los datos del coordinador en la card
+    if (resultado.data?.coordinador) {
+      const coordinadorActualizado = {
+        ...coordinadorActual,
+        pnf_actual: resultado.data.coordinador.pnf_nuevo,
+        nombre_pnf: resultado.data.coordinador.pnf_nuevo.nombre,
+        codigo_pnf: resultado.data.coordinador.pnf_nuevo.codigo
+      };
+      setCoordinadorActual(coordinadorActualizado);
+    }
+
+    alert.toast({
+      title: "Reasignación exitosa",
+      message: "El coordinador ha sido reasignado correctamente.",
+      config: { icon: "success" },
+    });
+
+    setOpenModalReasignar(false);
   };
 
   useEffect(() => {
@@ -634,6 +661,22 @@ export default function CardCoordinador({ coordinador, isSearch }) {
         onEliminado={handleCoordinadorEliminado}
       />
 
+      {/* ✅ Modal de Reasignación */}
+      <ModalReasignarCoordinador
+        open={openModalReasignar}
+        onClose={() => setOpenModalReasignar(false)}
+        coordinador={{
+          cedula: coordinadorActual?.cedula,
+          nombre_completo: `${coordinadorActual?.nombres} ${coordinadorActual?.apellidos}`,
+          pnf_actual: {
+            id_pnf: coordinadorActual?.id_pnf,
+            nombre_pnf: coordinadorActual?.nombre_pnf,
+            codigo_pnf: coordinadorActual?.codigo_pnf
+          }
+        }}
+        onReasignar={handleReasignacionExitosa}
+      />
+
       {/* Menú de acciones */}
       <Menu
         anchorEl={anchorEl}
@@ -665,33 +708,19 @@ export default function CardCoordinador({ coordinador, isSearch }) {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem
-          onClick={() =>
-            navigate(`/horarios/profesores/${coordinador.id_profesor}`)
-          }
-        >
+        {/* ✅ Nueva opción para reasignar PNF */}
+        <MenuItem onClick={() => setOpenModalReasignar(true)}>
           <ListItemIcon>
-            <ClassIcon fontSize="small" />
+            <SwapHorizIcon fontSize="small" />
           </ListItemIcon>
-          Horario Coordinador
+          Reasignar PNF
         </MenuItem>
-        <MenuItem
-          onClick={() =>
-            navigate(
-              `/academico/profesores/disponibilidad/${coordinador.id_profesor}`
-            )
-          }
-        >
-          <ListItemIcon>
-            <ScheduleIcon fontSize="small" />
-          </ListItemIcon>
-          Disponibilidad Coordinador
-        </MenuItem>
+
         <MenuItem onClick={() => setOpenModalEliminar(true)}>
           <ListItemIcon>
             <PersonRemoveIcon fontSize="small" />
           </ListItemIcon>
-          Eliminar Coordinador
+          Destituir Coordinador
         </MenuItem>
       </Menu>
     </Box>

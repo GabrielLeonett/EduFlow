@@ -19,6 +19,19 @@ export default class CoordinadorController {
       CoordinadorService.asignarCoordinador(req.body, req.user)
     );
   }
+  /**
+   * @name reasignarCoordinador
+   * @description Reasigna un coordinador existente a otro PNF
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async reasignarCoordinador(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      CoordinadorService.reasignarCoordinador(req.body, req.user)
+    );
+  }
 
   /**
    * @name listarCoordinadores

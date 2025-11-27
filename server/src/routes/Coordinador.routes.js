@@ -10,7 +10,8 @@ const {
   actualizarCoordinador,
   eliminarCoordinador,
   obtenerHistorialDestituciones,
-  restituirCoordinador
+  restituirCoordinador,
+  reasignarCoordinador
 } = CoordinadorController;
 
 // Creación del router para las rutas de Coordinador
@@ -185,6 +186,35 @@ coordinadorRouter.put(
     "Coordinador",
   ]),
   actualizarCoordinador
+);
+/**
+ * @name PUT /coordinadores/:cedula/reasignar-pnf
+ * @description Reasigna un coordinador existente a otro PNF
+ * @param {number} cedula - Cédula del coordinador a reasignar
+ * @body {Object} Datos de reasignación
+ * @body {number} body.id_pnf_nuevo - ID del nuevo PNF
+ * @body {string} [body.observaciones] - Observaciones de la reasignación
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ * @returns {Object} Coordinador reasignado con datos del PNF anterior y nuevo
+ * @example
+ * curl -X PUT 'http://localhost:3000/coordinadores/12345678/reasignar-pnf' \
+ *   -H 'Content-Type: application/json' \
+ *   -d '{
+ *     "id_pnf_nuevo": 2,
+ *     "observaciones": "Reasignación por reestructuración académica"
+ *   }'
+ */
+coordinadorRouter.put(
+  "/coordinadores/:cedula/reasignar-pnf",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ]),
+  reasignarCoordinador
 );
 
 /**
