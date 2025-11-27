@@ -122,6 +122,11 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
       submenu: [
         {
+          name: "Gestión de Usuarios",
+          url: "/administradores",
+          roles: ["Vicerrector", "SuperAdmin"],
+        },
+        {
           name: "Gestión de Profesores",
           url: "/academico/profesores",
           roles: [
@@ -148,15 +153,18 @@ function ResponsiveAppBar({ backgroundColor }) {
           url: "/coordinacion/coordinadores",
           roles: [
             "Vicerrector",
-            "Coordinador",
             "Director General de Gestión Curricular",
             "SuperAdmin",
           ],
         },
         {
-          name: "Gestión de Usuarios",
-          url: "/administradores",
-          roles: ["Vicerrector", "SuperAdmin"],
+          name: "Control de Estatus de Coordinadores",
+          url: "/personal/coordinadores/destituidos",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
         },
       ],
     },
