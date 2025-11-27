@@ -209,6 +209,11 @@ function ResponsiveAppBar({ backgroundColor }) {
           url: "/administracion/reportes-estadisticas", // Esta ruta no existe en tus Route, puedes agregarla o removerla
           roles: ["SuperAdmin"],
         },
+        {
+          name: "Auditoría",
+          url: "/auditoria", // Esta ruta no existe en tus Route, puedes agregarla o removerla
+          roles: ["SuperAdmin"],
+        },
       ],
     },
   ];

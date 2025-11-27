@@ -130,52 +130,11 @@ export default class CoordinadorController {
    */
   static async restituirCoordinador(req, res) {
     try {
-      const { id } = req.params;
-      const user_action = req.user;
-
-      // Validar que el ID esté presente
-      if (!id) {
-        return FormatResponseController.error(
-          res,
-          "ID de coordinador es requerido",
-          400
-        );
-      }
-
-      // Obtener datos de restitución del body
-      const {
-        tipo_reingreso = "REINGRESO",
-        motivo_reingreso,
-        observaciones = "",
-        fecha_efectiva = new Date().toISOString().split("T")[0],
-        registro_anterior_id = null,
-        id_pnf = null,
-      } = req.body;
-
-      // Validar datos requeridos
-      if (!motivo_reingreso || motivo_reingreso.trim() === "") {
-        return FormatResponseController.error(
-          res,
-          "El motivo del reingreso es requerido",
-          400
-        );
-      }
-
-      const dataRestitucion = {
-        tipo_reingreso,
-        motivo_reingreso: motivo_reingreso.trim(),
-        observaciones: observaciones.trim(),
-        fecha_efectiva,
-        registro_anterior_id,
-        id_pnf,
-      };
-
       return FormatResponseController.manejarServicio(
         res,
         await CoordinadorService.restituirCoordinador(
-          parseInt(id),
-          user_action,
-          dataRestitucion
+          req.user,
+          req.body
         )
       );
     } catch (error) {

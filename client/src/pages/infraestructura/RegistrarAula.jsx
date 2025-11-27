@@ -20,10 +20,20 @@ import useApi from "../../hook/useApi";
 import AulaSchema from "../../schemas/aula.schema";
 import useSweetAlert from "../../hook/useSweetAlert";
 
+// Valores iniciales para el formulario
+const defaultValues = {
+  codigo: "",
+  tipo: "",
+  capacidad: "",
+  id_sede: "",
+  id_pnf: undefined,
+};
+
 export default function RegistrarAula() {
   const theme = useTheme();
   const axios = useApi();
   const alert = useSweetAlert();
+  
   const {
     control,
     register,
@@ -34,7 +44,9 @@ export default function RegistrarAula() {
   } = useForm({
     resolver: zodResolver(AulaSchema),
     mode: "onChange",
+    defaultValues,
   });
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sedes, setSedes] = useState([]);
   const [pnfs, setPnfs] = useState([]);
@@ -121,7 +133,8 @@ export default function RegistrarAula() {
         "La información del aula se ha guardado correctamente."
       );
 
-      reset(); // Resetear formulario
+      // Resetear formulario a valores iniciales
+      handleReset();
     } catch (error) {
       console.error("Error al registrar el aula:", error);
 
@@ -145,15 +158,28 @@ export default function RegistrarAula() {
     }
   };
 
-  const handleReset = () => {
-    reset({
-      codigo: "",
-      tipo: "",
-      capacidad: "",
-      id_sede: "",
-      id_pnf: undefined,
+  const handleReset = useCallback(() => {
+    // Resetear el formulario
+    reset(defaultValues);
+    // Limpiar los PNFs inmediatamente
+    setPnfs([]);
+    // Forzar un pequeño delay para asegurar que el estado se actualice
+    setTimeout(() => {
+      setPnfs([]);
+    }, 100);
+  }, [reset]);
+
+  const handleDebug = () => {
+    console.log("Estado actual del formulario:", {
+      values: watch(),
+      errors,
+      isValid,
+      selectedSede,
+      sedesCount: sedes.length,
+      pnfsCount: pnfs.length,
+      loadingSedes,
+      loadingPnfs,
     });
-    setPnfs([]); // Limpiar también los PNFs
   };
 
   return (
@@ -224,7 +250,6 @@ export default function RegistrarAula() {
                     <Controller
                       name="tipo"
                       control={control}
-                      defaultValue=""
                       render={({ field, fieldState: { error } }) => (
                         <CustomLabel
                           select
@@ -286,7 +311,6 @@ export default function RegistrarAula() {
                     <Controller
                       name="id_sede"
                       control={control}
-                      defaultValue=""
                       render={({ field, fieldState: { error } }) => (
                         <CustomLabel
                           select
@@ -335,54 +359,56 @@ export default function RegistrarAula() {
                     Asignación Preferencial (Opcional)
                   </Typography>
                   <Grid container spacing={3}>
-                    <Controller
-                      name="id_pnf"
-                      control={control}
-                      defaultValue={undefined}
-                      render={({ field, fieldState: { error } }) => (
-                        <CustomLabel
-                          select
-                          label="PNF Preferencial"
-                          variant="outlined"
-                          fullWidth
-                          {...field}
-                          error={!!error}
-                          helperText={
-                            error?.message ||
-                            "Seleccione el PNF al que estará asignada preferencialmente el aula"
-                          }
-                          disabled={loadingPnfs}
-                        >
-                          <MenuItem value={undefined}>
-                            {loadingPnfs
-                              ? "Cargando PNFs..."
-                              : pnfs.length === 0
-                              ? "No hay PNFs en esta sede"
-                              : "Sin PNF preferencial"}
-                          </MenuItem>
-                          {pnfs.map((pnf) => (
-                            <MenuItem key={pnf.id_pnf} value={pnf.id_pnf}>
-                              {pnf.codigo_pnf} - {pnf.nombre_pnf}
-                              {pnf.tiene_coordinador && " 👨‍🏫"}
+                    <Grid size={{ xs: 12 }}>
+                      <Controller
+                        name="id_pnf"
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <CustomLabel
+                            select
+                            label="PNF Preferencial"
+                            variant="outlined"
+                            fullWidth
+                            {...field}
+                            error={!!error}
+                            helperText={
+                              error?.message ||
+                              "Seleccione el PNF al que estará asignada preferencialmente el aula"
+                            }
+                            disabled={loadingPnfs}
+                          >
+                            <MenuItem value={undefined}>
+                              {loadingPnfs
+                                ? "Cargando PNFs..."
+                                : pnfs.length === 0
+                                ? "No hay PNFs en esta sede"
+                                : "Sin PNF preferencial"}
                             </MenuItem>
-                          ))}
-                        </CustomLabel>
-                      )}
-                    />
-                    <Alert
-                      severity="info"
-                      sx={{
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography variant="body2">
-                        <strong>Información:</strong> Esta asignación es
-                        opcional. El aula podrá ser utilizada por cualquier PNF,
-                        pero tendrá prioridad para el PNF seleccionado.
-                      </Typography>
-                    </Alert>
+                            {pnfs.map((pnf) => (
+                              <MenuItem key={pnf.id_pnf} value={pnf.id_pnf}>
+                                {pnf.codigo_pnf} - {pnf.nombre_pnf}
+                                {pnf.tiene_coordinador && " 👨‍🏫"}
+                              </MenuItem>
+                            ))}
+                          </CustomLabel>
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <Alert
+                        severity="info"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography variant="body2">
+                          <strong>Información:</strong> Esta asignación es
+                          opcional. El aula podrá ser utilizada por cualquier PNF,
+                          pero tendrá prioridad para el PNF seleccionado.
+                        </Typography>
+                      </Alert>
+                    </Grid>
                   </Grid>
                 </Box>
               )}
@@ -413,6 +439,14 @@ export default function RegistrarAula() {
                   sx={{ minWidth: 120 }}
                 >
                   Limpiar
+                </CustomButton>
+                
+                <CustomButton
+                  tipo="secondary"
+                  onClick={handleDebug}
+                  sx={{ minWidth: 120 }}
+                >
+                  Debug
                 </CustomButton>
 
                 <CustomButton

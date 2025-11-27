@@ -79,7 +79,7 @@ import MiPerfil from "./pages/MiPerfil";
 import CambiarContraseña from "./pages/cambiarContraseña";
 import EditarAula from "./pages/EditarAula";
 import RecuperarContraseña from "./pages/RecuperarContraseña.jsx";
-import CoordinadoresDestituidos from "./pages/personal/coordinador/CoordinadoresDestituidosView.jsx";
+import CoordinadoresDestituidos from "./pages/personal/coordinador/CoordinadoresDestituidos.jsx";
 
 // Roles comunes para reutilización
 const ROLES = {

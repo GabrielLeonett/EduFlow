@@ -385,24 +385,41 @@ export default class CoordinadorModel {
         id_coordinador,
         id_profesor,
         id_pnf,
-        activo,
-        created_at,
-        updated_at,
-        fecha_desasignacion,
+        fecha_designacion,
+        fecha_actualizacion,
+        nombre_pnf,
+        codigo_pnf,
         nombres,
         apellidos,
+        cedula,
+        telefono_movil,
+        telefono_local,
+        fecha_nacimiento,
+        genero,
         email,
-        nombre_pnf
-      FROM public.vista_coordinadores_completa 
+        direccion,
+        fecha_ingreso,
+        dedicacion,
+        categoria,
+        areas_de_conocimiento,
+        disponibilidad,
+        pre_grados,
+        pos_grados,
+        horas_disponibles,
+        estatus_coordinador,
+        anos_experiencia_coordinador
+      FROM public.coordinadores_informacion_completa 
       WHERE 1=1
     `;
       const params = [];
+      let paramCount = 0;
 
       // --- 1. Aplicar Filtros ---
 
       // Filtro por Estado (activo/inactivo)
       if (queryParams.estado !== undefined && queryParams.estado !== "") {
-        query += ` AND activo = ?`;
+        paramCount++;
+        query += ` AND activo = $${paramCount}`;
         params.push(
           queryParams.estado === "true" || queryParams.estado === true
         );
@@ -410,25 +427,33 @@ export default class CoordinadorModel {
 
       // Filtro por Cédula (búsqueda parcial)
       if (queryParams.cedula) {
-        query += ` AND id_coordinador::text LIKE ?`;
+        paramCount++;
+        query += ` AND id_coordinador::text LIKE $${paramCount}`;
         params.push(`%${queryParams.cedula}%`);
       }
 
       // Filtro por Nombre (búsqueda parcial)
       if (queryParams.nombre) {
-        query += ` AND (nombres ILIKE ? OR apellidos ILIKE ?)`;
-        params.push(`%${queryParams.nombre}%`, `%${queryParams.nombre}%`);
+        paramCount++;
+        query += ` AND (nombres ILIKE $${paramCount}`;
+        params.push(`%${queryParams.nombre}%`);
+
+        paramCount++;
+        query += ` OR apellidos ILIKE $${paramCount})`;
+        params.push(`%${queryParams.nombre}%`);
       }
 
       // Filtro por Email (búsqueda parcial)
       if (queryParams.email) {
-        query += ` AND email ILIKE ?`;
+        paramCount++;
+        query += ` AND email ILIKE $${paramCount}`;
         params.push(`%${queryParams.email}%`);
       }
 
       // Filtro por PNF
       if (queryParams.pnf) {
-        query += ` AND id_pnf = ?`;
+        paramCount++;
+        query += ` AND id_pnf = $${paramCount}`;
         params.push(parseInt(queryParams.pnf));
       }
 
@@ -470,8 +495,15 @@ export default class CoordinadorModel {
           ? (parseInt(queryParams.page) - 1) * limit
           : 0;
 
-        query += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset);
+        paramCount++;
+        query += ` LIMIT $${paramCount}`;
+        params.push(limit);
+
+        if (offset > 0) {
+          paramCount++;
+          query += ` OFFSET $${paramCount}`;
+          params.push(offset);
+        }
       }
 
       // 🚀 Ejecutar la consulta con parámetros
@@ -775,7 +807,7 @@ export default class CoordinadorModel {
     id_pnf = null
   ) {
     try {
-      const query = `CALL reingresar_coordinador($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+      const query = `CALL reingresar_coordinador(NULL, $1, $2, $3, $4, $5, $6, $7, $8)`;
       const params = [
         id_usuario,
         id_coordinador,

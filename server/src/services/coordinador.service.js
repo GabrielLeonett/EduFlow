@@ -353,7 +353,7 @@ export default class CoordinadorService {
         );
       }
 
-      const respuestaModel = await CoordinadorModel.listarCoordinadores(
+      const respuestaModel = await CoordinadorModel.obtenerTodos(
         queryParams
       );
 
@@ -387,6 +387,85 @@ export default class CoordinadorService {
       throw error;
     }
   }
+  /**
+   * @static
+   * @async
+   * @method listarCoordinadoresDestituidos
+   * @description Obtiene el listado de todos los coordinadores activos
+   * @param {Object} queryParams - Parámetros de consulta
+   * @returns {Object} Resultado de la operación
+   */
+  static async listarCoordinadoresDestituidos(queryParams = {}) {
+    try {
+      console.log(
+        "🔍 [listarCoordinadoresDestituidos] Obteniendo listado de coordinadores activos..."
+      );
+
+      // Validar parámetros de consulta
+      const allowedParams = [
+        "page",
+        "limit",
+        "sort",
+        "order",
+        "id_pnf",
+        "cedula",
+        "nombre_pnf",
+        "sort_order",
+        "tipo_accion",
+        "estado",
+        "search",
+      ];
+      const queryValidation = ValidationService.validateQueryParams(
+        queryParams,
+        allowedParams
+      );
+
+      if (!queryValidation.isValid) {
+        console.error(
+          "❌ Validación de parámetros fallida:",
+          queryValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          queryValidation.errors,
+          "Error de validación en parámetros de consulta"
+        );
+      }
+
+      const respuestaModel = await CoordinadorModel.listarCoordinadoresDestituidos(
+        queryParams
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo:", respuestaModel);
+        return respuestaModel;
+      }
+
+      console.log(
+        `✅ Se encontraron ${
+          respuestaModel.data?.length || 0
+        } coordinadores activos`
+      );
+
+      return FormatterResponseService.success(
+        {
+          coordinadores: respuestaModel.data,
+          total: respuestaModel.data?.length || 0,
+          page: parseInt(queryParams.page) || 1,
+          limit:
+            parseInt(queryParams.limit) || respuestaModel.data?.length || 0,
+        },
+        "Coordinadores Destituidos obtenidos exitosamente",
+        {
+          status: 200,
+          title: "Lista de Coordinadores Activos",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio listar coordinadores:", error);
+      throw error;
+    }
+  }
+
   /**
    * @static
    * @async
@@ -734,7 +813,6 @@ export default class CoordinadorService {
    * @async
    * @method restituirCoordinador
    * @description Restituye (reingresa) un coordinador destituido
-   * @param {number} id - ID del coordinador
    * @param {object} user_action - Usuario que realiza la acción
    * @param {object} dataRestitucion - Datos específicos de la restitución
    * @param {string} dataRestitucion.tipo_reingreso - Tipo de reingreso (REINGRESO, REINCORPORACION, REINTEGRO)
@@ -745,23 +823,15 @@ export default class CoordinadorService {
    * @param {number} dataRestitucion.id_pnf - ID del PNF al que se reasigna
    * @returns {Object} Resultado de la operación
    */
-  static async restituirCoordinador(id, user_action, dataRestitucion = {}) {
+  static async restituirCoordinador(user_action, dataRestitucion = {}) {
     try {
       console.log(
-        `🔍 [restituirCoordinador] Restituyendo coordinador ID: ${id}`
+        `🔍 [restituirCoordinador] Restituyendo coordinador`, dataRestitucion 
       );
 
-      // 1. Validar ID del coordinador
-      const idValidation = ValidationService.validateId(id, "coordinador");
-      if (!idValidation.isValid) {
-        console.error("❌ Validación de ID fallida:", idValidation.errors);
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de coordinador inválido"
-        );
-      }
+      const id = dataRestitucion.id_usuario;
 
-      // 2. Validar ID de usuario
+      // 1. Validar ID de usuario
       const usuarioValidation = ValidationService.validateId(
         user_action.id,
         "usuario"
@@ -777,9 +847,9 @@ export default class CoordinadorService {
         );
       }
 
-      // 3. Validar datos de restitución
+      // 2. Validar datos de restitución
       const validacionRestitucion =
-        ValidationService.validateReingreso(dataRestitucion);
+        ValidationService.validateReingreso({...dataRestitucion, id_reingreso: dataRestitucion.id_usuario});
       if (!validacionRestitucion.isValid) {
         console.error(
           "❌ Validación de datos de restitución fallida:",
@@ -788,33 +858,6 @@ export default class CoordinadorService {
         return FormatterResponseService.validationError(
           validacionRestitucion.errors,
           "Datos de restitución inválidos"
-        );
-      }
-
-      // 4. Verificar que el coordinador existe
-      const coordinadorExistente =
-        await CoordinadorModel.obtenerCoordinadorPorId(id);
-
-      if (FormatterResponseService.isError(coordinadorExistente)) {
-        return coordinadorExistente;
-      }
-
-      if (
-        !coordinadorExistente.data ||
-        coordinadorExistente.data.length === 0
-      ) {
-        console.error("❌ Coordinador no encontrado:", id);
-        return FormatterResponseService.notFound("Coordinador", id);
-      }
-
-      const coordinador = coordinadorExistente.data[0];
-
-      // 5. Verificar que el coordinador está destituido
-      if (coordinador.estatus_coordinador !== "destituido") {
-        console.error("❌ Coordinador no está destituido:", id);
-        return FormatterResponseService.validationError(
-          ["El coordinador no se encuentra en estado destituido"],
-          "Solo se pueden restituir coordinadores previamente destituidos"
         );
       }
 
