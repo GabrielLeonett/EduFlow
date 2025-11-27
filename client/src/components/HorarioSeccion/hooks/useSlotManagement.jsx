@@ -72,9 +72,9 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       });
 
       // Limpiar selección después de agregar
-      setProfesorSelected({});
-      setUnidadCurricularSelected({});
-      setAulaSelected({});
+      setProfesorSelected(null);
+      setUnidadCurricularSelected(null);
+      setAulaSelected(null);
       setSelectedClass([]);
       setAvailableSlots([]);
 

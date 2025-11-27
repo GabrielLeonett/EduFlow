@@ -42,13 +42,12 @@ export default function Coordinadores() {
   const [loading, setLoading] = useState(true);
   const { id_coordinador } = useParams();
 
-  // Función para buscar coordinadores
+  // Función para cargar coordinadores
   const fetchCoordinadores = useCallback(async () => {
     setLoading(true);
     try {
-      const endpoint = `/coordinadores?page=${pagination.page}&limit=${
-        pagination.limit
-      }&sort=${sortOrder}&search=${coordinadorSearch || ""}`;
+      const endpoint = `/coordinadores?page=${pagination.page}&limit=${pagination.limit
+        }&sort=${sortOrder}&search=${coordinadorSearch || ""}`;
       const data = await axios.get(endpoint);
 
       let coordinadoresData = data.coordinadores || [];

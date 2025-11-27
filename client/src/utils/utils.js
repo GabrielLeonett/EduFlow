@@ -154,7 +154,12 @@ export const UTILS = {
     const bloques = [];
 
     Object.keys(UTILS.initialHours).forEach((hora) => {
-      if (hora >= inicio_hora && hora < fin_hora) {
+      // Verificar que la hora esté dentro del rango Y no sea "ignorar"
+      if (
+        hora >= inicio_hora &&
+        hora < fin_hora &&
+        UTILS.initialHours[hora] !== "ignorar"
+      ) {
         bloques.push(hora);
       }
     });
@@ -165,38 +170,47 @@ export const UTILS = {
     "07:00",
     "07:45",
     "08:30",
-    "09:15",
-    "10:00",
-    "10:45",
-    "11:30",
-    "12:15",
+    "08:45",
+    "09:30",
+    "10:15",
+    "10:20",
+    "11:05",
+    "11:50",
     "13:00",
     "13:45",
-    "14:30",
-    "15:15",
-    "16:00",
-    "16:45",
+    "14:00",
+    "14:10",
+    "14:55",
+    "15:40",
+    "15:50",
+    "16:35",
+    "17:20",
     "17:30",
     "18:15",
     "19:00",
+    "19:45",
   ],
   diasSemana: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
 
   initialHours: {
     700: null,
     745: null,
-    830: null,
-    915: null,
-    1000: null,
-    1045: null,
-    1130: null,
-    1215: null,
+    830: "ignorar",
+    845: null,
+    930: null,
+    1015: "ignorar",
+    1020: null,
+    1105: null,
+    1150: null,
     1300: null,
     1345: null,
-    1430: null,
-    1515: null,
-    1600: null,
-    1645: null,
+    1400: "ignorar",
+    1410: null,
+    1455: null,
+    1540: "ignorar",
+    1550: null,
+    1635: null,
+    1720: "ignorar",
     1730: null,
     1815: null,
     1900: null,

@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { UTILS } from "../../../utils/utils";
+import { UTILS } from "../../../utils/UTILS.js";
 
 // Efecto para carga inicial de horario
 const useHorarioInitialization = (props, stateSetters) => {
@@ -27,10 +27,13 @@ const useHorarioInitialization = (props, stateSetters) => {
       const horasFiltradas = {};
       Object.keys(UTILS.initialHours).forEach((key) => {
         const horaHHMM = Number(key);
-        if (horaHHMM >= horaInicioHHMM && horaHHMM <= horaFinHHMM) {
-          horasFiltradas[key] = UTILS.initialHours[key];
+        if (horaHHMM >= horaInicioHHMM && horaHHMM < horaFinHHMM) {
+          if(UTILS.initialHours[key] != 'ignorar'){
+            horasFiltradas[key] = UTILS.initialHours[key];
+          }
         }
       });
+      console.log(horasFiltradas)
 
       setTableHorario((prev) => {
         const nuevaMatriz = prev.map((item) => ({
