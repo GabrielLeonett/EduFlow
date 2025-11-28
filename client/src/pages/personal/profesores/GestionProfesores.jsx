@@ -16,7 +16,7 @@ import {
 } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import ResponsiveAppBar from "../../../components/navbar";
 import CardProfesor from "../../../components/cardProfesor";
 import CustomButton from "../../../components/customButton";
@@ -26,7 +26,7 @@ import CustomLabel from "../../../components/customLabel";
 
 export default function GestionProfesores() {
   const axios = useApi(false);
-  const navigate = useParams();
+  const navigate = useNavigate();
 
   const [profesores, setProfesores] = useState([]);
   const [profesorSearch, setProfesorSearch] = useState(null);
