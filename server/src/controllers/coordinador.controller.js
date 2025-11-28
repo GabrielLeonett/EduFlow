@@ -129,22 +129,10 @@ export default class CoordinadorController {
    * @returns {void}
    */
   static async restituirCoordinador(req, res) {
-    try {
-      return FormatResponseController.manejarServicio(
-        res,
-        await CoordinadorService.restituirCoordinador(
-          req.user,
-          req.body
-        )
-      );
-    } catch (error) {
-      console.error("💥 Error en controlador restituirCoordinador:", error);
-      return FormatResponseController.error(
-        res,
-        "Error interno del servidor al procesar la restitución",
-        500
-      );
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      await CoordinadorService.restituirCoordinador(req.user, req.body)
+    );
   }
   /**
    * @name obtenerHistorialDestituciones

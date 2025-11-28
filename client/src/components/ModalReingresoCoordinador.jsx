@@ -27,23 +27,19 @@ export default function ModalReingresoCoordinador({
     control,
     register,
     formState: { errors, isValid },
-    watch,
   } = useForm({
     resolver: zodResolver(reingresoSchema),
     mode: "onChange",
     defaultValues: {
-      id_usuario: coordinador?.id_coordinador
-        ? parseInt(coordinador.id_coordinador)
-        : undefined,
+      id_usuario: parseInt(coordinador?.id_coordinador) || "",
       tipo_reingreso: "REINGRESO",
       motivo_reingreso: "",
       observaciones: "",
       fecha_efectiva: "",
-      registro_anterior_id: coordinador?.id_registro
-        ? parseInt(coordinador.id_registro)
-        : undefined,
+      registro_anterior_id: parseInt(coordinador?.id_registro) || "",
     },
   });
+
 
   const onSubmit = async (data) => {
     try {
@@ -54,7 +50,6 @@ export default function ModalReingresoCoordinador({
       if (!confirm) return;
 
       setIsLoading(true);
-
 
       // Usar el endpoint correcto con el ID en la URL
       await axios.post(`/coordinadores/${coordinador.id}/restitur`, data);
@@ -99,6 +94,7 @@ export default function ModalReingresoCoordinador({
     reset();
     onClose();
   };
+
 
   return (
     <Dialog
@@ -153,7 +149,7 @@ export default function ModalReingresoCoordinador({
             </Box>
           )}
 
-          {/* Campos ocultos */}
+          {/* ✅ Ya están correctos estos inputs hidden */}
           <input type="hidden" {...register("id_usuario")} />
           <input type="hidden" {...register("registro_anterior_id")} />
 
@@ -164,7 +160,10 @@ export default function ModalReingresoCoordinador({
             fullWidth
             {...register("tipo_reingreso")}
             error={!!errors.tipo_reingreso}
-            helperText={errors.tipo_reingreso?.message || "Seleccione el tipo de reingreso"}
+            helperText={
+              errors.tipo_reingreso?.message ||
+              "Seleccione el tipo de reingreso"
+            }
           >
             <MenuItem value="REINGRESO">REINGRESO</MenuItem>
             <MenuItem value="REINCORPORACION">REINCORPORACIÓN</MenuItem>
@@ -179,7 +178,9 @@ export default function ModalReingresoCoordinador({
             fullWidth
             {...register("motivo_reingreso")}
             error={!!errors.motivo_reingreso}
-            helperText={errors.motivo_reingreso?.message || "Mínimo 10 caracteres"}
+            helperText={
+              errors.motivo_reingreso?.message || "Mínimo 10 caracteres"
+            }
             placeholder="Describa el motivo del reingreso..."
           />
 
@@ -191,7 +192,10 @@ export default function ModalReingresoCoordinador({
             fullWidth
             {...register("observaciones")}
             error={!!errors.observaciones}
-            helperText={errors.observaciones?.message || "Opcional - máximo 2000 caracteres"}
+            helperText={
+              errors.observaciones?.message ||
+              "Opcional - máximo 2000 caracteres"
+            }
             placeholder="Observaciones adicionales..."
           />
 
@@ -205,6 +209,7 @@ export default function ModalReingresoCoordinador({
                 value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
                 onChange={(date) => {
                   const formattedDate = date ? date.format("DD-MM-YYYY") : "";
+                  console.log("📅 Fecha seleccionada:", formattedDate);
                   field.onChange(formattedDate);
                 }}
                 helperText={
@@ -235,6 +240,7 @@ export default function ModalReingresoCoordinador({
             >
               Cancelar
             </CustomButton>
+
             <CustomButton
               tipo="primary"
               disabled={!isValid || isLoading}

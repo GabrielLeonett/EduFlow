@@ -104,8 +104,8 @@ export default class CoordinadorService {
           message: "Coordinador asignado exitosamente",
           coordinador: {
             cedula: datos.cedula_profesor,
-            nombre: profesorValidation.nombre,
-            pnf: pnfValidation.nombre,
+            nombre: respuestaModel.data.coordinador.nombres,
+            pnf: respuestaModel.data.coordinador.nombre_pnf,
             fecha_inicio: datos.fecha_inicio,
             fecha_fin: datos.fecha_fin || null,
           },
@@ -873,11 +873,11 @@ export default class CoordinadorService {
         dataRestitucion.registro_anterior_id,
         dataRestitucion.id_pnf
       );
-
       if (FormatterResponseService.isError(respuestaModel)) {
         console.error("❌ Error en modelo:", respuestaModel);
         return respuestaModel;
       }
+      const coordinador = respuestaModel.data.data.coordinador;
 
       // 7. Enviar notificación
       console.log("🔔 Enviando notificaciones...");

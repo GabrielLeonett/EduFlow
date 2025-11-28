@@ -17,14 +17,13 @@ import reingresoSchema from "../schemas/reingreso.schema.js"; // Asegúrate de i
 import useSweetAlert from "../hook/useSweetAlert.jsx";
 import CustomCalendar from "./customCalendar.jsx"; // ✅ tu componente personalizado
 import dayjs from "dayjs";
-
+import { config } from "zod/v4/core";
 
 export default function ModalReingresoProfe({ open, onClose, profesor }) {
   const navigate = useNavigate();
   const axios = useApi();
   const alert = useSweetAlert();
   const [isLoading, setIsLoading] = useState(false);
-
   const {
     register,
     handleSubmit,
@@ -32,9 +31,10 @@ export default function ModalReingresoProfe({ open, onClose, profesor }) {
     control,
     formState: { errors, isValid },
   } = useForm({
+    mode: "onChange",
     resolver: zodResolver(reingresoSchema),
     defaultValues: {
-      id_profesor: profesor?.id || "",
+      id_usuario: profesor?.id || "",
       tipo_reingreso: "REINGRESO",
       motivo_reingreso: "",
       observaciones: "",
@@ -43,54 +43,58 @@ export default function ModalReingresoProfe({ open, onClose, profesor }) {
     },
   });
 
- const onSubmit = async (data) => {
-  try {
-    const confirm = await alert.confirm(
-      "¿Desea reingresar este profesor?",
-      "El profesor volverá a estar activo en el sistema."
-    );
-    if (!confirm) return;
-
-    setIsLoading(true);
-
-    // 🧾 Preparar datos según el schema
-    const formData = {
-      ...data,
-      fecha_efectiva: data.fecha_efectiva || null,
-      observaciones: data.observaciones || null,
-    };
-
-    await axios.post("/profesores/reingresar", formData);
-
-    alert.success(
-      "Profesor reingresado con éxito",
-      "El profesor ha sido reactivado correctamente."
-    );
-
-    reset();
-    onClose();
-
-    // 🔄 Redirigir después del reingreso
-    navigate("/profesores");
-  } catch (error) {
-    console.error("❌ Error en reingreso de profesor:", error);
-
-    // ⚠️ Validaciones desde backend
-    if (error.error?.totalErrors > 0) {
-      error.error.validationErrors.forEach((errVal) => {
-        alert.toast(errVal.field, errVal.message);
-      });
-    } else {
-      // ❌ Error general
-      alert.error(
-        error.title || "Error al reingresar profesor",
-        error.message || "No se pudo procesar el reingreso del profesor."
+  const onSubmit = async (data) => {
+    try {
+      const confirm = await alert.confirm(
+        "¿Desea reingresar este profesor?",
+        "El profesor volverá a estar activo en el sistema."
       );
+      if (!confirm) return;
+
+      setIsLoading(true);
+
+      // 🧾 Preparar datos según el schema
+      const formData = {
+        ...data,
+        fecha_efectiva: data.fecha_efectiva || null,
+        observaciones: data.observaciones || null,
+      };
+
+      await axios.post("/profesores/reingresar", formData);
+
+      alert.success(
+        "Profesor reingresado con éxito",
+        "El profesor ha sido reactivado correctamente."
+      );
+
+      reset();
+      onClose();
+
+      // 🔄 Redirigir después del reingreso
+      navigate("/profesores");
+    } catch (error) {
+      console.error("❌ Error en reingreso de profesor:", error);
+
+      // ⚠️ Validaciones desde backend
+      if (error.error?.totalErrors > 0) {
+        error.error.validationErrors.forEach((errVal) => {
+          alert.toast({
+            title: errVal.field,
+            message: errVal.message,
+            config: { icon: "error" },
+          });
+        });
+      } else {
+        // ❌ Error general
+        alert.error(
+          error.title || "Error al reingresar profesor",
+          error.message || "No se pudo procesar el reingreso del profesor."
+        );
+      }
+    } finally {
+      setIsLoading(false);
     }
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleClose = () => {
     reset();
@@ -131,24 +135,34 @@ export default function ModalReingresoProfe({ open, onClose, profesor }) {
             Reingreso de Profesor
           </Typography>
 
-          {/* ID del profesor (oculto o deshabilitado) */}
-          <CustomLabel
-            label="ID Profesor"
-            name="id_profesor"
-            type="number"
-            required
-            disabled
-            {...register("id_profesor", { valueAsNumber: true })}
-            error={!!errors.id_profesor}
-            helperText={errors.id_profesor?.message}
-          />
+          {/* ✅ SOLUCIÓN: Usar inputs hidden como en el coordinador */}
+          <input type="hidden" {...register("id_usuario")} />
+          <input type="hidden" {...register("registro_anterior_id")} />
 
-          {/* ID del registro anterior (oculto) */}
-          <input
-            type="hidden"
-            {...register("registro_anterior_id", { valueAsNumber: true })}
-          />
+          {/* Mostrar info del profesor (solo lectura) */}
+          {profesor && (
+            <Box
+              sx={{
+                p: 2,
+                backgroundColor: "grey.50",
+                borderRadius: 1,
+                border: "1px solid",
+                borderColor: "grey.300",
+              }}
+            >
+              <Typography variant="body2" fontWeight="bold">
+                Profesor: {profesor.nombres} {profesor.apellidos}
+              </Typography>
+              <Typography variant="body2">ID: {profesor.id}</Typography>
+              {profesor.registro_anterior_id && (
+                <Typography variant="body2">
+                  Registro Anterior: {profesor.registro_anterior_id}
+                </Typography>
+              )}
+            </Box>
+          )}
 
+          {/* El resto de tus campos permanecen igual */}
           <CustomLabel
             label="Tipo de Reingreso"
             name="tipo_reingreso"
@@ -194,15 +208,15 @@ export default function ModalReingresoProfe({ open, onClose, profesor }) {
           <Controller
             name="fecha_efectiva"
             control={control}
-            rules={{ required: "Seleccione su fecha efectiva" }}
             render={({ field, fieldState: { error } }) => (
               <CustomCalendar
                 label="Fecha Efectiva"
                 value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
-                onChange={(date) => field.onChange(date?.format("DD-MM-YYYY"))}
-                helperText={
-                  error?.message || "Seleccionar la fecha en la que sera efectivo este cambio."
-                }
+                onChange={(date) => {
+                  console.log("Fecha seleccionada:", date);
+                  field.onChange(date?.format("DD-MM-YYYY"));
+                }}
+                helperText={error?.message || "Seleccionar la fecha..."}
                 error={!!error}
                 fullWidth
               />
@@ -219,9 +233,10 @@ export default function ModalReingresoProfe({ open, onClose, profesor }) {
             >
               Cancelar
             </CustomButton>
+
             <CustomButton
               tipo="primary"
-              disabled={!isValid && isLoading}
+              disabled={!isValid || isLoading}
               type="submit"
             >
               {isLoading ? "Procesando..." : "Confirmar Reingreso"}
