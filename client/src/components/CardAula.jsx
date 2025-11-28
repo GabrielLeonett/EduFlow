@@ -57,8 +57,8 @@ export default function CardAula({ aula, onGestionarAula }) {
     <Card
       elevation={2}
       sx={{
-        width: { xs: "100%", sm: 320 },
-        height: 380, // Altura fija para consistencia
+        width: "100%" ,
+        height: "auto", // Altura fija para consistencia
         borderRadius: "16px",
         boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
         transition: "all 0.3s ease-in-out",

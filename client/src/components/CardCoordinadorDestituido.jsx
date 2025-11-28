@@ -10,39 +10,32 @@ import {
   Grid,
   Paper,
   Typography,
-  Modal,
 } from "@mui/material";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PersonIcon from "@mui/icons-material/Person";
 import RestoreIcon from "@mui/icons-material/Restore";
-
 import { useTheme } from "@mui/material/styles";
 import { useState } from "react";
 import useApi from "../hook/useApi";
 import CustomButton from "./customButton";
+import ModalReingresoCoordinador from '../components/ModalReingresoCoordinador'; // Asegúrate de que la ruta sea correcta
 
 export default function CardCoordinadorDestituido({ coordinador }) {
-  const axios = useApi(false);
   const theme = useTheme();
 
   const [openModal, setOpenModal] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  // ==========================
-  // 🔄 REINGRESAR COORDINADOR
-  // ==========================
-  const handleReingresar = async () => {
-    setLoading(true);
-    try {
-      await axios.put(`/coordinadores/reingresar/${coordinador.id_coordinador}`);
-      window.location.reload();
-    } catch (err) {
-      console.error("Error al reingresar coordinador:", err);
-    } finally {
-      setLoading(false);
-      setOpenModal(false);
-    }
+  // Función para manejar el cierre del modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  // Función para manejar el éxito del reingreso
+  const handleReingresoExitoso = () => {
+    // Puedes agregar lógica adicional aquí si necesitas
+    // Por ejemplo, recargar la lista de coordinadores
+    window.location.reload(); // O usar un callback prop si prefieres
   };
 
   return (
@@ -64,7 +57,7 @@ export default function CardCoordinadorDestituido({ coordinador }) {
             {coordinador.nombres} {coordinador.apellidos}
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
-            Cédula: {coordinador.cedula}
+            Cédula: {coordinador.id_coordinador || coordinador.cedula}
           </Typography>
         </Box>
 
@@ -82,7 +75,7 @@ export default function CardCoordinadorDestituido({ coordinador }) {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <Typography variant="body2">
-                <strong>Correo:</strong> {coordinador.correo}
+                <strong>Correo:</strong> {coordinador.email || coordinador.correo}
               </Typography>
             </Grid>
 
@@ -105,6 +98,12 @@ export default function CardCoordinadorDestituido({ coordinador }) {
               <strong>Cargo:</strong> Coordinador
             </Typography>
 
+            {coordinador.nombre_pnf && (
+              <Typography variant="body2">
+                <strong>PNF:</strong> {coordinador.nombre_pnf}
+              </Typography>
+            )}
+
             <Typography variant="body2">
               <strong>Estatus:</strong>{" "}
               <span style={{ color: theme.palette.error.main, fontWeight: 600 }}>
@@ -114,14 +113,20 @@ export default function CardCoordinadorDestituido({ coordinador }) {
 
             <Typography variant="body2">
               <strong>Fecha de destitución:</strong>{" "}
-              {coordinador.fecha_destitucion
-                ? new Date(coordinador.fecha_destitucion).toLocaleDateString()
+              {coordinador.fecha_desasignacion || coordinador.fecha_destitucion
+                ? new Date(coordinador.fecha_desasignacion || coordinador.fecha_destitucion).toLocaleDateString()
                 : "—"}
             </Typography>
 
             <Typography variant="body2">
               <strong>Motivo:</strong> {coordinador.motivo_destitucion || "—"}
             </Typography>
+
+            {coordinador.registro_anterior_id && (
+              <Typography variant="body2">
+                <strong>ID Registro Anterior:</strong> {coordinador.registro_anterior_id}
+              </Typography>
+            )}
           </AccordionDetails>
         </Accordion>
 
@@ -142,55 +147,12 @@ export default function CardCoordinadorDestituido({ coordinador }) {
         </Box>
       </Paper>
 
-      {/* MODAL CONFIRMACIÓN */}
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box
-          sx={{
-            p: 4,
-            background: "white",
-            borderRadius: 2,
-            width: "90%",
-            maxWidth: 420,
-            mx: "auto",
-            mt: "20vh",
-          }}
-        >
-          <Typography variant="h6" fontWeight={700} mb={2}>
-            Confirmar Reingreso
-          </Typography>
-
-          <Typography variant="body1" mb={3}>
-            ¿Seguro que deseas reingresar al coordinador{" "}
-            <strong>
-              {coordinador.nombres} {coordinador.apellidos}
-            </strong>
-            ?
-          </Typography>
-
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <CustomButton
-                fullWidth
-                variant="outlined"
-                onClick={() => setOpenModal(false)}
-              >
-                Cancelar
-              </CustomButton>
-            </Grid>
-
-            <Grid item xs={6}>
-              <CustomButton
-                fullWidth
-                variant="contained"
-                disabled={loading}
-                onClick={handleReingresar}
-              >
-                {loading ? "Procesando..." : "Confirmar"}
-              </CustomButton>
-            </Grid>
-          </Grid>
-        </Box>
-      </Modal>
+      {/* MODAL DE REINGRESO COMPLETO */}
+      <ModalReingresoCoordinador
+        open={openModal}
+        onClose={handleCloseModal}
+        coordinador={coordinador}
+      />
     </>
   );
 }

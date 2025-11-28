@@ -30,7 +30,7 @@ const reingresoSchema = z.object({
   fecha_efectiva: z.string({
     invalid_type_error: "La fecha efectiva debe ser un texto"
   })
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)")
+  .regex(/^\d{2}-\d{2}-\d{4}$/, "Formato de fecha inválido (DD-MM-YYYY)")
   .optional()
   .nullable()
   .default(null),

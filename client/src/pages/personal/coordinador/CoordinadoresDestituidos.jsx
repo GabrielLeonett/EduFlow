@@ -49,7 +49,11 @@ export default function CoordinadoresDestituidos() {
   const fetchCoordinadores = useCallback(async () => {
     setLoading(true);
     try {
-      const endpoint = `/coordinadores/destituidos?page=${pagination.page}&limit=${pagination.limit}&sort_order=${sortOrder}&search=${coordinadorSearch || ""}`;
+      const endpoint = `/coordinadores/destituidos?page=${
+        pagination.page
+      }&limit=${pagination.limit}&sort_order=${sortOrder}&search=${
+        coordinadorSearch || ""
+      }`;
 
       const data = await axios.get(endpoint);
 
@@ -167,8 +171,12 @@ export default function CoordinadoresDestituidos() {
               filterOptions={(options, { inputValue }) =>
                 options.filter(
                   (opt) =>
-                    opt.nombres?.toLowerCase().includes(inputValue.toLowerCase()) ||
-                    opt.apellidos?.toLowerCase().includes(inputValue.toLowerCase()) ||
+                    opt.nombres
+                      ?.toLowerCase()
+                      .includes(inputValue.toLowerCase()) ||
+                    opt.apellidos
+                      ?.toLowerCase()
+                      .includes(inputValue.toLowerCase()) ||
                     opt.cedula?.toLowerCase().includes(inputValue.toLowerCase())
                 )
               }
@@ -214,7 +222,9 @@ export default function CoordinadoresDestituidos() {
 
                 {/* PAGINACIÓN */}
                 {pagination.totalPages > 1 && (
-                  <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", my: 3 }}
+                  >
                     <Stack>
                       <Pagination
                         count={pagination.totalPages}
@@ -256,14 +266,18 @@ export default function CoordinadoresDestituidos() {
           onClick={resetTour}
           sx={{
             position: "fixed",
-            bottom: 128,
+            bottom: 75,
             right: 24,
+            minWidth: "auto",
             width: 48,
             height: 48,
             borderRadius: "50%",
             zIndex: 9999,
-            backgroundColor: theme.palette.primary.main,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
+          aria-label="Ver tutorial"
         >
           <RouteIcon />
         </CustomButton>
