@@ -58,16 +58,16 @@ if (isProduction) {
 }
 
 // ✅ RUTAS DE API - CON PREFIJO /api PARA MEJOR ORGANIZACIÓN
-app.use("/api/admin", adminRouter);
-app.use("/api/profesor", profesorRouter);
-app.use("/api/curricular", CurricularRouter);
-app.use("/api/user", UserRouter);
-app.use("/api/horario", HorarioRouter);
-app.use("/api/sedes", SedesRouter);
-app.use("/api/aula", AulaRouter);
-app.use("/api/coordinador", coordinadorRouter);
-app.use("/api/notification", NotificationRouter);
-app.use("/api/system", SystemRouter);
+app.use("", adminRouter);
+app.use("", profesorRouter);
+app.use("", CurricularRouter);
+app.use("", UserRouter);
+app.use("", HorarioRouter);
+app.use("", SedesRouter);
+app.use("", AulaRouter);
+app.use("", coordinadorRouter);
+app.use("", NotificationRouter);
+app.use("", SystemRouter);
 
 // ✅ RUTA DE SALUD DEL SISTEMA
 app.get("/api/health", (req, res) => {

@@ -15,7 +15,7 @@ const userSchema = z.object({
     error_map: () => ({
       message: "El municipio debe ser: Carrizal, Los Salias o Guaicaipuro",
     }),
-  }),
+  }).optional(),
 
   nombres: z
     .string({ invalid_type_error: "Nombres tiene que ser un string" })
@@ -33,7 +33,7 @@ const userSchema = z.object({
     .string({ invalid_type_error: "Email tiene que ser un string" })
     .email({ message: "Email no es valido" })
     .max(150, { message: "Email tiene que tener menos de 150 caracteres" })
-    .nonempty({ message: "Email no puede estar vacio" }),
+    .nonempty({ message: "Email no puede estar vacio" }).optional,
 
   password: z
     .string({ invalid_type_error: "Password tiene que ser un string" })
@@ -45,7 +45,7 @@ const userSchema = z.object({
     .string({ invalid_type_error: "Direccion tiene que ser un string" })
     .min(3, { message: "Direccion tiene que tener al menos 3 caracteres" })
     .max(150, { message: "Direccion tiene que tener menos de 150 caracteres" })
-    .nonempty({ message: "Direccion no puede estar vacio" }),
+    .nonempty({ message: "Direccion no puede estar vacio" }).optional,
 
   telefono_movil: z
     .string({ invalid_type_error: "Telefono movil tiene que ser un string" })
