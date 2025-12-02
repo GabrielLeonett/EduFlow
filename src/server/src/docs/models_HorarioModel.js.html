@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>models/HorarioModel.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="CurricularController.html">CurricularController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="CurricularModel.html">CurricularModel</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="FormatResponseController.html">FormatResponseController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="FormatResponseModel.html">FormatResponseModel</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="HorarioController.html">HorarioController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ProfesorController.html">ProfesorController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="UserController.html">UserController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="UserModel.html">UserModel</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-ProfesorModel.html">ProfesorModel</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.RegisterProfesor">RegisterProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.buscarProfesor">buscarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.mostrarProfesor">mostrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.mostrarProfesorAPI">mostrarProfesorAPI</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-emailService.html">emailService</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-emailService.html#~enviarEmail">enviarEmail</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-passwordUtils.html">passwordUtils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~comparePassword">comparePassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~generarPassword">generarPassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~hashPassword">hashPassword</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">buscarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#generateReport">generateReport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">login</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">loginUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPostGrados</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPreGrados</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarProfesorAPI</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarTrayectos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarUnTrayecto</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarHorario</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#registrarHorario-Registraunnuevohorarioenlabasededatos">registrarHorario - Registra un nuevo horario en la base de datos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarUnidadCurricular</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">regitrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">regitrarUnidadCurricular</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaDatos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaExito</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaPostgres</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaSuccess</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">validacionesComunes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#validationErrors">validationErrors</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">verificarUsers</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">models/HorarioModel.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// Importación de la conexión a la base de datos
+import db from "../db.js";
+
+// Importación de clase para formateo de respuestas
+import FormatResponseModel from '../utils/FormatResponseModel.js'
+
+/**
+ * @class HorarioModel
+ * @description Modelo para gestionar las operaciones relacionadas con horarios académicos
+ * @method registrarHorario - Registra un nuevo horario en la base de datos
+ */
+export default class HorarioModel {
+  /**
+   * @static
+   * @async
+   * @method registrarHorario
+   * @description Registra un nuevo horario académico llamando a un procedimiento almacenado
+   * @param {Object} params - Objeto con parámetros de registro
+   * @param {Object} params.datos - Datos del horario a registrar
+   * @param {number} params.datos.id_seccion - ID de la sección académica
+   * @param {number} params.datos.id_profesor - ID del profesor asignado
+   * @param {number} params.datos.unidad_curricular_id - ID de la unidad curricular
+   * @param {string} params.datos.dia_semana - Día de la semana (Lunes, Martes, etc.)
+   * @param {string} params.datos.hora_inicio - Hora de inicio del horario (formato HH:MM)
+   * @param {string} params.datos.aula - Aula asignada
+   * @param {Object} params.usuario_accion - Información del usuario que realiza la acción
+   * @param {number} params.usuario_accion.id - ID del usuario
+   * @returns {Promise&lt;Object>} Objeto con el resultado de la operación formateado
+   * @throws {Error} Cuando ocurre un error en el registro
+   * 
+   * @example
+   * const resultado = await HorarioModel.registrarHorario({
+   *   datos: {
+   *     id_seccion: 1,
+   *     id_profesor: 5,
+   *     unidad_curricular_id: 10,
+   *     dia_semana: 'Lunes',
+   *     hora_inicio: '08:00',
+   *     aula: 'A-201'
+   *   },
+   *   usuario_accion: { id: 1 }
+   * });
+   */
+  static async registrarHorario({ datos, usuario_accion }) {
+    try {
+      // Extracción de parámetros del objeto datos
+      const { id_seccion, id_profesor, unidad_curricular_id, dia_semana, hora_inicio, aula } = datos;
+
+      // Consulta SQL que llama al procedimiento almacenado
+      const query = `CALL public.registrar_horario_completo(?, ?, ?, ?, ?, ?, ?, TRUE, NULL)`;
+      
+      // Parámetros para el procedimiento almacenado
+      const param = [ 
+        usuario_accion.id, 
+        id_seccion, 
+        id_profesor, 
+        unidad_curricular_id, 
+        dia_semana, 
+        hora_inicio, 
+        aula 
+      ];
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query, param);
+
+      // Formateo de la respuesta
+      const resultado = FormatResponseModel.respuestaPostgres(rows, 'Horario Registrado exitosamente');
+
+      return resultado;
+    } catch (error) {
+      // Manejo y formateo de errores
+      error.details = {
+        path: 'HorarioModel.registrarHorario'
+      }
+      throw FormatResponseModel.respuestaError(error, 'Error al registrar el horario');
+    }
+  }
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Thu Jul 31 2025 12:10:09 GMT-0400 (hora de Venezuela) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

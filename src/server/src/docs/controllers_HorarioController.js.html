@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>controllers/HorarioController.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="CurricularController.html">CurricularController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="CurricularModel.html">CurricularModel</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="FormatResponseController.html">FormatResponseController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="FormatResponseModel.html">FormatResponseModel</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="HorarioController.html">HorarioController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ProfesorController.html">ProfesorController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="UserController.html">UserController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="UserModel.html">UserModel</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-ProfesorModel.html">ProfesorModel</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.RegisterProfesor">RegisterProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.buscarProfesor">buscarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.mostrarProfesor">mostrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.mostrarProfesorAPI">mostrarProfesorAPI</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-emailService.html">emailService</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-emailService.html#~enviarEmail">enviarEmail</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-passwordUtils.html">passwordUtils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~comparePassword">comparePassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~generarPassword">generarPassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~hashPassword">hashPassword</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">buscarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#generateReport">generateReport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">login</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">loginUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPostGrados</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPreGrados</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarProfesorAPI</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarTrayectos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarUnTrayecto</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarHorario</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#registrarHorario-Registraunnuevohorarioenlabasededatos">registrarHorario - Registra un nuevo horario en la base de datos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarUnidadCurricular</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">regitrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">regitrarUnidadCurricular</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaDatos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaExito</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaPostgres</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaSuccess</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">validacionesComunes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#validationErrors">validationErrors</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">verificarUsers</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">controllers/HorarioController.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { validationHorario } from "../schemas/HorarioSchema.js";
+import HorarioModel from "../models/HorarioModel.js";
+import validationErrors from "../utils/validationsErrors.js";
+import FormatResponseController from "../utils/FormatResponseController.js";
+
+/**
+ * @class HorarioController
+ * @description Controlador para gestionar las operaciones relacionadas con horarios académicos
+ *
+ * Este controlador maneja:
+ * - Validación de datos de entrada
+ * - Interacción con el modelo de horarios
+ * - Formateo de respuestas HTTP
+ */
+export default class HorarioController {
+  /**
+   * @static
+   * @async
+   * @method registrarHorario
+   * @description Endpoint para registrar un nuevo horario académico
+   *
+   * Flujo de operación:
+   * 1. Valida los datos de entrada contra el esquema definido
+   * 2. Si la validación falla, retorna errores detallados
+   * 3. Si la validación es exitosa, delega al modelo el registro
+   * 4. Retorna la respuesta adecuada según el resultado
+   *
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} req.body - Datos del horario a registrar
+   * @param {Object} req.user - Información del usuario autenticado
+   * @param {Object} res - Objeto de respuesta de Express
+   *
+   * @returns {Object} Respuesta JSON con:
+   * - {boolean} success - Indica si la operación fue exitosa
+   * - {string} message - Mensaje descriptivo del resultado
+   * - {Object} [data] - Datos adicionales (opcional)
+   *
+   * @throws {400} Si la validación de datos falla
+   * @throws {500} Si ocurre un error en el servidor
+   *
+   * @example
+   * // Petición POST a /api/horarios
+   * {
+   *   "id_seccion": 1,
+   *   "id_profesor": 5,
+   *   "unidad_curricular_id": 10,
+   *   "dia_semana": "Lunes",
+   *   "hora_inicio": "08:00",
+   *   "aula": "A-201"
+   * }
+   */
+  static async registrarHorario(req, res) {
+    try {
+      // 1. Validación de datos de entrada
+      const validaciones = validationErrors(
+        validationHorario({ input: req.body })
+      );
+
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
+        });
+      }
+
+      // 3. Registro del horario mediante el modelo
+      const respuestaModel = await HorarioModel.registrarHorario({
+        datos: req.body,
+        usuario_accion: req.user,
+      });
+
+      FormatResponseController.respuestaExito(res, result);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Thu Jul 31 2025 12:10:09 GMT-0400 (hora de Venezuela) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

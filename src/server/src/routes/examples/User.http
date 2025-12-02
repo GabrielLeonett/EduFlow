@@ -1,0 +1,19 @@
+### 1. Solicitud de Login (Inicio de sesión)
+# Esta petición POST envía credenciales para autenticarse
+POST http://localhost:3000/login
+Content-Type: application/json  # Indica que el cuerpo es JSON
+
+# Datos de autenticación (email y contraseña)
+{
+  "email": "superadmin@uptamca.ve",
+  "password": "12345678"
+}
+
+### 2. Solicitud de Reporte (Obtener reporte)
+# Esta petición GET solicita un reporte protegido
+# Requiere autenticación con token JWT
+GET http://localhost:3000/report
+# Encabezado de autorización con token Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTE1NTQxNTcsImV4cCI6MTc1MjE1ODk1N30.Ps3Es827zLSuGVvSK1BamY0xTE4BSXc7m5PbKL9Rb40
+# Cookie de autenticación alternativa (algunas APIs usan este método)
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTE1NTQxNTcsImV4cCI6MTc1MjE1ODk1N30.Ps3Es827zLSuGVvSK1BamY0xTE4BSXc7m5PbKL9Rb40

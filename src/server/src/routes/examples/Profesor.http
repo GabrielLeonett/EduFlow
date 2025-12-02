@@ -1,0 +1,92 @@
+### GET: Obtener todos los profesores
+GET http://localhost:3000/Profesor
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYzMTA3NDAsImV4cCI6MTc1NjkxNTU0MH0.58h74l4ZH9nNBY5ZrVYViP8cgLHjgWbDvWCiAGAnHCk;
+
+### GET: Obtener pre-grados
+GET http://localhost:3000/Profesor/pre-grado
+Content-Type: application/json
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYzMTA3NDAsImV4cCI6MTc1NjkxNTU0MH0.58h74l4ZH9nNBY5ZrVYViP8cgLHjgWbDvWCiAGAnHCk;
+
+### GET: Obtener pos-grados
+GET http://localhost:3000/Profesor/pos-grado
+Content-Type: application/json
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYzMTA3NDAsImV4cCI6MTc1NjkxNTU0MH0.58h74l4ZH9nNBY5ZrVYViP8cgLHjgWbDvWCiAGAnHCk;
+
+### GET: Obtener áreas de conocimiento
+GET http://localhost:3000/Profesor/areas-conocimiento
+Content-Type: application/json
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYzMTA3NDAsImV4cCI6MTc1NjkxNTU0MH0.58h74l4ZH9nNBY5ZrVYViP8cgLHjgWbDvWCiAGAnHCk;
+
+### POST: Registrar nuevo pre-grado
+POST http://localhost:3000/Profesor/pre-grado
+Content-Type: application/json
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYzMTA3NDAsImV4cCI6MTc1NjkxNTU0MH0.58h74l4ZH9nNBY5ZrVYViP8cgLHjgWbDvWCiAGAnHCk
+
+{
+    "tipo": "Ingeniería",
+    "nombre": "En informática"
+}
+
+
+### POST: Registrar nuevo pos-grado
+POST http://localhost:3000/Profesor/pos-grado
+Content-Type: application/json
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYzMTA3NDAsImV4cCI6MTc1NjkxNTU0MH0.58h74l4ZH9nNBY5ZrVYViP8cgLHjgWbDvWCiAGAnHCk
+
+{
+    "tipo": "Especialización",
+    "nombre": "En IA"
+}
+
+
+### POST: Registrar área de conocimiento
+POST http://localhost:3000/Profesor/areas-conocimiento
+Content-Type: application/json
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYzMTA3NDAsImV4cCI6MTc1NjkxNTU0MH0.58h74l4ZH9nNBY5ZrVYViP8cgLHjgWbDvWCiAGAnHCk;
+{
+    "area_conocimiento": "Matematicas"
+}
+
+
+### POST: Registrar profesor
+POST http://localhost:3000/Profesor/register
+Content-Type: application/json
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYzMTA3NDAsImV4cCI6MTc1NjkxNTU0MH0.58h74l4ZH9nNBY5ZrVYViP8cgLHjgWbDvWCiAGAnHCk;
+{
+    "cedula": 31264460,
+    "nombres": "Gabriel Dayer",
+    "apellidos": "Leonett Armas",
+    "email": "delegadogabrielleonett@gmail.com",
+    "direccion": "Av. Bermúdez, Los Teques",
+    "telefono_movil": "04142245310",
+    "telefono_local": null,
+    "fecha_nacimiento": "11-11-2004",
+    "genero": "masculino",
+    "fecha_ingreso": "11-03-2021",
+    "dedicacion": "Convencional",
+    "categoria": "Instructor",
+    "area_de_conocimiento": ["Matematicas"],
+    "pre_grado": [
+        {
+            "id_pre_grado": 1,
+            "nombre_pre_grado": "Licenciatura en Informática",
+            "tipo_pre_grado": "Licenciatura"
+        }
+    ],
+    "pos_grado": [
+        {
+            "id_pos_grado": 1,
+            "nombre_pos_grado": "Maestría en Inteligencia Artificial",
+            "tipo_pos_grado": "Maestría"
+        }
+    ]
+}
+
+
+### POST: Buscar profesor
+POST http://localhost:3000/Profesor/search
+Content-Type: application/json
+
+{
+    "busqueda": "Gabriel"
+}

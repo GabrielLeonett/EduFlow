@@ -1,0 +1,25 @@
+
+### **3. `CHANGELOG.md` (historial de versiones):**
+```markdown
+# Changelog
+
+## [2.0.0] - 2024-01-15
+### Added
+- Nuevo módulo de reportes
+- Sistema de notificaciones en tiempo real
+- Backup automático
+
+### Changed
+- Mejorado rendimiento del servidor
+- Interfaz de usuario renovada
+
+### Fixed
+- Corrección de bugs en módulo de horarios
+- Problema de conexión con WebSockets
+
+## [1.0.0] - 2023-12-01
+### Initial Release
+- Módulo de administración
+- Gestión de profesores
+- Sistema de autenticación
+- Panel de coordinadores
