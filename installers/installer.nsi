@@ -1,11 +1,11 @@
 ; ============================================
-; INSTALADOR SISTEMA UPTAMCA v2.0.0
-; Configurado para estructura: installer/
+; INSTALADOR SISTEMA UPTAMCA v1.0.0
+; Version final - Solo start.exe maneja todo
 ; ============================================
 
 Unicode true
 Name "Sistema UPTAMCA"
-Caption "Instalador Sistema UPTAMCA v2.0.0"
+Caption "Instalador Sistema UPTAMCA v1.0.0"
 OutFile "..\dist\Instalar_UPTAMCA.exe"
 InstallDir "$PROGRAMFILES\SistemaUPTAMCA"
 InstallDirRegKey HKLM "Software\SistemaUPTAMCA" "InstallPath"
@@ -14,19 +14,19 @@ ShowInstDetails show
 ShowUninstDetails show
 
 ; ============================================
-; ICONOS Y BANNERS (ajusta las rutas según tus archivos)
+; ICONOS Y BANNERS
 ; ============================================
 !define MUI_ICON "resources\icon.ico"
 !define MUI_UNICON "resources\icon.ico"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "resources\banner.bmp"    ; 150x57 pixels
+!define MUI_HEADERIMAGE_BITMAP "resources\banner.bmp"
 !define MUI_HEADERIMAGE_RIGHT
-!define MUI_WELCOMEFINISHPAGE_BITMAP "resources\banner.bmp" ; 164x314 pixels
-!define MUI_WELCOMEPAGE_TITLE "Bienvenido al Sistema UPTAMCA"
-!define MUI_WELCOMEPAGE_TEXT "Este asistente instalará el Sistema UPTAMCA v2.0.0 en su computadora.$\r$\n$\r$\nRecomendamos cerrar todas las aplicaciones antes de continuar."
+!define MUI_WELCOMEFINISHPAGE_BITMAP "resources\banner.bmp"
+!define MUI_WELCOMEPAGE_TITLE "Bienvenido al Sistema UPTAMCA v1.0.0"
+!define MUI_WELCOMEPAGE_TEXT "Este asistente instalara el Sistema UPTAMCA v1.0.0 en su computadora.$\r$\n$\r$\nRequisitos minimos:$\r$\n* Windows 7 o superior$\r$\n* 2 GB de RAM$\r$\n* 500 MB espacio libre$\r$\n* Node.js 14+ (para el servidor)$\r$\n$\r$\nRecomendamos cerrar todas las aplicaciones antes de continuar."
 
 ; ============================================
-; INCLUIR MÓDULOS
+; INCLUIR MoDULOS
 ; ============================================
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
@@ -35,7 +35,7 @@ ShowUninstDetails show
 !include "WinVer.nsh"
 
 ; ============================================
-; PÁGINAS DEL INSTALADOR
+; PaGINAS DEL INSTALADOR
 ; ============================================
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE"
@@ -43,21 +43,20 @@ ShowUninstDetails show
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
-; Configurar página final
-!define MUI_FINISHPAGE_TITLE "Instalación Completada"
-!define MUI_FINISHPAGE_TEXT "El Sistema UPTAMCA ha sido instalado exitosamente."
+; Configurar pagina final
+!define MUI_FINISHPAGE_TITLE "Instalacion Completada"
+!define MUI_FINISHPAGE_TEXT "El Sistema UPTAMCA v1.0.0 ha sido instalado exitosamente.$\r$\n$\r$\nEl sistema incluye:$\r$\n* Interfaz grafica principal (start.exe)$\r$\n* Servidor Node.js$\r$\n* Interfaz web React$\r$\n* Base de datos local"
 !define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "Iniciar Sistema UPTAMCA"
+!define MUI_FINISHPAGE_RUN_TEXT "Iniciar Sistema UPTAMCA ahora"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchApp"
-!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\Documentacion\Manual.pdf"
-!define MUI_FINISHPAGE_SHOWREADME_TEXT "Ver documentación"
-!define MUI_FINISHPAGE_LINK "Visitar sitio web oficial"
-!define MUI_FINISHPAGE_LINK_LOCATION "https://www.uptamca.edu.ve"
+!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README.txt"
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Ver documentacion del sistema"
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
 !insertmacro MUI_PAGE_FINISH
 
-; Páginas del desinstalador
+; Paginas del desinstalador
 !insertmacro MUI_UNPAGE_WELCOME
+!define MUI_UNCONFIRMPAGE_TEXT_TOP "El sistema sera eliminado de su computadora. Los datos de usuario se conservaran a menos que especifique lo contrario."
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_UNPAGE_FINISH
@@ -79,16 +78,33 @@ Var StartMenuFolder
 ; FUNCIONES PERSONALIZADAS
 ; ============================================
 
-; Función para iniciar la aplicación
+; Funcion para iniciar la aplicacion
 Function LaunchApp
   SetOutPath "$INSTDIR"
-  Exec '"$INSTDIR\iniciar.bat"'
+  ; Ejecutar directamente start.exe
+  Exec '"$INSTDIR\start.exe"'
 FunctionEnd
 
-; Verificar si hay una instalación previa
+; Funcion para verificar Node.js
+Function CheckNodeJS
+  nsExec::ExecToStack 'node --version'
+  Pop $0
+  Pop $1
+  ${If} $0 != 0
+    MessageBox MB_YESNO|MB_ICONQUESTION "Node.js no esta instalado o no esta en el PATH.$\r$\n$\r$\nEl servidor requiere Node.js para funcionar.$\r$\n¿Desea continuar de todos modos?" IDYES continueInstall IDNO abortInstall
+    
+    abortInstall:
+      Quit
+      
+    continueInstall:
+      MessageBox MB_OK|MB_ICONEXCLAMATION "El sistema se instalara pero el servidor no funcionara hasta que instale Node.js.$\r$\n$\r$\nPuede instalar Node.js desde: https://nodejs.org/"
+  ${EndIf}
+FunctionEnd
+
+; Verificar requisitos del sistema
 Function .onInit
   StrCpy $AppName "Sistema UPTAMCA"
-  StrCpy $AppVersion "2.0.0"
+  StrCpy $AppVersion "1.0.0"
   
   ; Verificar Windows 7 o superior
   ${IfNot} ${AtLeastWin7}
@@ -99,167 +115,132 @@ Function .onInit
   ; Verificar arquitectura
   ${If} ${RunningX64}
     SetRegView 64
+    StrCpy $INSTDIR "$PROGRAMFILES64\SistemaUPTAMCA"
   ${Else}
     MessageBox MB_OK|MB_ICONEXCLAMATION "Se recomienda usar Windows de 64 bits para mejor rendimiento."
   ${EndIf}
   
-  ; Inicializar carpeta del menú inicio
+  ; Inicializar carpeta del menu inicio
   StrCpy $StartMenuFolder "Sistema UPTAMCA"
   
-  ; Verificar instalación anterior
+  ; Verificar Node.js
+  Call CheckNodeJS
+  
+  ; Verificar instalacion anterior
   ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" "UninstallString"
   ${If} $0 != ""
     MessageBox MB_YESNO|MB_ICONQUESTION \
-      "Se encontró una instalación previa de UPTAMCA. $\n$\n¿Desea desinstalarla antes de continuar?" \
+      "Se encontro una instalacion previa de UPTAMCA. $\n$\n¿Desea desinstalarla antes de continuar?" \
       IDYES uninstallOld IDNO skipUninstall
       
     uninstallOld:
       ExecWait '$0 _?=$INSTDIR'
       Delete "$0"
+      DetailPrint "Instalacion anterior desinstalada."
       
     skipUninstall:
   ${EndIf}
 FunctionEnd
 
 ; ============================================
-; SECCIÓN PRINCIPAL (Siempre instalada)
+; SECCIoN PRINCIPAL (Siempre instalada)
 ; ============================================
-Section "!Aplicación Principal" SecMain
+Section "!Aplicacion Principal" SecMain
   SectionIn RO
   
   SetOutPath "$INSTDIR"
   
   ; Mensaje de inicio
-  DetailPrint "Instalando Sistema UPTAMCA v2.0.0..."
+  DetailPrint "Instalando Sistema UPTAMCA v1.0.0..."
   
   ; ============================================
   ; 1. CREAR ESTRUCTURA DE CARPETAS
   ; ============================================
+  DetailPrint "Creando estructura de carpetas..."
   CreateDirectory "$INSTDIR"
   CreateDirectory "$INSTDIR\server"
   CreateDirectory "$INSTDIR\client"
-  CreateDirectory "$INSTDIR\database"
-  CreateDirectory "$INSTDIR\logs"
-  CreateDirectory "$INSTDIR\backups"
   CreateDirectory "$INSTDIR\config"
-  CreateDirectory "$INSTDIR\Documentacion"
   
   ; ============================================
-  ; 2. COPIAR ARCHIVOS DEL SERVIDOR
+  ; 2. COPIAR EJECUTABLE PRINCIPAL (start.exe)
+  ; ============================================
+  DetailPrint "Copiando ejecutable principal..."
+  SetOutPath "$INSTDIR"
+  
+  ; ¡IMPORTANTE! Verificar primero si start.exe esta disponible
+  ; Estos archivos deben estar en la MISMA CARPETA donde esta este script
+  
+  ; start.exe esta en la misma carpeta que el script
+  File "..\src\start.exe"
+  DetailPrint "✓ start.exe copiado"
+  
+  ; ============================================
+  ; 3. COPIAR ARCHIVOS DEL SERVIDOR
   ; ============================================
   DetailPrint "Copiando archivos del servidor..."
   SetOutPath "$INSTDIR\server"
+  
   File /r "..\src\server\*.*"
+  DetailPrint "✓ Servidor copiado"
   
   ; ============================================
-  ; 3. COPIAR CLIENTE (React build)
+  ; 4. COPIAR CLIENTE WEB
   ; ============================================
   DetailPrint "Copiando interfaz web..."
-  SetOutPath "$INSTDIR\client"
-  
-  ; Verificar si existe dist/ en el cliente
-  ${If} ${FileExists} "..\src\client\dist\*.*"
-    File /r "..\src\client\dist\*.*"
-  ${Else}
-    DetailPrint "Advertencia: No se encontró build del cliente"
-  ${EndIf}
+  SetOutPath "$INSTDIR\client\dist"
+
+  ; Si los archivos del cliente estan en src\client\dist
+  File /r "..\src\client\dist\*.*"
+  DetailPrint "✓ Cliente web copiado"
   
   ; ============================================
-  ; 4. COPIAR ARCHIVOS PRINCIPALES
+  ; 5. COPIAR ARCHIVOS ADICIONALES
   ; ============================================
+  DetailPrint "Copiando archivos adicionales..."
   SetOutPath "$INSTDIR"
-  
-  ; Script de inicio
-  FileOpen $0 "$INSTDIR\iniciar.bat" w
-  FileWrite $0 '@echo off$\r$\n'
-  FileWrite $0 'chcp 65001 >nul$\r$\n'
-  FileWrite $0 'title Sistema UPTAMCA v2.0.0$\r$\n'
-  FileWrite $0 'echo.$\r$\n'
-  FileWrite $0 'echo =========================================$\r$\n'
-  FileWrite $0 'echo      SISTEMA UPTAMCA - Iniciando...$\r$\n'
-  FileWrite $0 'echo =========================================$\r$\n'
-  FileWrite $0 'echo.$\r$\n'
-  FileWrite $0 'cd /d "%~dp0server"$\r$\n'
-  FileWrite $0 '$\r$\n'
-  FileWrite $0 ':: Verificar Node.js$\r$\n'
-  FileWrite $0 'where node >nul 2>nul$\r$\n'
-  FileWrite $0 'if errorlevel 1 ($\r$\n'
-  FileWrite $0 '  echo ERROR: Node.js no está instalado$\r$\n'
-  FileWrite $0 '  echo.$\r$\n'
-  FileWrite $0 '  echo Instale Node.js desde: https://nodejs.org$\r$\n'
-  FileWrite $0 '  pause$\r$\n'
-  FileWrite $0 '  exit /b 1$\r$\n'
-  FileWrite $0 ')$\r$\n'
-  FileWrite $0 '$\r$\n'
-  FileWrite $0 ':: Instalar dependencias si es necesario$\r$\n'
-  FileWrite $0 'if not exist "node_modules" ($\r$\n'
-  FileWrite $0 '  echo Instalando dependencias...$\r$\n'
-  FileWrite $0 '  call npm install --silent$\r$\n'
-  FileWrite $0 ')$\r$\n'
-  FileWrite $0 '$\r$\n'
-  FileWrite $0 ':: Iniciar servidor$\r$\n'
-  FileWrite $0 'echo Iniciando servidor en puerto 3001...$\r$\n'
-  FileWrite $0 'echo.$\r$\n'
-  FileWrite $0 'echo URL: http://localhost:3001$\r$\n'
-  FileWrite $0 'echo.$\r$\n'
-  FileWrite $0 'node app.js$\r$\n'
-  FileWrite $0 'pause$\r$\n'
-  FileClose $0
   
   ; Icono
   File "resources\icon.ico"
+  DetailPrint "✓ Icono copiado"
   
-  ; Documentación básica
-  FileOpen $0 "$INSTDIR\README.txt" w
-  FileWrite $0 'SISTEMA UPTAMCA v2.0.0$\r$\n'
-  FileWrite $0 '=============================$\r$\n$\r$\n'
-  FileWrite $0 'Instalado en: $INSTDIR$\r$\n'
-  FileWrite $0 'Fecha: [DATE]$\r$\n$\r$\n'
-  FileWrite $0 'Para iniciar el sistema:$\r$\n'
-  FileWrite $0 '1. Haga doble clic en "iniciar.bat"$\r$\n'
-  FileWrite $0 '2. O use el acceso directo del escritorio$\r$\n$\r$\n'
-  FileWrite $0 'El sistema se abrirá en: http://localhost:3001$\r$\n'
-  FileClose $0
+  ; Documentacion
+  File "..\README.md"
+  Rename "$INSTDIR\README.md" "$INSTDIR\README.txt"
+  DetailPrint "✓ Documentacion copiada"
   
-  ; Archivo de configuración por defecto
-  FileOpen $0 "$INSTDIR\config\config.json" w
-  FileWrite $0 '{$\r$\n'
-  FileWrite $0 '  "app": "Sistema UPTAMCA",$\r$\n'
-  FileWrite $0 '  "version": "2.0.0",$\r$\n'
-  FileWrite $0 '  "port": 3001,$\r$\n'
-  FileWrite $0 '  "database": "$INSTDIR\\\\database\\\\uptamca.db",$\r$\n'
-  FileWrite $0 '  "logFile": "$INSTDIR\\\\logs\\\\app.log",$\r$\n'
-  FileWrite $0 '  "backupDir": "$INSTDIR\\\\backups"$\r$\n'
-  FileWrite $0 '}$\r$\n'
-  FileClose $0
-
-  DetailPrint "Instalación principal completada."
+  ; Licencia
+  File "..\LICENSE"
+  DetailPrint "✓ Licencia copiada"
+  
+  DetailPrint "Instalacion principal completada."
 SectionEnd
 
 ; ============================================
-; SECCIÓN: ACCESOS DIRECTOS
+; SECCIoN: ACCESOS DIRECTOS
 ; ============================================
 Section "Accesos Directos" SecShortcuts
   DetailPrint "Creando accesos directos..."
   
-  ; Crear carpeta en menú inicio
+  ; Crear carpeta en menu inicio
   CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
   
-  ; Acceso directo principal
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Iniciar Sistema UPTAMCA.lnk" "$INSTDIR\iniciar.bat" "" "$INSTDIR\icon.ico" 0
+  ; Acceso directo PRINCIPAL (ejecuta start.exe)
+  ${If} ${FileExists} "$INSTDIR\icon.ico"
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Iniciar Sistema UPTAMCA.lnk" "$INSTDIR\start.exe" "" "$INSTDIR\icon.ico" 0
+    CreateShortCut "$DESKTOP\Sistema UPTAMCA.lnk" "$INSTDIR\start.exe" "" "$INSTDIR\icon.ico" 0
+  ${Else}
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Iniciar Sistema UPTAMCA.lnk" "$INSTDIR\start.exe"
+    CreateShortCut "$DESKTOP\Sistema UPTAMCA.lnk" "$INSTDIR\start.exe"
+  ${EndIf}
   
-  ; Acceso directo a carpeta
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Abrir Carpeta de Instalación.lnk" "$INSTDIR"
+  ; Acceso directo a carpeta de instalacion
+  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Abrir Carpeta de Instalacion.lnk" "$INSTDIR"
   
-  ; Acceso directo a documentación
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Leer Documentación.lnk" "$INSTDIR\README.txt"
-  
-  ; Acceso directo a desinstalar
-  WriteUninstaller "$INSTDIR\Uninstall.exe"
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Desinstalar Sistema.lnk" "$INSTDIR\Uninstall.exe"
-  
-  ; Acceso directo en escritorio (opcional)
-  CreateShortCut "$DESKTOP\Sistema UPTAMCA.lnk" "$INSTDIR\iniciar.bat" "" "$INSTDIR\icon.ico" 0
+  ; Acceso directo a documentacion
+  ${If} ${FileExists} "$INSTDIR\README.txt"
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Leer Documentacion.lnk" "$INSTDIR\README.txt"
+  ${EndIf}
   
   ; URL del sitio web
   WriteINIStr "$SMPROGRAMS\$StartMenuFolder\Sitio Web UPTAMCA.url" "InternetShortcut" "URL" "https://www.uptamca.edu.ve"
@@ -268,39 +249,24 @@ Section "Accesos Directos" SecShortcuts
 SectionEnd
 
 ; ============================================
-; SECCIÓN: VARIABLES DE ENTORNO
+; SECCIoN: REGISTRO DE WINDOWS
 ; ============================================
-Section "Variables de Entorno" SecEnvVars
-  DetailPrint "Configurando variables de entorno..."
-  
-  ; Crear variable UPTAMCA_HOME
-  WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "UPTAMCA_HOME" "$INSTDIR"
-  
-  ; Agregar al PATH (opcional)
-  ; EnvVar::AddValue "PATH" "$INSTDIR"
-  
-  ; Forzar actualización de variables
-  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
-  
-  DetailPrint "Variables de entorno configuradas."
-SectionEnd
-
-; ============================================
-; SECCIÓN: REGISTRO DE WINDOWS
-; ============================================
-
 Section -Post
-  ; Registrar en Panel de Control -> Programas y Características
+  DetailPrint "Actualizando registro de Windows..."
+  
+  ; Registrar en Panel de Control -> Programas y Caracteristicas
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
     "DisplayName" "Sistema UPTAMCA"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
     "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  ${If} ${FileExists} "$INSTDIR\icon.ico"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
+      "DisplayIcon" "$INSTDIR\icon.ico"
+  ${EndIf}
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
-    "DisplayIcon" "$INSTDIR\icon.ico"
+    "DisplayVersion" "1.0.0"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
-    "DisplayVersion" "2.0.0"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
-    "Publisher" "Universidad Politécnica Territorial de los Altos Mirandinos Cecilio Acosta"
+    "Publisher" "Universidad Politecnica Territorial de los Altos Mirandinos Cecilio Acosta"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
     "HelpLink" "https://www.uptamca.edu.ve"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
@@ -308,9 +274,9 @@ Section -Post
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
     "InstallLocation" "$INSTDIR"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
-    "Comments" "Sistema de gestión académica UPTAMCA"
+    "Comments" "Sistema de gestion academica UPTAMCA"
   
-  ; Tipo de instalación
+  ; Tipo de instalacion
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
     "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA" \
@@ -324,84 +290,71 @@ Section -Post
   
   ; Registrar en nuestro propio registro
   WriteRegStr HKLM "Software\SistemaUPTAMCA" "InstallPath" "$INSTDIR"
-  WriteRegStr HKLM "Software\SistemaUPTAMCA" "Version" "2.0.0"
+  WriteRegStr HKLM "Software\SistemaUPTAMCA" "Version" "1.0.0"
+  WriteRegStr HKLM "Software\SistemaUPTAMCA" "InstallDate" "$GetTime"
   
-  ; Obtener fecha actual
-  ${GetTime} "" "L" $0 $1 $2 $3 $4 $5 $6
-  WriteRegStr HKLM "Software\SistemaUPTAMCA" "InstallDate" "$2/$1/$0"
+  ; Crear desinstalador
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
   
   DetailPrint "Registro de Windows actualizado."
   
-  ; MENSAJE CORREGIDO - OPCIÓN 1 (una sola línea):
-  MessageBox MB_OK|MB_ICONINFORMATION "¡Instalación completada exitosamente!$\r$\n$\r$\nEl Sistema UPTAMCA v2.0.0 ha sido instalado en:$\r$\n$INSTDIR$\r$\n$\r$\nPuede iniciarlo desde el acceso directo en el escritorio."
-  
-  ; OPCIÓN 2 (con continuaciones correctas):
-  ; MessageBox MB_OK|MB_ICONINFORMATION \
-  ;   "¡Instalación completada exitosamente!$\r$\n$\r$\n" + \
-  ;   "El Sistema UPTAMCA v2.0.0 ha sido instalado en:$\r$\n" + \
-  ;   "$INSTDIR$\r$\n$\r$\n" + \
-  ;   "Puede iniciarlo desde el acceso directo en el escritorio."
+  ; Mensaje final
+  MessageBox MB_OK|MB_ICONINFORMATION \
+    "¡Instalacion completada exitosamente!$\r$\n$\r$\nEl Sistema UPTAMCA v1.0.0 ha sido instalado en:$\r$\n$INSTDIR$\r$\n$\r$\nPuede iniciarlo desde:$\r$\n* El acceso directo en el escritorio$\r$\n* El menu Inicio$\r$\n* Ejecutando start.exe directamente"
 SectionEnd
 
 ; ============================================
 ; DESCRIPCIONES DE LAS SECCIONES
 ; ============================================
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecMain} "Archivos esenciales del Sistema UPTAMCA (servidor, cliente, base de datos)."
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecShortcuts} "Crea accesos directos en el escritorio y menú inicio."
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecEnvVars} "Configura variables de entorno del sistema (UPTAMCA_HOME)."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecMain} "Archivos esenciales del Sistema UPTAMCA: ejecutable principal, servidor, cliente web y configuracion."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecShortcuts} "Crea accesos directos en el escritorio y menu inicio."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ; ============================================
 ; DESINSTALADOR
 ; ============================================
 Section "Uninstall"
-  ; PRIMER MessageBox 
-  MessageBox MB_YESNO|MB_ICONQUESTION "¿Está seguro de desinstalar el Sistema UPTAMCA?$\r$\n$\r$\nLos datos de usuario (base de datos, backups, logs) se conservarán." IDNO endUninstall
+  ; PRIMER MessageBox
+  MessageBox MB_YESNO|MB_ICONQUESTION "¿Esta seguro de desinstalar el Sistema UPTAMCA?$\r$\n$\r$\nLos datos de usuario (base de datos, backups, logs) se conservaran." IDNO endUninstall
   
-  DetailPrint "Iniciando desinstalación..."
+  DetailPrint "Iniciando desinstalacion..."
   
   ; ============================================
   ; 1. ELIMINAR ACCESOS DIRECTOS
   ; ============================================
   DetailPrint "Eliminando accesos directos..."
   Delete "$DESKTOP\Sistema UPTAMCA.lnk"
-  Delete "$SMPROGRAMS\Sistema UPTAMCA\*.*"
-  RMDir "$SMPROGRAMS\Sistema UPTAMCA"
+  Delete "$SMPROGRAMS\$StartMenuFolder\*.*"
+  Delete "$SMPROGRAMS\$StartMenuFolder\Sitio Web UPTAMCA.url"
+  RMDir "$SMPROGRAMS\$StartMenuFolder"
   
   ; ============================================
-  ; 2. ELIMINAR VARIABLES DE ENTORNO
-  ; ============================================
-  DetailPrint "Eliminando variables de entorno..."
-  DeleteRegValue HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "UPTAMCA_HOME"
-  
-  ; ============================================
-  ; 3. ELIMINAR REGISTRO DE WINDOWS
+  ; 2. ELIMINAR REGISTRO DE WINDOWS
   ; ============================================
   DetailPrint "Eliminando registro..."
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SistemaUPTAMCA"
   DeleteRegKey HKLM "Software\SistemaUPTAMCA"
   
   ; ============================================
-  ; 4. ELIMINAR ARCHIVOS DEL PROGRAMA
+  ; 3. ELIMINAR ARCHIVOS DEL PROGRAMA
   ; ============================================
   DetailPrint "Eliminando archivos del programa..."
-  Delete "$INSTDIR\iniciar.bat"
-  Delete "$INSTDIR\README.txt"
+  Delete "$INSTDIR\start.exe"
   Delete "$INSTDIR\icon.ico"
+  Delete "$INSTDIR\README.txt"
+  Delete "$INSTDIR\LICENSE"
   Delete "$INSTDIR\Uninstall.exe"
   
-  ; Eliminar carpetas de programa
+  ; Eliminar solo las carpetas principales
   RMDir /r "$INSTDIR\server"
   RMDir /r "$INSTDIR\client"
   RMDir /r "$INSTDIR\config"
-  RMDir /r "$INSTDIR\Documentacion"
   
   ; ============================================
-  ; 5. PREGUNTAR SOBRE DATOS DE USUARIO
+  ; 4. PREGUNTAR SOBRE CARPETAS ADICIONALES
   ; ============================================
-  ; SEGUNDO MessageBox CORREGIDO
-  MessageBox MB_YESNO|MB_ICONQUESTION "¿Desea eliminar TODOS los datos de usuario?$\r$\n$\r$\nEsto incluye:$\r$\n- Base de datos$\r$\n- Archivos de log$\r$\n- Backups$\r$\n$\r$\nEsta acción NO se puede deshacer." IDNO keepData
+  MessageBox MB_YESNO|MB_ICONQUESTION "¿Desea eliminar TODAS las carpetas adicionales?$\r$\n$\r$\nEsto incluye:$\r$\n* Base de datos (database)$\r$\n* Logs$\r$\n* Backups$\r$\n$\r$\nEsta accion NO se puede deshacer." IDNO keepData
   
   ; Eliminar datos si el usuario confirma
   DetailPrint "Eliminando datos de usuario..."
@@ -414,27 +367,39 @@ Section "Uninstall"
   DetailPrint "Conservando datos de usuario..."
   
   removeFolder:
-  ; Verificar si la carpeta está vacía
-  ${GetSize} "$INSTDIR" "/S=0K /G=0" $0 $1 $2
-  ${If} $0 == 0
+  ; Verificar si la carpeta esta vacia antes de eliminarla
+  FindFirst $0 $1 "$INSTDIR\*"
+  loop:
+    StrCmp $1 "" done
+    StrCmp $1 "." next
+    StrCmp $1 ".." next
+    Goto notEmpty
+  next:
+    FindNext $0 $1
+    Goto loop
+  
+  notEmpty:
+    FindClose $0
+    Goto endCleanup
+  
+  done:
+    FindClose $0
     RMDir "$INSTDIR"
-  ${EndIf}
   
-  ; Notificar al sistema
-  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+  endCleanup:
+  DetailPrint "Desinstalacion completada."
   
-  DetailPrint "Desinstalación completada."
-  
-  ; TERCER MessageBox CORREGIDO
+  ; Mensaje final
   MessageBox MB_OK|MB_ICONINFORMATION "Sistema UPTAMCA ha sido desinstalado."
   
   endUninstall:
 SectionEnd
+
 ; ============================================
-; FUNCIÓN: .onInstSuccess
+; FUNCIoN: .onInstSuccess
 ; ============================================
 Function .onInstSuccess
   WriteRegStr HKCU "Software\SistemaUPTAMCA" "FirstRun" "1"
 FunctionEnd
 
-BrandingText "Sistema UPTAMCA v2.0.0 | Universidad Politécnica Cecilio Acosta"
+BrandingText "Sistema UPTAMCA v1.0.0 | Universidad Politecnica Territorial de los Altos Mirandinos Cecilio Acosta"

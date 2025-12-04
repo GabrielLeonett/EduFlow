@@ -8,10 +8,7 @@ const pool = new Pool({
   connectionString:
     process.env.DATABASE_URL_EXTERNAL ||
     `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false,
+  ssl:false,
   // Configuraciones adicionales recomendadas para el pool
   max: 20, // máximo número de clientes en el pool
   idleTimeoutMillis: 30000, // cierra clientes inactivos después de 30 segundos

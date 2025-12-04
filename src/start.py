@@ -15,23 +15,27 @@ import signal
 import threading
 from datetime import datetime
 import tkinter as tk
-from tkinter import ttk, messagebox
-from typing import Optional
+from tkinter import ttk, messagebox, scrolledtext
 import json
 import shutil
 
 class SistemaUPTAMCAGUI:
     def __init__(self):
         try:
-            # 1. VENTANA PRINCIPAL
+            # ============ 1. DETERMINAR RUTAS CORRECTAS ============
+            if getattr(sys, 'frozen', False):
+                self.app_dir = Path(os.path.dirname(sys.executable))
+            else:
+                self.app_dir = Path(os.path.dirname(os.path.abspath(__file__)))
+            
+            print(f"Directorio de la aplicación: {self.app_dir}")
+            
+            # ============ 2. VENTANA PRINCIPAL ============
             self.root = tk.Tk()
             self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
             
             # Configurar color de fondo
             self.root.configure(bg='#1C75BA')
-            
-            # Cargar icono
-            self._cargar_icono()
             
             # Título y tamaño
             self.root.title("Sistema UPTAMCA - v2.0.0")
@@ -41,56 +45,82 @@ class SistemaUPTAMCAGUI:
             self.root.resizable(True, True)
             self.root.minsize(700, 500)
             
-            # 2. ESTILO Y TEMA
+            # ============ 3. INICIALIZAR COMPONENTES DE UI PRIMERO ============
+            self.status_text = None
+            self.logs_text = None
+            self.req_widgets = {}
+            
+            # ============ 4. ESTILO Y TEMA ============
             self.style = ttk.Style()
             self._configurar_temas()
             
-            # 3. PALETA DE COLORES
+            # ============ 5. PALETA DE COLORES ============
             self.colors = self._definir_paleta_colores()
             
-            # 4. CONFIGURACIÓN DEL SISTEMA
-            self.config = self._definir_configuracion()
+            # ============ 6. CONFIGURACIÓN DEL SISTEMA ============
+            self.config = self._definir_configuracion_corregida()
             
-            # Cargar configuración guardada si existe
-            self._cargar_configuracion_guardada()
-            
-            # 5. VARIABLES DE ESTADO
+            # ============ 7. VARIABLES DE ESTADO ============
             self.server_process = None
             self.is_windows = os.name == 'nt'
             self.is_server_running = False
             self.server_start_time = None
             self.shutdown_flag = False
             
-            # 6. CONFIGURACIONES INICIALES
+            # ============ 8. CONFIGURACIONES INICIALES ============
             self._configurar_manejo_señales()
             
-            # Asegurar directorios necesarios
-            self._crear_directorios_necesarios()
+            # ============ 9. CARGAR ICONO ============
+            self._cargar_icono_corregido()
             
-            # Configurar UI
+            # ============ 10. CARGAR CONFIGURACIÓN GUARDADA ============
+            self._cargar_configuracion_guardada()
+            
+            # ============ 11. CREAR DIRECTORIOS ============
+            self._crear_directorios_necesarios_corregido()
+            
+            # ============ 12. CONFIGURAR UI ============
             self._setup_ui()
             
             # Centrar ventana
             self._center_window()
             
-            # Verificar requisitos
-            self.root.after(500, self.verificar_prerequisitos_gui)
+            # Mostrar mensaje inicial
+            if self.status_text:
+                self.actualizar_status("Sistema inicializado correctamente")
+            
+            # Verificar requisitos después de un breve retraso
+            self.root.after(1000, self.verificar_prerequisitos_gui)
             
         except Exception as e:
-            messagebox.showerror("Error de Inicialización", 
-                               f"No se pudo inicializar la aplicación:\n{str(e)}")
+            error_msg = f"No se pudo inicializar la aplicación:\n{str(e)}\n\nDirectorio: {self.app_dir}"
+            messagebox.showerror("Error de Inicialización", error_msg)
+            print(f"Error de inicialización: {e}")
+            import traceback
+            traceback.print_exc()
             if hasattr(self, 'root') and self.root:
                 self.root.destroy()
             raise
 
-    def _cargar_icono(self):
-        """Carga el icono de la aplicación"""
+    def _cargar_icono_corregido(self):
+        """Carga el icono de la aplicación - RUTAS CORREGIDAS"""
         try:
-            icon_path = Path(__file__).parent.absolute() / '../installers' / 'resources' / 'icon.ico'
-            if icon_path.exists():
-                self.root.iconbitmap(str(icon_path))
-        except Exception:
-            pass
+            posibles_rutas = [
+                self.app_dir / "icon.ico",
+                self.app_dir / "resources" / "icon.ico",
+                self.app_dir.parent / "icon.ico",
+                self.app_dir.parent / "resources" / "icon.ico",
+            ]
+            
+            for icon_path in posibles_rutas:
+                if icon_path.exists():
+                    self.root.iconbitmap(str(icon_path))
+                    print(f"Icono cargado desde: {icon_path}")
+                    return
+            
+            print("Advertencia: No se encontró icon.ico en ninguna ubicación")
+        except Exception as e:
+            print(f"Error cargando icono: {e}")
 
     def _configurar_temas(self):
         """Configura los temas de la aplicación"""
@@ -117,20 +147,22 @@ class SistemaUPTAMCAGUI:
             'text_light': '#f8f9fa',
         }
 
-    def _definir_configuracion(self):
-        """Define la configuración del sistema"""
-        script_dir = Path(__file__).parent.absolute()
-        server_dir = script_dir / "server"
+    def _definir_configuracion_corregida(self):
+        """Define la configuración del sistema - RUTAS CORREGIDAS"""
+        server_dir = self.app_dir / "server"
+        client_dir = self.app_dir / "client"
         
         return {
             "app_name": "Sistema UPTAMCA",
             "version": "2.0.0",
             "server_port": 3000,
             "server_url": "http://localhost:3000",
-            "app_root": script_dir,
+            "app_root": self.app_dir,
             "server_dir": server_dir,
+            "client_dir": client_dir,
             "package_json": server_dir / "package.json",
-            "config_file": script_dir / "config.json",
+            "config_file": self.app_dir / "config.json",
+            "log_file": self.app_dir / "uptamca.log",
         }
 
     def _cargar_configuracion_guardada(self):
@@ -144,29 +176,41 @@ class SistemaUPTAMCAGUI:
                 if 'server_port' in saved_config:
                     self.config['server_port'] = saved_config['server_port']
                     self.config['server_url'] = f"http://localhost:{saved_config['server_port']}"
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Error cargando configuración: {e}")
 
     def _guardar_configuracion(self):
         """Guarda la configuración actual en archivo"""
         try:
             config_to_save = {
                 'server_port': self.config['server_port'],
-                'last_updated': datetime.now().isoformat()
+                'last_updated': datetime.now().isoformat(),
+                'app_dir': str(self.app_dir),
+                'version': self.config['version']
             }
             
             with open(self.config['config_file'], 'w', encoding='utf-8') as f:
                 json.dump(config_to_save, f, indent=2)
-        except Exception:
-            pass
+            print(f"Configuración guardada en: {self.config['config_file']}")
+        except Exception as e:
+            print(f"Error guardando configuración: {e}")
 
-    def _crear_directorios_necesarios(self):
-        """Crea directorios necesarios"""
+    def _crear_directorios_necesarios_corregido(self):
+        """Crea directorios necesarios - RUTAS CORREGIDAS"""
         try:
-            server_dir = self.config["server_dir"]
-            (server_dir / "data").mkdir(parents=True, exist_ok=True)
-        except Exception:
-            pass
+            directorios = [
+                self.config["server_dir"],
+                self.config["client_dir"],
+                self.app_dir / "logs",
+                self.app_dir / "data",
+            ]
+            
+            for directorio in directorios:
+                directorio.mkdir(parents=True, exist_ok=True)
+                print(f"Directorio creado/verificado: {directorio}")
+            
+        except Exception as e:
+            print(f"Error creando directorios: {e}")
 
     def _setup_ui(self):
         """Configura la interfaz de usuario"""
@@ -193,7 +237,6 @@ class SistemaUPTAMCAGUI:
         header_frame.grid(row=0, column=0, sticky="ew", padx=0, pady=0)
         header_frame.grid_propagate(False)
         
-        # Título
         title_label = tk.Label(
             header_frame,
             text="SISTEMA UPTAMCA v2.0.0",
@@ -219,7 +262,6 @@ class SistemaUPTAMCAGUI:
         main_frame.columnconfigure(0, weight=1)
         main_frame.rowconfigure(0, weight=1)
         
-        # Notebook con pestañas
         self.notebook = ttk.Notebook(main_frame)
         self.notebook.grid(row=0, column=0, sticky="nsew")
         
@@ -232,6 +274,11 @@ class SistemaUPTAMCAGUI:
         self.tab_config = ttk.Frame(self.notebook)
         self.notebook.add(self.tab_config, text="Configuración")
         self._setup_config_tab()
+        
+        # Pestaña Logs
+        self.tab_logs = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab_logs, text="Logs")
+        self._setup_logs_tab()
 
     def _setup_dashboard_tab(self):
         """Configura el dashboard"""
@@ -245,12 +292,17 @@ class SistemaUPTAMCAGUI:
         info_grid = tk.Frame(info_frame)
         info_grid.pack(fill=tk.X)
         
+        app_dir_short = str(self.app_dir)
+        if len(app_dir_short) > 50:
+            app_dir_short = "..." + app_dir_short[-47:]
+        
         info_data = [
             ("Sistema:", f"{platform.system()} {platform.release()}"),
             ("Python:", platform.python_version()),
-            ("Directorio:", str(self.config['app_root'])),
+            ("Directorio:", app_dir_short),
+            ("Tipo:", "Ejecutable" if getattr(sys, 'frozen', False) else "Script"),
             ("Puerto:", str(self.config['server_port'])),
-            ("Fecha:", datetime.now().strftime('%d/%m/%Y')),
+            ("Fecha:", datetime.now().strftime('%d/%m/%Y %H:%M:%S')),
         ]
         
         for i, (label, value) in enumerate(info_data):
@@ -263,25 +315,24 @@ class SistemaUPTAMCAGUI:
         status_frame = ttk.LabelFrame(dashboard_frame, text="Estado del Servidor", padding=10)
         status_frame.pack(fill=tk.X, pady=(0, 10))
         
-        self.status_text = tk.Text(
+        self.status_text = scrolledtext.ScrolledText(
             status_frame,
-            height=4,
-            font=('Arial', 9),
+            height=6,
+            font=('Consolas', 9),
             wrap=tk.WORD,
-            bg=self.colors['bg_light']
+            bg='#f5f5f5'
         )
         self.status_text.pack(fill=tk.BOTH, expand=True)
-        self.actualizar_status("Sistema inicializado. Verificando requisitos...")
         
         # Requisitos del sistema
         req_frame = ttk.LabelFrame(dashboard_frame, text="Requisitos del Sistema", padding=10)
         req_frame.pack(fill=tk.X)
         
-        self.req_widgets = {}
         requisitos = [
             ("Node.js", "node_status"),
             ("npm", "npm_status"),
-            ("Proyecto", "project_status"),
+            ("Carpeta Server", "server_status"),
+            ("Carpeta Client", "client_status"),
             ("Dependencias", "deps_status")
         ]
         
@@ -290,11 +341,11 @@ class SistemaUPTAMCAGUI:
             frame.pack(fill=tk.X, pady=2)
             
             tk.Label(frame, text=f"{nombre}:", 
-                    font=('Arial', 9, 'bold'), anchor='w').pack(side=tk.LEFT)
+                    font=('Arial', 9, 'bold'), anchor='w', width=15).pack(side=tk.LEFT)
             
             label = tk.Label(frame, text="Verificando...", 
                             font=('Arial', 9), fg='orange', anchor='w')
-            label.pack(side=tk.LEFT, padx=(10, 0))
+            label.pack(side=tk.LEFT, padx=(10, 0), fill=tk.X, expand=True)
             
             self.req_widgets[key] = label
 
@@ -327,22 +378,49 @@ class SistemaUPTAMCAGUI:
         ttk.Button(tools_frame, text="Verificar Estado del Servidor", 
                   command=self.verificar_estado_servidor_gui).pack(anchor='w', pady=2)
         
+        ttk.Button(tools_frame, text="Verificar Rutas", 
+                  command=self.verificar_rutas_gui).pack(anchor='w', pady=2)
+        
         # Información
         info_frame = ttk.LabelFrame(config_frame, text="Información", padding=10)
         info_frame.pack(fill=tk.X)
         
         info_text = f"""Aplicación: {self.config['app_name']}
 Versión: {self.config['version']}
-URL: {self.config['server_url']}"""
+URL: {self.config['server_url']}
+Directorio: {self.app_dir}"""
         
         tk.Label(info_frame, text=info_text, font=('Arial', 9), justify='left', anchor='w').pack(fill=tk.X)
+
+    def _setup_logs_tab(self):
+        """Configura la pestaña de logs"""
+        logs_frame = ttk.Frame(self.tab_logs)
+        logs_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        self.logs_text = scrolledtext.ScrolledText(
+            logs_frame,
+            height=15,
+            font=('Consolas', 9),
+            wrap=tk.WORD,
+            bg='#1e1e1e',
+            fg='#ffffff'
+        )
+        self.logs_text.pack(fill=tk.BOTH, expand=True)
+        
+        button_frame = ttk.Frame(logs_frame)
+        button_frame.pack(fill=tk.X, pady=(5, 0))
+        
+        ttk.Button(button_frame, text="Limpiar Logs", 
+                  command=self.limpiar_logs).pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(button_frame, text="Guardar Logs", 
+                  command=self.guardar_logs).pack(side=tk.LEFT, padx=5)
 
     def _setup_control_panel(self):
         """Configura el panel de control inferior"""
         self.control_frame = ttk.Frame(self.root)
         self.control_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=10)
         
-        # Estado del servidor
         self.status_label = tk.Label(
             self.control_frame,
             text="Estado: DETENIDO",
@@ -351,7 +429,6 @@ URL: {self.config['server_url']}"""
         )
         self.status_label.pack(side=tk.LEFT, padx=10)
         
-        # Botones
         button_frame = ttk.Frame(self.control_frame)
         button_frame.pack(side=tk.RIGHT)
         
@@ -403,39 +480,127 @@ URL: {self.config['server_url']}"""
         """Actualiza el estado en el dashboard"""
         current_time = datetime.now().strftime('%H:%M:%S')
         status = f"{current_time} - {message}\n"
-        self.status_text.insert(tk.END, status)
-        self.status_text.see(tk.END)
+        if self.status_text:
+            self.status_text.insert(tk.END, status)
+            self.status_text.see(tk.END)
+        
+        # Agregar a logs solo si logs_text ya está inicializado
+        if self.logs_text is not None:
+            self.logs_text.insert(tk.END, status)
+            self.logs_text.see(tk.END)
+
+    def agregar_log(self, message):
+        """Agrega un mensaje a los logs"""
+        if self.logs_text is not None:
+            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            log_entry = f"[{current_time}] {message}\n"
+            self.logs_text.insert(tk.END, log_entry)
+            self.logs_text.see(tk.END)
+
+    def limpiar_logs(self):
+        """Limpia los logs"""
+        if self.logs_text is not None:
+            self.logs_text.delete(1.0, tk.END)
+
+    def guardar_logs(self):
+        """Guarda los logs a un archivo"""
+        try:
+            if self.logs_text is None:
+                messagebox.showerror("Error", "Logs no inicializados")
+                return
+                
+            log_file = self.config['log_file']
+            logs_content = self.logs_text.get(1.0, tk.END)
+            
+            with open(log_file, 'w', encoding='utf-8') as f:
+                f.write(logs_content)
+            
+            messagebox.showinfo("Éxito", f"Logs guardados en:\n{log_file}")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudieron guardar los logs:\n{e}")
+
+    def verificar_rutas_gui(self):
+        """Verifica las rutas críticas del sistema"""
+        rutas_verificar = [
+            ("Directorio App", self.app_dir, True),
+            ("Server Dir", self.config['server_dir'], True),
+            ("Client Dir", self.config['client_dir'], True),
+            ("package.json", self.config['package_json'], False),
+            ("config.json", self.config['config_file'], False),
+        ]
+        
+        reporte = "=== VERIFICACIÓN DE RUTAS ===\n"
+        for nombre, ruta, es_directorio in rutas_verificar:
+            existe = ruta.exists()
+            tipo = "Directorio" if es_directorio else "Archivo"
+            estado = "✓ EXISTE" if existe else "✗ NO EXISTE"
+            reporte += f"{nombre}: {estado} ({tipo})\n"
+            reporte += f"  Ruta: {ruta}\n"
+            
+            if existe and es_directorio:
+                try:
+                    contenido = list(ruta.iterdir())
+                    reporte += f"  Contenido: {len(contenido)} items\n"
+                    for item in contenido[:5]:
+                        reporte += f"    - {item.name}\n"
+                    if len(contenido) > 5:
+                        reporte += f"    ... y {len(contenido)-5} más\n"
+                except Exception as e:
+                    reporte += f"  Error leyendo: {e}\n"
+        
+        messagebox.showinfo("Verificación de Rutas", reporte)
+        # Solo agregar log si logs_text está inicializado
+        if self.logs_text is not None:
+            self.agregar_log("Verificación de rutas completada")
 
     def verificar_prerequisitos_gui(self):
         """Verifica los prerequisitos"""
         self.actualizar_status("Verificando prerequisitos...")
         
         # Verificar Node.js
-        if self._verificar_nodejs_gui():
-            self.req_widgets['node_status'].config(text="OK ✓", fg='green')
-        else:
-            self.req_widgets['node_status'].config(text="ERROR ✗", fg='red')
-            return
+        node_ok = self._verificar_nodejs_gui()
+        self.req_widgets['node_status'].config(
+            text="OK ✓" if node_ok else "ERROR ✗", 
+            fg='green' if node_ok else 'red'
+        )
         
         # Verificar npm
-        if self._verificar_npm_gui():
-            self.req_widgets['npm_status'].config(text="OK ✓", fg='green')
-        else:
-            self.req_widgets['npm_status'].config(text="ERROR ✗", fg='red')
-            return
+        npm_ok = self._verificar_npm_gui()
+        self.req_widgets['npm_status'].config(
+            text="OK ✓" if npm_ok else "ERROR ✗", 
+            fg='green' if npm_ok else 'red'
+        )
         
-        # Verificar estructura del proyecto
-        if self._verificar_estructura_proyecto_gui():
-            self.req_widgets['project_status'].config(text="OK ✓", fg='green')
-        else:
-            self.req_widgets['project_status'].config(text="ERROR ✗", fg='red')
-            return
+        # Verificar carpeta server
+        server_ok = self.config['server_dir'].exists()
+        self.req_widgets['server_status'].config(
+            text="OK ✓" if server_ok else "NO EXISTE ✗", 
+            fg='green' if server_ok else 'red'
+        )
+        
+        # Verificar carpeta client
+        client_ok = self.config['client_dir'].exists()
+        self.req_widgets['client_status'].config(
+            text="OK ✓" if client_ok else "NO EXISTE ✗", 
+            fg='green' if client_ok else 'red'
+        )
         
         # Verificar dependencias
-        if self._verificar_dependencias_gui():
-            self.req_widgets['deps_status'].config(text="OK ✓", fg='green')
-        else:
-            self.req_widgets['deps_status'].config(text="FALTANTE", fg='orange')
+        deps_ok = self._verificar_dependencias_gui()
+        self.req_widgets['deps_status'].config(
+            text="OK ✓" if deps_ok else "FALTANTE", 
+            fg='green' if deps_ok else 'orange'
+        )
+        
+        if server_ok:
+            try:
+                server_items = list(self.config['server_dir'].iterdir())
+                server_info = f" ({len(server_items)} archivos)"
+                self.req_widgets['server_status'].config(
+                    text=f"OK ✓{server_info}"
+                )
+            except:
+                pass
         
         self.actualizar_status("Prerequisitos verificados")
 
@@ -449,8 +614,15 @@ URL: {self.config['server_url']}"""
                 timeout=5,
                 shell=self.is_windows
             )
-            return resultado.returncode == 0
-        except Exception:
+            if resultado.returncode == 0:
+                # Solo agregar log si logs_text está inicializado
+                if self.logs_text is not None:
+                    self.agregar_log(f"Node.js encontrado: {resultado.stdout.strip()}")
+                return True
+            return False
+        except Exception as e:
+            if self.logs_text is not None:
+                self.agregar_log(f"Error verificando Node.js: {e}")
             return False
 
     def _verificar_npm_gui(self):
@@ -463,35 +635,36 @@ URL: {self.config['server_url']}"""
                 timeout=5,
                 shell=self.is_windows
             )
-            return resultado.returncode == 0
-        except Exception:
+            if resultado.returncode == 0:
+                if self.logs_text is not None:
+                    self.agregar_log(f"npm encontrado: {resultado.stdout.strip()}")
+                return True
             return False
-
-    def _verificar_estructura_proyecto_gui(self):
-        """Verifica la estructura del proyecto"""
-        try:
-            if not self.config['server_dir'].exists():
-                return False
-            if not self.config['package_json'].exists():
-                return False
-            return True
-        except Exception:
+        except Exception as e:
+            if self.logs_text is not None:
+                self.agregar_log(f"Error verificando npm: {e}")
             return False
 
     def _verificar_dependencias_gui(self):
         """Verifica si las dependencias están instaladas"""
         try:
             node_modules = self.config['server_dir'] / "node_modules"
-            return node_modules.exists() and any(node_modules.iterdir())
-        except Exception:
+            existe = node_modules.exists() and any(node_modules.iterdir())
+            if existe and self.logs_text is not None:
+                self.agregar_log("Dependencias encontradas")
+            return existe
+        except Exception as e:
+            if self.logs_text is not None:
+                self.agregar_log(f"Error verificando dependencias: {e}")
             return False
 
     def iniciar_servidor_gui(self):
         """Inicia el servidor"""
         self.start_button.config(state='disabled')
         self.actualizar_status("Iniciando servidor...")
+        if self.logs_text is not None:
+            self.agregar_log("Iniciando servidor...")
         
-        # Ejecutar en un hilo separado
         thread = threading.Thread(target=self._iniciar_servidor_thread)
         thread.daemon = True
         thread.start()
@@ -499,6 +672,9 @@ URL: {self.config['server_url']}"""
     def _iniciar_servidor_thread(self):
         """Hilo para iniciar el servidor"""
         try:
+            if self.logs_text is not None:
+                self.agregar_log(f"Directorio servidor: {self.config['server_dir']}")
+            
             # Instalar dependencias si es necesario
             self.actualizar_status("Verificando dependencias...")
             if not self._instalar_dependencias_gui():
@@ -509,11 +685,12 @@ URL: {self.config['server_url']}"""
             # Iniciar servidor
             self.actualizar_status("Iniciando servicios...")
             
-            # Cambiar al directorio del servidor
             original_cwd = os.getcwd()
             os.chdir(self.config['server_dir'])
             
-            # Iniciar proceso
+            if self.logs_text is not None:
+                self.agregar_log(f"Directorio de trabajo: {os.getcwd()}")
+            
             self.server_process = subprocess.Popen(
                 ['npm', 'start'],
                 stdout=subprocess.PIPE,
@@ -524,24 +701,30 @@ URL: {self.config['server_url']}"""
                 bufsize=1
             )
             
-            # Esperar a que el servidor esté listo
+            if self.logs_text is not None:
+                self.agregar_log("Proceso npm start iniciado")
+            
             self.server_start_time = datetime.now()
             
-            for i in range(30):  # 30 intentos de 2 segundos
+            for i in range(30):
                 if self._verificar_servidor_listo():
-                    self.actualizar_status("Servidor iniciado correctamente")
+                    tiempo_inicio = (datetime.now() - self.server_start_time).total_seconds()
+                    self.actualizar_status(f"Servidor iniciado en {tiempo_inicio:.1f} segundos")
                     self._finalizar_inicio_server(True)
                     return
+                self.actualizar_status(f"Esperando servidor... ({i+1}/30)")
                 time.sleep(2)
             
             self.actualizar_status("Timeout: El servidor tardó demasiado en iniciar")
             self._finalizar_inicio_server(False)
             
         except Exception as e:
-            self.actualizar_status(f"Error al iniciar servidor: {str(e)[:50]}")
+            error_msg = f"Error al iniciar servidor: {str(e)}"
+            self.actualizar_status(error_msg)
+            if self.logs_text is not None:
+                self.agregar_log(error_msg)
             self._finalizar_inicio_server(False)
         finally:
-            # Restaurar directorio
             try:
                 os.chdir(original_cwd)
             except:
@@ -554,6 +737,8 @@ URL: {self.config['server_url']}"""
             
             if not node_modules.exists() or not any(node_modules.iterdir()):
                 self.actualizar_status("Instalando dependencias...")
+                if self.logs_text is not None:
+                    self.agregar_log("Instalando dependencias con npm install...")
                 
                 resultado = subprocess.run(
                     ['npm', 'install'],
@@ -564,17 +749,28 @@ URL: {self.config['server_url']}"""
                     cwd=str(self.config['server_dir'])
                 )
                 
+                if self.logs_text is not None:
+                    self.agregar_log(f"npm install salida: {resultado.stdout[:500]}")
+                    if resultado.stderr:
+                        self.agregar_log(f"npm install errores: {resultado.stderr[:500]}")
+                
                 if resultado.returncode == 0:
                     self.actualizar_status("Dependencias instaladas")
                     self.req_widgets['deps_status'].config(text="OK ✓", fg='green')
                     return True
                 else:
+                    if self.logs_text is not None:
+                        self.agregar_log(f"npm install falló con código: {resultado.returncode}")
                     return False
             else:
                 self.req_widgets['deps_status'].config(text="OK ✓", fg='green')
+                if self.logs_text is not None:
+                    self.agregar_log("Dependencias ya instaladas")
                 return True
                 
-        except Exception:
+        except Exception as e:
+            if self.logs_text is not None:
+                self.agregar_log(f"Error instalando dependencias: {e}")
             return False
 
     def _verificar_servidor_listo(self):
@@ -585,8 +781,17 @@ URL: {self.config['server_url']}"""
                 timeout=2,
                 verify=False
             )
-            return respuesta.status_code == 200
-        except:
+            if respuesta.status_code == 200:
+                if self.logs_text is not None:
+                    self.agregar_log(f"Servidor responde: {respuesta.status_code}")
+                return True
+            else:
+                if self.logs_text is not None:
+                    self.agregar_log(f"Servidor responde con código: {respuesta.status_code}")
+                return False
+        except Exception as e:
+            if self.logs_text is not None:
+                self.agregar_log(f"Error verificando servidor: {e}")
             return False
 
     def _finalizar_inicio_server(self, success):
@@ -604,6 +809,8 @@ URL: {self.config['server_url']}"""
             self.start_button.config(state='disabled')
             self.stop_button.config(state='normal')
             self.browser_button.config(state='normal')
+            if self.logs_text is not None:
+                self.agregar_log("Servidor iniciado correctamente")
         else:
             self.is_server_running = False
             self.status_label.config(
@@ -613,11 +820,15 @@ URL: {self.config['server_url']}"""
             self.start_button.config(state='normal')
             self.stop_button.config(state='disabled')
             self.browser_button.config(state='disabled')
+            if self.logs_text is not None:
+                self.agregar_log("Error iniciando servidor")
 
     def detener_servidor_gui(self):
         """Detiene el servidor"""
         self.stop_button.config(state='disabled')
         self.actualizar_status("Deteniendo servidor...")
+        if self.logs_text is not None:
+            self.agregar_log("Deteniendo servidor...")
         
         thread = threading.Thread(target=self._detener_servidor_thread)
         thread.daemon = True
@@ -638,13 +849,18 @@ URL: {self.config['server_url']}"""
                     self.server_process = None
                     self.server_start_time = None
                     self.actualizar_status("Servidor detenido")
+                    if self.logs_text is not None:
+                        self.agregar_log("Servidor detenido correctamente")
                 else:
                     self.actualizar_status("Servidor ya estaba detenido")
             
             self.root.after(0, self._actualizar_ui_detener_server)
             
         except Exception as e:
-            self.actualizar_status(f"Error al detener servidor: {e}")
+            error_msg = f"Error al detener servidor: {e}"
+            self.actualizar_status(error_msg)
+            if self.logs_text is not None:
+                self.agregar_log(error_msg)
             self.root.after(0, lambda: self._actualizar_ui_detener_server(False))
 
     def _actualizar_ui_detener_server(self, success=True):
@@ -664,8 +880,13 @@ URL: {self.config['server_url']}"""
         try:
             webbrowser.open(self.config['server_url'])
             self.actualizar_status(f"Aplicación abierta en navegador")
+            if self.logs_text is not None:
+                self.agregar_log(f"Navegador abierto en: {self.config['server_url']}")
         except Exception as e:
-            self.actualizar_status(f"Error al abrir navegador: {e}")
+            error_msg = f"Error al abrir navegador: {e}"
+            self.actualizar_status(error_msg)
+            if self.logs_text is not None:
+                self.agregar_log(error_msg)
             messagebox.showerror("Error", f"No se pudo abrir el navegador:\n{e}")
 
     def verificar_estado_servidor_gui(self):
@@ -679,14 +900,29 @@ URL: {self.config['server_url']}"""
         try:
             respuesta = requests.get(f"{self.config['server_url']}/api/health", timeout=5)
             if respuesta.status_code == 200:
-                messagebox.showinfo("Estado", "Servidor funcionando correctamente")
+                uptime = datetime.now() - self.server_start_time
+                horas = uptime.seconds // 3600
+                minutos = (uptime.seconds % 3600) // 60
+                segundos = uptime.seconds % 60
+                
+                mensaje = f"Servidor funcionando correctamente\n"
+                mensaje += f"Tiempo activo: {horas:02d}:{minutos:02d}:{segundos:02d}\n"
+                mensaje += f"URL: {self.config['server_url']}"
+                
+                messagebox.showinfo("Estado", mensaje)
                 self.actualizar_status("Servidor funcionando correctamente")
+                if self.logs_text is not None:
+                    self.agregar_log(f"Estado servidor: OK (uptime: {horas}:{minutos}:{segundos})")
             else:
                 messagebox.showwarning("Estado", f"Servidor respondió con código: {respuesta.status_code}")
                 self.actualizar_status(f"Servidor respondió con código: {respuesta.status_code}")
+                if self.logs_text is not None:
+                    self.agregar_log(f"Estado servidor: Código {respuesta.status_code}")
         except Exception as e:
             messagebox.showerror("Estado", f"Error al conectar con el servidor: {e}")
             self.actualizar_status(f"Error al conectar con servidor: {e}")
+            if self.logs_text is not None:
+                self.agregar_log(f"Error conexión servidor: {e}")
 
     def actualizar_config(self):
         """Actualiza la configuración"""
@@ -697,11 +933,15 @@ URL: {self.config['server_url']}"""
                 self.config['server_port'] = new_port
                 self.config['server_url'] = f"http://localhost:{new_port}"
                 
-                # Guardar configuración
                 self._guardar_configuracion()
                 
-                self.actualizar_status(f"Puerto actualizado de {old_port} a {new_port}")
-                messagebox.showinfo("Éxito", f"Puerto actualizado a {new_port}\n\nReiniciar el servidor para aplicar cambios.")
+                mensaje = f"Puerto actualizado de {old_port} a {new_port}"
+                self.actualizar_status(mensaje)
+                if self.logs_text is not None:
+                    self.agregar_log(mensaje)
+                
+                messagebox.showinfo("Éxito", 
+                    f"Puerto actualizado a {new_port}\n\nReiniciar el servidor para aplicar cambios.")
             else:
                 messagebox.showerror("Error", "El puerto debe estar entre 1024 y 65535")
         except ValueError:
@@ -711,37 +951,46 @@ URL: {self.config['server_url']}"""
         """Reinstala las dependencias"""
         if messagebox.askyesno("Confirmar", "¿Reinstalar todas las dependencias?"):
             self.actualizar_status("Reinstalando dependencias...")
+            if self.logs_text is not None:
+                self.agregar_log("Reinstalando dependencias...")
             
-            # Detener servidor si está en ejecución
             was_running = self.is_server_running
             if was_running:
                 self.detener_servidor_gui()
                 time.sleep(2)
             
-            # Eliminar node_modules si existe
             node_modules = self.config['server_dir'] / "node_modules"
             if node_modules.exists():
                 try:
                     shutil.rmtree(node_modules)
                     self.req_widgets['deps_status'].config(text="ELIMINADO", fg='orange')
+                    if self.logs_text is not None:
+                        self.agregar_log("node_modules eliminado")
                 except Exception as e:
-                    messagebox.showerror("Error", f"No se pudo eliminar node_modules:\n{e}")
+                    error_msg = f"No se pudo eliminar node_modules: {e}"
+                    messagebox.showerror("Error", error_msg)
+                    if self.logs_text is not None:
+                        self.agregar_log(error_msg)
                     return
             
-            # Reinstalar
             if self._instalar_dependencias_gui():
                 messagebox.showinfo("Éxito", "Dependencias reinstaladas correctamente")
+                if self.logs_text is not None:
+                    self.agregar_log("Dependencias reinstaladas correctamente")
                 
-                # Reiniciar servidor si estaba en ejecución
                 if was_running:
                     self.root.after(2000, self.iniciar_servidor_gui)
             else:
                 messagebox.showerror("Error", "Error al reinstalar dependencias")
+                if self.logs_text is not None:
+                    self.agregar_log("Error reinstalando dependencias")
 
     def actualizar_dependencias(self):
         """Actualiza las dependencias"""
         if messagebox.askyesno("Confirmar", "¿Actualizar dependencias?"):
             self.actualizar_status("Actualizando dependencias...")
+            if self.logs_text is not None:
+                self.agregar_log("Actualizando dependencias...")
             
             try:
                 resultado = subprocess.run(
@@ -755,12 +1004,18 @@ URL: {self.config['server_url']}"""
                 
                 if resultado.returncode == 0:
                     self.actualizar_status("Dependencias actualizadas")
+                    if self.logs_text is not None:
+                        self.agregar_log("Dependencias actualizadas correctamente")
                     messagebox.showinfo("Éxito", "Dependencias actualizadas correctamente")
                 else:
                     messagebox.showerror("Error", "Error al actualizar dependencias")
+                    if self.logs_text is not None:
+                        self.agregar_log("Error actualizando dependencias")
                     
             except Exception as e:
                 messagebox.showerror("Error", f"Error: {e}")
+                if self.logs_text is not None:
+                    self.agregar_log(f"Error ejecutando npm update: {e}")
 
     def run(self):
         """Ejecuta la aplicación GUI"""
@@ -774,15 +1029,36 @@ URL: {self.config['server_url']}"""
                 self.detener_servidor_gui()
                 self.root.after(2000, self.root.destroy)
             else:
-                return  # Cancelar cierre
+                return
         else:
             self.root.destroy()
 
 
-if __name__ == "__main__":
+def main():
+    """Función principal con manejo de errores mejorado"""
     try:
+        print("=== INICIANDO SISTEMA UPTAMCA ===")
+        print(f"Python: {sys.version}")
+        print(f"Plataforma: {platform.platform()}")
+        
         app = SistemaUPTAMCAGUI()
         app.run()
+        
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"ERROR CRÍTICO: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        error_msg = f"""Error crítico en la aplicación:
+
+{str(e)}
+
+Por favor, contacte al soporte técnico."""
+        
+        messagebox.showerror("Error Crítico", error_msg)
+        
         input("Presione Enter para salir...")
+
+
+if __name__ == "__main__":
+    main()
