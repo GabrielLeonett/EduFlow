@@ -12,23 +12,73 @@ import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
 
 /**
+ * Servicio de negocio para operaciones relacionadas con usuarios.
+ * Contiene la lógica de negocio para autenticación, gestión de usuarios,
+ * recuperación de contraseña y administración de cuentas.
+ * 
+ * @module services/user.service
  * @class UserService
- * @description Servicio para operaciones de negocio relacionadas con usuarios
+ * @requires ./validation.service
+ * @requires ./email.service
+ * @requires ../models/user.model
+ * @requires ./socket.service
+ * @requires ../utils/encrypted
+ * @requires ../utils/auth
+ * @requires ../utils/utilis
+ * @requires ../utils/FormatterResponseService
  */
 export default class UserService {
   /**
+   * Tipos de datos para operaciones de autenticación.
+   * @typedef {Object} LoginData
+   * @property {string} email - Correo electrónico del usuario
+   * @property {string} password - Contraseña del usuario
+   */
+
+  /**
+   * Tipos de datos para recuperación de contraseña.
+   * @typedef {Object} RecoveryData
+   * @property {string} email - Correo electrónico para recuperación
+   * @property {string} [token] - Token de recuperación (opcional)
+   * @property {string} [password] - Nueva contraseña (opcional)
+   */
+
+  /**
+   * Estructura de respuesta estándar del servicio.
+   * @typedef {Object} ServiceResponse
+   * @property {boolean} success - Indica si la operación fue exitosa
+   * @property {string} message - Mensaje descriptivo del resultado
+   * @property {Object} [data] - Datos de respuesta en caso de éxito
+   * @property {Object} [error] - Información de error en caso de fallo
+   * @property {string} [error.code] - Código único del error
+   * @property {number} [status] - Código HTTP de la respuesta
+   */
+
+  /**
+   * Inicia sesión de un usuario en el sistema.
+   * Valida credenciales, verifica contraseña, genera token JWT y establece sesión.
+   * 
    * @static
    * @async
    * @method login
-   * @description Iniciar sesión de usuario
-   * @param {Object} datos - Datos de login
-   * @param {Object} usuario - Usuario para no crear de nuevo la session
-   * @returns {Object} Resultado de la operación
+   * @memberof UserService
+   * @param {LoginData} datos - Objeto con email y contraseña del usuario
+   * @param {Object|null} usuario - Usuario pre-autenticado (si middleware ya validó)
+   * @returns {Promise<ServiceResponse>} Respuesta estandarizada del servicio
+   * @throws {Error} Cuando ocurre un error interno no controlado
+   * 
+   * @example
+   * // Uso típico
+   * const resultado = await UserService.login({
+   *   email: "usuario@ejemplo.com",
+   *   password: "contraseñaSegura123"
+   * }, null);
    */
   static async login(datos, usuario) {
     try {
       console.log("🔍 [login] Iniciando proceso de login...");
 
+      // Validar que no haya sesión previa activa
       if (usuario) {
         throw FormatterResponseService.error(
           "Ya hay una sesion iniciada",
@@ -37,7 +87,7 @@ export default class UserService {
         );
       }
 
-      // 1. Validar datos de entrada
+      // 1. Validar estructura de datos de entrada
       const validacion = ValidationService.validateLogin(datos);
       if (!validacion.isValid) {
         console.error("❌ Validación de login fallida:", validacion.errors);
@@ -47,7 +97,7 @@ export default class UserService {
         );
       }
 
-      // 2. Buscar usuario en la base de datos
+      // 2. Normalizar y buscar usuario en la base de datos
       const email = asegurarStringEnMinusculas(datos.email);
       console.log("📧 Buscando usuario:", email);
 
@@ -62,10 +112,8 @@ export default class UserService {
       const user = respuestaModel.data;
       console.log("✅ Usuario encontrado:", user.nombres, user.apellidos);
 
-      // 3. Validar contraseña
+      // 3. Validar contraseña mediante comparación segura
       console.log("🔐 Validando contraseña...");
-      console.log("📝 Contraseña ingresada:", datos.password);
-      console.log("📝 Contraseña almacenada", user.password);
       const validatePassword = await comparePassword(
         datos.password,
         user.password
@@ -78,7 +126,7 @@ export default class UserService {
         );
       }
 
-      // 4. Crear token de sesión
+      // 4. Crear token de sesión JWT
       console.log("🎫 Creando token de sesión...");
       const token = createSession({
         object: {
@@ -86,7 +134,7 @@ export default class UserService {
           apellidos: user.apellidos,
           nombres: user.nombres,
           roles: user.roles,
-          ...(user.id_pnf && { id_pnf: user.id_pnf }), // ✅ Solo agrega si existe
+          ...(user.id_pnf && { id_pnf: user.id_pnf }), // Propiedad condicional
         },
       });
 
@@ -96,7 +144,7 @@ export default class UserService {
         user.apellidos
       );
 
-      // 5. Preparar respuesta exitosa
+      // 5. Preparar respuesta exitosa con datos del usuario
       return FormatterResponseService.success(
         {
           token: token,
@@ -106,7 +154,7 @@ export default class UserService {
             nombres: user.nombres,
             primera_vez: user.primera_vez,
             roles: user.roles,
-            ...(user.id_pnf && { id_pnf: user.id_pnf }), // ✅ Solo agrega si existe
+            ...(user.id_pnf && { id_pnf: user.id_pnf }),
           },
         },
         "Inicio de sesión exitoso",
@@ -117,24 +165,29 @@ export default class UserService {
       );
     } catch (error) {
       console.error("💥 Error en servicio login:", error);
-
-      // Re-lanza el error para que el controlador lo maneje
-      throw error;
+      throw error; // Propagar error para manejo en capa superior
     }
   }
 
   /**
-   * Enviar el token para la recuperacion de contraseña
+   * Envía un token de recuperación al email del usuario.
+   * Genera un token seguro, lo almacena con expiración y envía email con instrucciones.
+   * 
    * @static
    * @async
-   * @param {object} datos - contiene datos como email
-   * @returns {object} - Resultado del enviado del email
+   * @method EnviarTokenEmail
+   * @memberof UserService
+   * @param {RecoveryData} datos - Objeto con email para recuperación
+   * @returns {Promise<ServiceResponse>} Respuesta estandarizada del servicio
+   * @throws {Error} Cuando ocurre un error en el envío del email o en la base de datos
+   * 
+   * @security Esta operación no revela si un email existe en el sistema por seguridad
    */
   static async EnviarTokenEmail(datos) {
     try {
       console.log("🔍 [EnviarTokenEmail] Iniciando envío de token...");
 
-      // 1. Validar datos de entrada
+      // 1. Validar email proporcionado
       const validacion = ValidationService.validatePartialLogin(datos);
       if (!validacion.isValid) {
         console.error("❌ Validación de email fallida:", validacion.errors);
@@ -144,15 +197,14 @@ export default class UserService {
         );
       }
 
-      // 2. Verificar que el usuario existe
+      // 2. Verificar existencia del usuario (sin revelar si existe o no)
       const respuestaModel = await UserModel.obtenerUsuarioPorEmail(
         datos.email
       );
-      console.log(respuestaModel);
 
+      // Por seguridad, siempre retornamos éxito aunque el email no exista
       if (respuestaModel.state != "success") {
         console.log("❌ Usuario no encontrado:", datos.email);
-        // Por seguridad, no revelar que el email no existe
         return FormatterResponseService.success(
           null,
           "Si el email existe, se ha enviado el token de recuperación",
@@ -162,59 +214,59 @@ export default class UserService {
 
       const usuario = respuestaModel.data[0];
 
-      // 3. Generar token seguro (sin hash para el usuario)
-      const tokenPlano = await generarPassword(16); // Más largo para seguridad
+      // 3. Generar token seguro (16 caracteres) y su hash para almacenamiento
+      const tokenPlano = await generarPassword(16);
       const token_hash = await hashPassword(tokenPlano);
 
-      // 4. Guardar token con expiración (ej: 1 hora)
+      // 4. Guardar token hash con tiempo de expiración (1 hora por defecto)
       await UserModel.GuardarTokenEmail(datos.email, token_hash);
 
-      // 5. Construir URL con parámetros correctos
+      // 5. Construir URL para restablecimiento con parámetros codificados
       const resetUrl = `${
         process.env.ORIGIN_FRONTEND
       }/recuperar-contrasena?email=${encodeURIComponent(
         datos.email
       )}&token=${encodeURIComponent(tokenPlano)}`;
 
-      // 6. Preparar email con token PLANO (no el hash) y link directo
+      // 6. Preparar contenido del email con diseño responsivo
       const correo = {
         asunto: "Recuperación de Contraseña - Sistema Académico",
         html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2 style="color: #2c3e50;">Recuperación de Contraseña</h2>
-        <p>Hola ${usuario.nombres || "usuario"},</p>
-        <p>Has solicitado recuperar tu contraseña. Utiliza el siguiente token:</p>
-        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0; text-align: center;">
-          <p style="font-size: 24px; font-weight: bold; letter-spacing: 2px; margin: 0;">${tokenPlano}</p>
-        </div>
-        <p><strong>Instrucciones:</strong></p>
-        <ul>
-          <li>Este token expira en 1 hora</li>
-          <li>Copia y pega el token en la plataforma O haz clic en el botón</li>
-          <li>Si no solicitaste este token, ignora este mensaje</li>
-        </ul>
-        <div style="text-align: center; margin: 20px 0;">
-          <a href="${resetUrl}" 
-             style="display: inline-block; background-color: #1C75BA; color: white; 
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2 style="color: #2c3e50;">Recuperación de Contraseña</h2>
+          <p>Hola ${usuario.nombres || "usuario"},</p>
+          <p>Has solicitado recuperar tu contraseña. Utiliza el siguiente token:</p>
+          <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0; text-align: center;">
+            <p style="font-size: 24px; font-weight: bold; letter-spacing: 2px; margin: 0;">${tokenPlano}</p>
+          </div>
+          <p><strong>Instrucciones:</strong></p>
+          <ul>
+            <li>Este token expira en 1 hora</li>
+            <li>Copia y pega el token en la plataforma O haz clic en el botón</li>
+            <li>Si no solicitaste este token, ignora este mensaje</li>
+          </ul>
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="${resetUrl}" 
+              style="display: inline-block; background-color: #1C75BA; color: white; 
                     padding: 12px 30px; text-decoration: none; border-radius: 5px; 
                     font-weight: bold;">
-            Restablecer Contraseña
-          </a>
+              Restablecer Contraseña
+            </a>
+          </div>
+          <p style="color: #7f8c8d; font-size: 12px; text-align: center;">
+            Si el botón no funciona, copia y pega esta URL en tu navegador:<br>
+            ${resetUrl}
+          </p>
         </div>
-        <p style="color: #7f8c8d; font-size: 12px; text-align: center;">
-          Si el botón no funciona, copia y pega esta URL en tu navegador:<br>
-          ${resetUrl}
-        </p>
-      </div>
-      `,
+        `,
       };
 
-      // 7. Enviar email
+      // 7. Enviar email utilizando el servicio de email
       const emailService = new EmailService();
       const resultadoEmail = await emailService.enviarEmail({
         Destinatario: datos.email,
         Correo: correo,
-        verificarEmail: false,
+        verificarEmail: false, // No verificar existencia del email para evitar información
       });
 
       if (!resultadoEmail.success) {
@@ -238,13 +290,17 @@ export default class UserService {
   }
 
   /**
+   * Verifica la validez de un token de recuperación de contraseña.
+   * Comprueba existencia, expiración y coincidencia del token.
+   * 
    * @static
    * @async
    * @method VerificarToken
-   * @description Verifica si un token de recuperación es válido
-   * @param {string} email - Email del usuario
+   * @memberof UserService
+   * @param {string} email - Email del usuario que solicitó recuperación
    * @param {string} token - Token proporcionado por el usuario (sin hash)
-   * @returns {Object} Resultado de la verificación
+   * @returns {Promise<ServiceResponse>} Respuesta con estado de verificación
+   * @throws {Error} Cuando ocurre un error en la base de datos
    */
   static async VerificarToken(email, token) {
     try {
@@ -264,7 +320,8 @@ export default class UserService {
       }
 
       const usuario = respuestaModel.data[0];
-      // 2. Verificar que el token no haya expirado
+      
+      // 2. Verificar expiración del token (comparación de fechas)
       const ahora = new Date();
       const expiracion = new Date(usuario.reset_password_expires);
 
@@ -276,7 +333,7 @@ export default class UserService {
         });
       }
 
-      // 3. Comparar el token plano con el hash almacenado
+      // 3. Comparar token proporcionado con hash almacenado
       const tokenValido = await comparePassword(
         token,
         usuario.reset_password_token
@@ -307,50 +364,42 @@ export default class UserService {
   }
 
   /**
+   * Cambia la contraseña del usuario mediante dos flujos posibles:
+   * 1. Usuario autenticado (requiere contraseña actual)
+   * 2. Recuperación con token (requiere token válido)
+   * 
    * @static
    * @async
    * @method cambiarContraseña
-   * @description Cambiar contraseña del usuario (autenticado o con token de recuperación)
-   * @param {Object} datos - Datos para cambiar contraseña
-   * @param {Object} [usuarioActual] - Usuario actual autenticado (opcional)
-   * @returns {Object} Resultado de la operación
+   * @memberof UserService
+   * @param {Object} datos - Datos para el cambio de contraseña
+   * @param {string} [datos.antigua_password] - Contraseña actual (solo para usuarios autenticados)
+   * @param {string} datos.password - Nueva contraseña
+   * @param {string} [datos.email] - Email para recuperación
+   * @param {string} [datos.token] - Token de recuperación
+   * @param {Object|null} usuarioActual - Usuario autenticado (null para recuperación)
+   * @returns {Promise<ServiceResponse>} Respuesta del cambio de contraseña
+   * @throws {Error} Cuando ocurre un error en la validación o base de datos
    */
   static async cambiarContraseña(datos, usuarioActual = null) {
     try {
       console.log("🔍 [cambiarContraseña] Iniciando cambio de contraseña...");
-      console.log(
-        "📝 Modo:",
-        usuarioActual ? "USUARIO_AUTENTICADO" : "RECUPERACION_CON_TOKEN"
-      );
+      
+      const modo = usuarioActual ? "USUARIO_AUTENTICADO" : "RECUPERACION_CON_TOKEN";
+      console.log("📝 Modo:", modo);
 
-      if (process.env.MODE === "DEVELOPMENT") {
-        console.log("📝 Datos recibidos:", {
-          datos: datos,
-          usuarioActual: usuarioActual
-            ? {
-                id: usuarioActual.id,
-                nombres: usuarioActual.nombres,
-                apellidos: usuarioActual.apellidos,
-              }
-            : "RECUPERACION_CON_TOKEN",
-        });
-      }
-
-      // 1. Validar datos de entrada según el modo
+      // 1. Validar datos según el modo de operación
       let validacion;
       if (usuarioActual) {
-        // Modo usuario autenticado - valida contraseña actual
+        // Modo usuario autenticado - valida contraseña actual y nueva
         validacion = ValidationService.validateContrasenia(datos);
       } else {
-        // Modo recuperación - valida solo email, token y nueva contraseña
+        // Modo recuperación - valida email, token y nueva contraseña
         validacion = ValidationService.validateRecoveryPassword(datos);
       }
 
       if (!validacion.isValid) {
-        console.error(
-          "❌ Validación de contraseña fallida:",
-          validacion.errors
-        );
+        console.error("❌ Validación de contraseña fallida:", validacion.errors);
         return FormatterResponseService.validationError(
           validacion.errors,
           "Error de validación en cambio de contraseña"
@@ -360,12 +409,12 @@ export default class UserService {
 
       let usuarioParaCambio;
 
-      // 2. Lógica según el modo de operación
+      // 2. Lógica específica por modo de operación
       if (usuarioActual) {
         // 🔐 MODO USUARIO AUTENTICADO
         console.log("🔐 Modo: Usuario autenticado");
 
-        console.log("🔍 Obteniendo datos del usuario para validación...");
+        // Obtener usuario para validar contraseña actual
         const respuestaUsuario = await UserModel.obtenerUsuarioPorId(
           usuarioActual.id
         );
@@ -375,9 +424,8 @@ export default class UserService {
           return FormatterResponseService.notFound("Usuario no encontrado");
         }
 
-        console.log("✅ Datos del usuario obtenidos para validación");
-        const { password } = respuestaUsuario.data[0];
         usuarioParaCambio = respuestaUsuario.data[0];
+        const { password } = usuarioParaCambio;
 
         // Validar contraseña actual
         console.log("🔐 Validando contraseña actual...");
@@ -387,10 +435,7 @@ export default class UserService {
         );
 
         if (!validatePassword) {
-          console.error(
-            "❌ Contraseña actual incorrecta para usuario:",
-            usuarioActual.id
-          );
+          console.error("❌ Contraseña actual incorrecta para usuario:", usuarioActual.id);
           return FormatterResponseService.unauthorized(
             "La contraseña actual es incorrecta"
           );
@@ -399,30 +444,32 @@ export default class UserService {
         // 🔑 MODO RECUPERACIÓN CON TOKEN
         console.log("🔑 Modo: Recuperación con token");
 
+        // Verificar validez del token antes de proceder
         const { email, token } = datos;
-
-        // Verificar que el token sea válido y no haya expirado
         console.log("🔍 Verificando token de recuperación...");
-
-        this.VerificarToken(email, token);
+        
+        const tokenVerificado = await this.VerificarToken(email, token);
+        if (!tokenVerificado.success) {
+          return tokenVerificado; // Retornar error de verificación
+        }
       }
 
       // 3. Hashear nueva contraseña (común para ambos modos)
       console.log("🔒 Hasheando nueva contraseña...");
       const passwordHash = await hashPassword(datos.password);
 
-      // 4. Cambiar contraseña en la base de datos
+      // 4. Actualizar contraseña en base de datos según modo
       console.log("💾 Actualizando contraseña en base de datos...");
 
       let respuestaModel;
       if (usuarioActual) {
-        // Modo autenticado - cambiar contraseña normalmente
+        // Modo autenticado - actualizar contraseña normalmente
         respuestaModel = await UserModel.cambiarContraseña(
           usuarioActual.id,
           passwordHash
         );
       } else {
-        // Modo recuperación - cambiar contraseña y limpiar token
+        // Modo recuperación - actualizar contraseña y limpiar token usado
         respuestaModel = await UserModel.actualizarContraseñaYLimpiarToken(
           datos.email,
           passwordHash
@@ -436,6 +483,7 @@ export default class UserService {
 
       console.log("✅ Contraseña cambiada exitosamente");
 
+      // 5. Preparar respuesta según modo
       const mensajeExito = usuarioActual
         ? "Contraseña cambiada exitosamente"
         : "Contraseña restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña";
@@ -456,24 +504,29 @@ export default class UserService {
         );
       }
 
-      // Re-lanza el error para que el controlador lo maneje
       throw error;
     }
   }
 
   /**
+   * Verifica la sesión actual de un usuario autenticado.
+   * Retorna los datos del usuario si la sesión es válida.
+   * 
    * @static
    * @async
    * @method verificarSesion
-   * @description Verificar la sesión del usuario
-   * @param {Object} user - Usuario autenticado
-   * @returns {Object} Resultado de la operación
+   * @memberof UserService
+   * @param {Object} user - Objeto de usuario inyectado por middleware de autenticación
+   * @returns {Promise<ServiceResponse>} Respuesta con datos de sesión verificada
+   * @throws {Error} Cuando no hay usuario autenticado
    */
   static async verificarSesion(user) {
     try {
+      // Validar existencia de usuario autenticado
       if (!user) {
         FormatterResponseService.unauthorized("Usuario no autenticado");
       }
+      
       return FormatterResponseService.success(
         user,
         "Sesión verificada exitosamente",
@@ -487,6 +540,7 @@ export default class UserService {
     } catch (error) {
       console.error("💥 Error en servicio verificar sesión:", error);
 
+      // Manejar errores específicos de conexión
       if (["ECONNREFUSED", "ETIMEDOUT"].includes(error.code)) {
         return FormatterResponseService.error(
           "Error de conexión con la base de datos",
@@ -495,24 +549,27 @@ export default class UserService {
         );
       }
 
-      // Re-lanza el error para que el controlador lo maneje
       throw error;
     }
   }
 
   /**
+   * Obtiene el perfil completo de un usuario autenticado.
+   * Retorna información del usuario excluyendo datos sensibles como contraseñas.
+   * 
    * @static
    * @async
    * @method obtenerPerfil
-   * @description Obtener perfil del usuario
-   * @param {number} userId - ID del usuario
-   * @returns {Object} Resultado de la operación
+   * @memberof UserService
+   * @param {number|string} userId - Identificador único del usuario
+   * @returns {Promise<ServiceResponse>} Perfil del usuario sin información sensible
+   * @throws {Error} Cuando el usuario no existe o hay error de conexión
    */
   static async obtenerPerfil(userId) {
     try {
       console.log("🔍 [obtenerPerfil] Obteniendo perfil para usuario:", userId);
 
-      // Validar ID de usuario
+      // Validar formato del ID del usuario
       const idValidation = ValidationService.validateId(userId, "usuario");
       if (!idValidation.isValid) {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
@@ -522,6 +579,7 @@ export default class UserService {
         );
       }
 
+      // Consultar datos del usuario en el modelo
       const respuestaModel = await UserModel.obtenerUsuarioPorId(userId);
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -536,7 +594,7 @@ export default class UserService {
 
       const user = respuestaModel.data;
 
-      // Remover información sensible antes de enviar
+      // Remover información sensible antes de enviar respuesta
       const { password, ...userSafe } = user;
 
       console.log(
@@ -555,19 +613,22 @@ export default class UserService {
       );
     } catch (error) {
       console.error("💥 Error en servicio obtener perfil:", error);
-      // Re-lanza el error para que el controlador lo maneje
       throw error;
     }
   }
 
   /**
+   * Actualiza el perfil de un usuario autenticado.
+   * Permite modificar información personal del usuario.
+   * 
    * @static
    * @async
    * @method actualizarPerfil
-   * @description Actualizar perfil del usuario
-   * @param {number} userId - ID del usuario
-   * @param {Object} datosActualizacion - Datos a actualizar
-   * @returns {Object} Resultado de la operación
+   * @memberof UserService
+   * @param {number|string} userId - Identificador único del usuario
+   * @param {Object} datosActualizacion - Campos a actualizar en el perfil
+   * @returns {Promise<ServiceResponse>} Resultado de la actualización
+   * @throws {Error} Cuando hay errores de validación o en la base de datos
    */
   static async actualizarPerfil(userId, datosActualizacion) {
     try {
@@ -576,6 +637,7 @@ export default class UserService {
         userId
       );
 
+      // Log detallado en modo desarrollo
       if (process.env.MODE === "DEVELOPMENT") {
         console.log(
           "📝 Datos de actualización:",
@@ -583,7 +645,7 @@ export default class UserService {
         );
       }
 
-      // Validar ID de usuario
+      // Validar ID del usuario
       const idValidation = ValidationService.validateId(userId, "usuario");
       if (!idValidation.isValid) {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
@@ -593,20 +655,18 @@ export default class UserService {
         );
       }
 
-      // Validar datos de actualización
+      // Validar datos de actualización según esquema definido
       const validacion =
         ValidationService.validateActualizacionPerfil(datosActualizacion);
       if (!validacion.isValid) {
-        console.error(
-          "❌ Validación de actualización fallida:",
-          validacion.errors
-        );
+        console.error("❌ Validación de actualización fallida:", validacion.errors);
         return FormatterResponseService.validationError(
           validacion.errors,
           "Error de validación en actualización de perfil"
         );
       }
 
+      // Ejecutar actualización en el modelo
       const respuestaModel = await UserModel.actualizarUsuario(
         userId,
         datosActualizacion
@@ -630,6 +690,7 @@ export default class UserService {
     } catch (error) {
       console.error("💥 Error en servicio actualizar perfil:", error);
 
+      // Manejar errores específicos de validación
       if (error.name === "ValidationError") {
         return FormatterResponseService.validationError(
           error.details,
@@ -637,24 +698,28 @@ export default class UserService {
         );
       }
 
-      // Re-lanza el error para que el controlador lo maneje
       throw error;
     }
   }
 
   /**
+   * Cierra la sesión del usuario actual.
+   * En sistemas complejos, aquí se invalidarían tokens en el servidor.
+   * 
    * @static
    * @async
    * @method cerrarSesion
-   * @description Cerrar sesión del usuario
-   * @returns {Object} Resultado de la operación
+   * @memberof UserService
+   * @returns {Promise<ServiceResponse>} Confirmación de cierre de sesión
    */
   static async cerrarSesion() {
     try {
       console.log("🔍 [cerrarSesion] Cerrando sesión...");
 
-      // En un sistema más complejo, aquí podrías invalidar tokens, etc.
-      // Por ahora simplemente retornamos éxito ya que el controlador se encarga de limpiar la cookie
+      // Nota: En implementaciones avanzadas, aquí se podría:
+      // - Invalidar token JWT en una blacklist
+      // - Registrar logout en auditoría
+      // - Notificar otros sistemas
 
       return FormatterResponseService.success(
         null,
@@ -666,25 +731,29 @@ export default class UserService {
       );
     } catch (error) {
       console.error("💥 Error en servicio cerrar sesión:", error);
-      // Re-lanza el error para que el controlador lo maneje
       throw error;
     }
   }
 
   /**
+   * Desactiva un usuario del sistema (administradores solamente).
+   * Realiza soft delete y notifica al usuario vía WebSocket si está conectado.
+   * 
    * @static
    * @async
    * @method desactivarUsuario
-   * @description Desactivar un usuario del sistema
-   * @param {number} usuario_accion - ID del usuario que realiza la acción
-   * @param {number} id_usuario - ID del usuario a desactivar
-   * @returns {Object} Resultado de la operación
+   * @memberof UserService
+   * @param {number|string} usuario_accion - ID del administrador que ejecuta la acción
+   * @param {number|string} id_usuario - ID del usuario a desactivar
+   * @returns {Promise<ServiceResponse>} Resultado de la desactivación
+   * @throws {Error} Cuando hay errores de validación o en la base de datos
+   * @security Requiere roles SuperAdmin o Vicerrector
    */
   static async desactivarUsuario(usuario_accion, id_usuario) {
     try {
       console.log("🔍 [desactivarUsuario] Desactivando usuario...");
 
-      // Validar ID del usuario que realiza la acción
+      // Validar ID del administrador
       const validateIdUser = ValidationService.validateId(
         usuario_accion,
         "id usuario accion"
@@ -712,7 +781,7 @@ export default class UserService {
         );
       }
 
-      // Verificar que no sea auto-desactivación
+      // Prevenir auto-desactivación (medida de seguridad)
       if (usuario_accion === id_usuario) {
         console.error("❌ Intento de auto-desactivación");
         return FormatterResponseService.error(
@@ -722,13 +791,13 @@ export default class UserService {
         );
       }
 
-      // Llamar al modelo para desactivar el usuario
+      // Ejecutar desactivación en el modelo
       const resultado = await UserModel.desactivarUsuario(
         usuario_accion,
         id_usuario
       );
 
-      // ✅ CORREGIDO: Emitir evento de cierre de sesión
+      // ✅ Notificar usuario desactivado vía WebSocket
       console.log(`📡 Emitiendo close_sesion para usuario: ${id_usuario}`);
 
       const socket = new SocketServices("websocket");
@@ -759,19 +828,24 @@ export default class UserService {
   }
 
   /**
+   * Reactiva un usuario previamente desactivado (administradores solamente).
+   * Restaura el acceso del usuario al sistema.
+   * 
    * @static
    * @async
    * @method activarUsuario
-   * @description Activar un usuario previamente desactivado
-   * @param {number} usuario_accion - ID del usuario que realiza la acción
-   * @param {number} id_usuario - ID del usuario a activar
-   * @returns {Object} Resultado de la operación
+   * @memberof UserService
+   * @param {number|string} usuario_accion - ID del administrador que ejecuta la acción
+   * @param {number|string} id_usuario - ID del usuario a reactivar
+   * @returns {Promise<ServiceResponse>} Resultado de la activación
+   * @throws {Error} Cuando hay errores de validación o en la base de datos
+   * @security Requiere roles SuperAdmin o Vicerrector
    */
   static async activarUsuario(usuario_accion, id_usuario) {
     try {
       console.log("🔍 [activarUsuario] Activando usuario...");
 
-      // Validar ID del usuario que realiza la acción
+      // Validar ID del administrador
       const validateIdUser = ValidationService.validateId(
         usuario_accion,
         "id usuario accion"
@@ -799,7 +873,7 @@ export default class UserService {
         );
       }
 
-      // Llamar al modelo para activar el usuario
+      // Ejecutar activación en el modelo
       const resultado = await UserModel.activarUsuario(
         usuario_accion,
         id_usuario

@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { server } from "../server.js";
+import { server } from "../backend-server.js";
 import { socketAuth } from "../middlewares/auth.js";
 import { joinRoleRooms } from "../middlewares/process.js";
 
