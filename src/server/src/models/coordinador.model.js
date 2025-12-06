@@ -6,7 +6,7 @@
  */
 
 // Importaciones principales
-import pg from "../database/pg.js";
+import db from "../database/db.js";
 import FormatterResponseModel from "../utils/FormatterResponseModel.js";
 
 export default class CoordinadorModel {
@@ -21,10 +21,10 @@ export default class CoordinadorModel {
    */
   static async asignarCoordinador(datos, id_usuario) {
     try {
-      const query = `CALL asignar_coordinador($1, $2, $3)`;
+      const query = `CALL asignar_coordinador(?,  ?,?)`;
       const params = [id_usuario, datos.id_profesor, datos.id_pnf];
       console.log(params);
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -69,10 +69,10 @@ export default class CoordinadorModel {
       FROM coordinadores c
       INNER JOIN pnfs p ON c.id_pnf = p.id_pnf
       INNER JOIN users u ON c.id_coordinador = u.cedula
-      WHERE c.id_profesor = $1 AND c.activo = true
+      WHERE c.id_profesor =? AND c.activo = true
     `;
 
-      const { rows } = await pg.query(query, [cedula_profesor]);
+      const { rows } = await db.raw(query, [cedula_profesor]);
 
       console.log(rows);
       const coordinador = rows[0];
@@ -123,10 +123,10 @@ export default class CoordinadorModel {
         c.created_at
       FROM coordinadores c
       INNER JOIN users u ON c.id_coordinador = u.cedula
-      WHERE c.id_pnf = $1 AND c.activo = true
+      WHERE c.id_pnf =? AND c.activo = true
     `;
 
-      const { rows } = await pg.query(query, [id_pnf]);
+      const { rows } = await db.raw(query, [id_pnf]);
 
       if (rows.length === 0) {
         console.log("✅ PNF sin coordinador activo");
@@ -262,10 +262,10 @@ export default class CoordinadorModel {
       INNER JOIN users u ON c.id_coordinador = u.cedula
       INNER JOIN pnfs p ON c.id_pnf = p.id_pnf
       INNER JOIN profesores pr ON c.id_profesor = pr.id_profesor
-      WHERE c.id_coordinador = $1 AND c.activo = true
+      WHERE c.id_coordinador =? AND c.activo = true
     `;
 
-      const { rows } = await pg.query(query, [cedula_coordinador]);
+      const { rows } = await db.raw(query, [cedula_coordinador]);
 
       if (rows.length === 0) {
         return FormatterResponseModel.respuestaPostgres(
@@ -323,7 +323,7 @@ export default class CoordinadorModel {
       ORDER BY u.nombres, u.apellidos
     `;
 
-      const { rows } = await pg.query(query);
+      const { rows } = await db.raw(query);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -350,11 +350,11 @@ export default class CoordinadorModel {
    */
   static async reasignarCoordinador(datos, id_usuario) {
     try {
-      const query = `CALL reasignar_coordinador($1, $2, $3)`;
+      const query = `CALL reasignar_coordinador(?,  ?,?)`;
       const params = [id_usuario, datos.id_profesor, datos.id_pnf];
       console.log("📋 Parámetros reasignación:", params);
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
       console.log(rows);
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -507,7 +507,7 @@ export default class CoordinadorModel {
       }
 
       // 🚀 Ejecutar la consulta con parámetros
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -585,7 +585,7 @@ export default class CoordinadorModel {
         }
       }
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -614,11 +614,11 @@ export default class CoordinadorModel {
     try {
       const query = `
         SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE cedula = $1
+        WHERE cedula =?
       `;
       const params = [cedula];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -645,11 +645,11 @@ export default class CoordinadorModel {
     try {
       const query = `
         SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE id_coordinador = $1
+        WHERE id_coordinador =?
       `;
       const params = [id_coordinador];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -719,7 +719,7 @@ export default class CoordinadorModel {
         WHERE id_coordinador = $${paramCount - 1}
       `;
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -756,7 +756,7 @@ export default class CoordinadorModel {
     fecha_efectiva = null
   ) {
     try {
-      const query = `CALL eliminar_destituir_coordinador(NULL, $1, $2, $3, $4, $5, $6)`;
+      const query = `CALL eliminar_destituir_coordinador(NULL, ?,  ?,  ?,  ?,  ?,?)`;
       const params = [
         id_usuario,
         id_coordinador,
@@ -766,7 +766,7 @@ export default class CoordinadorModel {
         fecha_efectiva,
       ];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -807,7 +807,7 @@ export default class CoordinadorModel {
     id_pnf = null
   ) {
     try {
-      const query = `CALL reingresar_coordinador(NULL, $1, $2, $3, $4, $5, $6, $7, $8)`;
+      const query = `CALL reingresar_coordinador(NULL, ?,  ?,  ?,  ?,  ?,  ?,  ?,?)`;
       const params = [
         id_usuario,
         id_coordinador,
@@ -819,7 +819,7 @@ export default class CoordinadorModel {
         id_pnf,
       ];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -856,11 +856,11 @@ export default class CoordinadorModel {
         FROM destituciones d
         INNER JOIN coordinadores c ON d.usuario_id = c.id_profesor
         INNER JOIN users u ON d.usuario_accion = u.cedula
-        WHERE c.id_coordinador = $1 AND d.rol_id = 2
+        WHERE c.id_coordinador =? AND d.rol_id = 2
         ORDER BY d.created_at DESC
       `;
 
-      const { rows } = await pg.query(query, [id_coordinador]);
+      const { rows } = await db.raw(query, [id_coordinador]);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -889,12 +889,12 @@ export default class CoordinadorModel {
     try {
       const query = `
         SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE cedula = $1 
+        WHERE cedula =? 
         ORDER BY fecha_inicio DESC
       `;
       const params = [cedula_profesor];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,

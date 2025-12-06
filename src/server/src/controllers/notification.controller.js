@@ -61,7 +61,7 @@ export default class NotificationController {
         error
       );
 
-      return FormatterResponseController.error(
+      return FormatterResponseController.respuestaError(
         res,
         "Error interno del servidor al obtener notificaciones",
         500,
@@ -88,7 +88,7 @@ export default class NotificationController {
     try {
       // Validar usuario autenticado
       if (!req.user || !req.user.id) {
-        return FormatterResponseController.error(
+        return FormatterResponseController.respuestaError(
           res,
           "Usuario no autenticado",
           401,
@@ -99,7 +99,7 @@ export default class NotificationController {
       // Validar ID de notificación
       const { notificacionId } = req.params;
       if (!notificacionId) {
-        return FormatterResponseController.error(
+        return FormatterResponseController.respuestaError(
           res,
           "ID de notificación requerido",
           400,
@@ -115,7 +115,7 @@ export default class NotificationController {
 
       // Manejar respuesta del servicio
       if (respuestaServicio.success === false) {
-        return FormatterResponseController.error(
+        return FormatterResponseController.respuestaError(
           res,
           respuestaServicio.error.message ||
             "Error al marcar notificación como leída",
@@ -137,7 +137,7 @@ export default class NotificationController {
     } catch (error) {
       console.error("Error en NotificationController.marcarComoLeida:", error);
 
-      return FormatterResponseController.error(
+      return FormatterResponseController.respuestaError(
         res,
         "Error interno del servidor al marcar notificación como leída",
         500,

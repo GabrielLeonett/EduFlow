@@ -1,5 +1,5 @@
 // Importación de la conexión a la base de datos
-import pg from "../database/pg.js";
+import db from "../database/db.js";
 
 // Importación de clase para formateo de respuestas
 import FormatterResponseModel from "../utils/FormatterResponseModel.js";
@@ -35,7 +35,7 @@ export default class AdminModel {
         genero,
       } = datos;
 
-      const query = `CALL public.registrar_administrador_completo($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NULL);`;
+      const query = `CALL public.registrar_administrador_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NULL);`;
 
       const params = [
         id_usuario, // p_usuario_accion
@@ -53,7 +53,7 @@ export default class AdminModel {
         roles[0].id_rol, // p_id_rol
       ];
       console.log(params);
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -203,7 +203,7 @@ export default class AdminModel {
       console.log("🔍 Parámetros:", params);
 
       // 🚀 Ejecutar la consulta con parámetros
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -250,11 +250,11 @@ export default class AdminModel {
           id_roles,
           nombre_roles
         FROM public.vista_usuarios 
-        WHERE cedula = $1
+        WHERE cedula = ?'
       `;
       const params = [cedula];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
       return FormatterResponseModel.respuestaPostgres(
         rows,
         "Administrador obtenido exitosamente"
@@ -303,7 +303,7 @@ export default class AdminModel {
       `;
       const params = [email];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -361,7 +361,7 @@ export default class AdminModel {
       const searchTerm = `%${termino}%`;
       const params = [searchTerm, searchTerm, searchTerm, searchTerm];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -428,7 +428,7 @@ export default class AdminModel {
         WHERE cedula = ?
       `;
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -491,7 +491,7 @@ export default class AdminModel {
         WHERE cedula = ?
       `;
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -524,7 +524,7 @@ export default class AdminModel {
       `;
       const params = [cedula];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -557,7 +557,7 @@ export default class AdminModel {
       `;
       const params = [cedula];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -586,12 +586,12 @@ export default class AdminModel {
     try {
       // Usar el nuevo procedimiento con array de roles
       const query = `
-        CALL public.actualizar_roles_administrador_usuario($1, $2, $3, NULL)
+        CALL public.actualizar_roles_administrador_usuario(?,  ?,  ?, NULL)
       `;
 
       const params = [id_usuario, cedula, nuevos_roles_ids];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -629,7 +629,7 @@ export default class AdminModel {
       `;
       const params = [cedula, rol_id];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -680,7 +680,7 @@ export default class AdminModel {
       `;
       const params = [parseInt(rol_id)];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -731,7 +731,7 @@ export default class AdminModel {
       `;
       const params = [estado];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       const estadoTexto = estado ? "activos" : "inactivos";
       return FormatterResponseModel.respuestaPostgres(
@@ -765,7 +765,7 @@ export default class AdminModel {
       `;
       const params = [parseInt(rol_id), estado];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -797,7 +797,7 @@ export default class AdminModel {
       `;
       const params = [cedula];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -828,7 +828,7 @@ export default class AdminModel {
         ORDER BY nombre_rol ASC
       `;
 
-      const { rows } = await pg.query(query);
+      const { rows } = await db.raw(query);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,

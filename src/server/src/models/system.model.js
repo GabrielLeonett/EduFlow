@@ -1,5 +1,5 @@
 // Importación de la conexión a la base de datos
-import pg from "../database/pg.js";
+import db from "../database/db.js";
 
 // Importación de clase para formateo de respuestas
 import FormatterResponseModel from "../utils/FormatterResponseModel.js";
@@ -138,7 +138,7 @@ export default class SystemModel {
       console.log("🔍 Query auditoría:", query);
       console.log("🔍 Parámetros:", params);
 
-      const result = await pg.query(query, params);
+      const result = await db.raw(query, params);
 
       // Consulta para el total (sin paginación)
       let countQuery = `SELECT COUNT(*) as total FROM public.vista_auditoria WHERE 1=1`;
@@ -171,7 +171,7 @@ export default class SystemModel {
         }
       });
 
-      const countResult = await pg.query(countQuery, countParams);
+      const countResult = await db.raw(countQuery, countParams);
       const total = parseInt(countResult.rows[0].total);
 
       return FormatterResponseModel.respuestaPostgres(
@@ -222,8 +222,8 @@ export default class SystemModel {
     try {
       console.log("Obteniendo metricas del sistema");
       const [cambiosGeneradosResult, resumenGeneralResult] = await Promise.all([
-        pg.query("SELECT * FROM public.vista_estadisticas_logs"),
-        pg.query(`
+        db.raw("SELECT * FROM public.vista_estadisticas_logs"),
+        db.raw(`
           SELECT 
             (SELECT COUNT(*) FROM aulas WHERE activa = true) as total_aulas,
             (SELECT COUNT(*) FROM profesores WHERE activo = true) as total_profesores,
@@ -278,7 +278,7 @@ export default class SystemModel {
         totalSecciones,
         cargaRealResult,
       ] = await Promise.all([
-        pg.query(`SELECT
+        db.raw(`SELECT
           p.nombre_pnf,    
           tr.valor_trayecto,
           COUNT(s.*)::INTEGER AS total_secciones
@@ -294,15 +294,15 @@ export default class SystemModel {
       ORDER BY
           p.nombre_pnf,
           tr.valor_trayecto`),
-        pg.query(`
+        db.raw(`
           SELECT SUM(horas_clase)::INTEGER as total 
           FROM unidades_curriculares
         `),
-        pg.query(`
+        db.raw(`
           SELECT COUNT(*)::INTEGER as total 
           FROM secciones
         `),
-        pg.query(`
+        db.raw(`
           SELECT 
             SUM(EXTRACT(EPOCH FROM horas_disponibles) / 3600)::INTEGER as total 
           FROM public.profesores_informacion_completa
@@ -353,7 +353,7 @@ export default class SystemModel {
    */
   static async obtenerMapaCalorOcupacion() {
     try {
-      const saturacionResult = await pg.query(`
+      const saturacionResult = await db.raw(`
         WITH intervalos_academicos AS (
           SELECT 
             n,

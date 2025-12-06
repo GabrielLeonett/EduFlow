@@ -1,7 +1,7 @@
 // ===========================================================
 // Importación de dependencias y conexión a la base de datos
 // ===========================================================
-import pg from "../database/pg.js";
+import db from "../database/db.js";
 import FormatterResponseModel from "../utils/FormatterResponseModel.js";
 
 /**
@@ -41,7 +41,7 @@ export default class CurricularModel {
         sede_pnf,
       } = datos;
 
-      const query = `CALL public.registrar_pnf_completo($1, $2, $3, $4, $5, $6, NULL)`;
+      const query = `CALL public.registrar_pnf_completo(?,  ?,  ?,  ?,  ?,  ?, NULL)`;
       const params = [
         usuario_accion,
         nombre_pnf,
@@ -51,7 +51,7 @@ export default class CurricularModel {
         duracion_trayectos_pnf,
       ];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -79,7 +79,7 @@ export default class CurricularModel {
     try {
       const query = `
       CALL actualizar_pnf_completo_o_parcial(
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+        ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,?0
       )
     `;
       console.log(datos);
@@ -97,7 +97,7 @@ export default class CurricularModel {
         datos.activo || null,
       ];
 
-      const { rows } = await pg.query(query, valores);
+      const { rows } = await db.raw(query, valores);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -134,7 +134,7 @@ export default class CurricularModel {
       });
 
       const query = `
-        CALL actualizar_descripcion_trayecto($1, $2, $3, $4)
+        CALL actualizar_descripcion_trayecto(?,  ?,  ?,?)
       `;
 
       const valores = [
@@ -144,7 +144,7 @@ export default class CurricularModel {
         descripcion,
       ];
 
-      const { rows } = await pg.query(query, valores);
+      const { rows } = await db.raw(query, valores);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -225,56 +225,56 @@ export default class CurricularModel {
 
       // --- Consulta a la Función Almacenada ---
       const query = `CALL registrar_unidad_curricular_completo(
-      $1,  -- p_usuario_accion
-      $2,  -- p_id_trayecto
-      $3,  -- p_nombre_unidad_curricular
-      $4,  -- p_descripcion_unidad_curricular
-      $5,  -- p_carga_horas
-      $6,  -- p_codigo_unidad
-      $7,  -- p_areas_conocimiento (integer[])
-      $8,  -- p_lineas_investigacion (integer[]) - AHORA EN POSICIÓN CORRECTA
-      $9,  -- p_sinoptico (text)
-      $10, -- p_id_linea_investigacion (bigint)
-      $11, -- p_creditos (smallint)
-      $12, -- p_semanas (smallint)
-      $13, -- p_tipo_unidad (character varying)
-      $14, -- p_hte (numeric)
-      $15, -- p_hse (numeric)
-      $16, -- p_hta (numeric)
-      $17, -- p_hsa (numeric)
-      $18, -- p_hti (numeric)
-      $19, -- p_hsi (numeric)
-      $20  -- p_resultado (OUT parameter)
+      ?,  -- p_usuario_accion
+       ?,  -- p_id_trayecto
+       ?,  -- p_nombre_unidad_curricular
+       ?,  -- p_descripcion_unidad_curricular
+       ?,  -- p_carga_horas
+       ?,  -- p_codigo_unidad
+       ?,  -- p_areas_conocimiento (integer[])
+       ?,  -- p_lineas_investigacion (integer[]) - AHORA EN POSICIÓN CORRECTA
+       ?,  -- p_sinoptico (text)
+       ?, -- p_id_linea_investigacion (bigint)
+       ?, -- p_creditos (smallint)
+       ?, -- p_semanas (smallint)
+       ?, -- p_tipo_unidad (character varying)
+       ?, -- p_hte (numeric)
+       ?, -- p_hse (numeric)
+       ?, -- p_hta (numeric)
+       ?, -- p_hsa (numeric)
+       ?, -- p_hti (numeric)
+       ?, -- p_hsi (numeric)
+     ?0  -- p_resultado (OUT parameter)
     )`;
 
       // --- Array de Parámetros ---
       const params = [
-        usuario_accion, // $1
-        idTrayecto, // $2
-        nombre_unidad_curricular, // $3
-        descripcion_unidad_curricular, // $4
-        carga_horas_academicas, // $5
-        codigo_unidad_curricular, // $6
-        areasConocimientoArray, // $7
-        lineasInvestigacionParam, // $8 - AHORA EN POSICIÓN CORRECTA
-        sinoptico, // $9
-        id_linea_investigacion, // $10
-        creditos, // $11
-        semanas, // $12
-        tipo_unidad, // $13
-        hte, // $14
-        hse, // $15
-        hta, // $16
-        hsa, // $17
-        hti, // $18
-        hsi, // $19
-        null, // $20 - Para el parámetro OUT
+        usuario_accion, //?
+        idTrayecto, //?
+        nombre_unidad_curricular, //?
+        descripcion_unidad_curricular, //?
+        carga_horas_academicas, //?
+        codigo_unidad_curricular, //?
+        areasConocimientoArray, //?
+        lineasInvestigacionParam, //? - AHORA EN POSICIÓN CORRECTA
+        sinoptico, //?
+        id_linea_investigacion, //?0
+        creditos, //?1
+        semanas, //?2
+        tipo_unidad, //?3
+        hte, //?4
+        hse, //?5
+        hta, //?6
+        hsa, //?7
+        hti, //?8
+        hsi, //?9
+        null, //?0 - Para el parámetro OUT
       ];
 
       console.log("Parámetros para el procedimiento:", params);
 
       // Ejecutar el procedimiento
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -310,7 +310,7 @@ export default class CurricularModel {
         id_trayecto = null,
       } = datos;
 
-      const query = `CALL public.registrar_linea_investigacion($1, $2, $3, $4, NULL)`;
+      const query = `CALL public.registrar_linea_investigacion(?,  ?,  ?,  ?, NULL)`;
       const params = [
         usuario_accion,
         nombre_linea_investigacion,
@@ -323,7 +323,7 @@ export default class CurricularModel {
         params
       );
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -367,7 +367,7 @@ export default class CurricularModel {
         FROM lineas_investigacion li
         LEFT JOIN trayectos t ON li.id_pnf = t.id_pnf
         LEFT JOIN pnfs p ON li.id_pnf = p.id_pnf
-        WHERE t.id_trayecto = $1
+        WHERE t.id_trayecto =?
         ORDER BY li.nombre_linea_investigacion
       `;
         params = [id_trayecto];
@@ -394,7 +394,7 @@ export default class CurricularModel {
         params,
       });
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -498,55 +498,55 @@ export default class CurricularModel {
       // Query actualizada con todos los parámetros
       const query = `
         CALL actualizar_unidad_curricular_completo(
-          $1,   -- p_resultado (OUT)
-          $2,   -- p_usuario_accion
-          $3,   -- p_id_unidad_curricular
-          $4,   -- p_id_trayecto
-          $5,   -- p_codigo_unidad
-          $6,   -- p_nombre_unidad_curricular
-          $7,   -- p_descripcion_unidad_curricular
-          $8,   -- p_horas_clase
-          $9,   -- p_activo
-          $10,  -- p_areas_conocimiento
-          $11,  -- p_lineas_investigacion
-          $12,  -- p_tipo_unidad
-          $13,  -- p_creditos
-          $14,  -- p_semanas
-          $15,  -- p_sinoptico
-          $16,  -- p_hte
-          $17,  -- p_hse
-          $18,  -- p_hta
-          $19,  -- p_hsa
-          $20,  -- p_hti
-          $21   -- p_hsi
+          ?,   -- p_resultado (OUT)
+           ?,   -- p_usuario_accion
+           ?,   -- p_id_unidad_curricular
+           ?,   -- p_id_trayecto
+           ?,   -- p_codigo_unidad
+           ?,   -- p_nombre_unidad_curricular
+           ?,   -- p_descripcion_unidad_curricular
+           ?,   -- p_horas_clase
+           ?,   -- p_activo
+           ?,  -- p_areas_conocimiento
+           ?,  -- p_lineas_investigacion
+           ?,  -- p_tipo_unidad
+           ?,  -- p_creditos
+           ?,  -- p_semanas
+           ?,  -- p_sinoptico
+           ?,  -- p_hte
+           ?,  -- p_hse
+           ?,  -- p_hta
+           ?,  -- p_hsa
+           ?,  -- p_hti
+         ?1   -- p_hsi
         )
       `;
 
       // Parámetros completos en el orden correcto
       const valores = [
-        null, // $1 - p_resultado (OUT parameter)
-        usuarioId, // $2 - p_usuario_accion
-        id_unidad_curricular, // $3 - p_id_unidad_curricular
-        id_trayecto || null, // $4 - p_id_trayecto
-        codigo_unidad_curricular || null, // $5 - p_codigo_unidad
-        nombre_unidad_curricular || null, // $6 - p_nombre_unidad_curricular
-        descripcion_unidad_curricular || null, // $7 - p_descripcion_unidad_curricular
+        null, //? - p_resultado (OUT parameter)
+        usuarioId, //? - p_usuario_accion
+        id_unidad_curricular, //? - p_id_unidad_curricular
+        id_trayecto || null, //? - p_id_trayecto
+        codigo_unidad_curricular || null, //? - p_codigo_unidad
+        nombre_unidad_curricular || null, //? - p_nombre_unidad_curricular
+        descripcion_unidad_curricular || null, //? - p_descripcion_unidad_curricular
         carga_horas_academicas !== undefined
           ? Number(carga_horas_academicas)
-          : null, // $8 - p_horas_clase
-        activo !== undefined ? Boolean(activo) : null, // $9 - p_activo
-        areasConocimientoArray, // $10 - p_areas_conocimiento
-        lineasInvestigacionArray, // $11 - p_lineas_investigacion
-        tipo_unidad || null, // $12 - p_tipo_unidad
-        creditos !== undefined ? Number(creditos) : null, // $13 - p_creditos
-        semanas !== undefined ? Number(semanas) : null, // $14 - p_semanas
-        sinoptico || null, // $15 - p_sinoptico
-        hte !== undefined ? Number(hte) : null, // $16 - p_hte
-        hse !== undefined ? Number(hse) : null, // $17 - p_hse
-        hta !== undefined ? Number(hta) : null, // $18 - p_hta
-        hsa !== undefined ? Number(hsa) : null, // $19 - p_hsa
-        hti !== undefined ? Number(hti) : null, // $20 - p_hti
-        hsi !== undefined ? Number(hsi) : null, // $21 - p_hsi
+          : null, //? - p_horas_clase
+        activo !== undefined ? Boolean(activo) : null, //? - p_activo
+        areasConocimientoArray, //?0 - p_areas_conocimiento
+        lineasInvestigacionArray, //?1 - p_lineas_investigacion
+        tipo_unidad || null, //?2 - p_tipo_unidad
+        creditos !== undefined ? Number(creditos) : null, //?3 - p_creditos
+        semanas !== undefined ? Number(semanas) : null, //?4 - p_semanas
+        sinoptico || null, //?5 - p_sinoptico
+        hte !== undefined ? Number(hte) : null, //?6 - p_hte
+        hse !== undefined ? Number(hse) : null, //?7 - p_hse
+        hta !== undefined ? Number(hta) : null, //?8 - p_hta
+        hsa !== undefined ? Number(hsa) : null, //?9 - p_hsa
+        hti !== undefined ? Number(hti) : null, //?0 - p_hti
+        hsi !== undefined ? Number(hsi) : null, //?1 - p_hsi
       ];
 
       console.log("🔍 [Model] Parámetros enviados al procedimiento:", {
@@ -571,7 +571,7 @@ export default class CurricularModel {
         },
       });
 
-      const { rows } = await pg.query(query, valores);
+      const { rows } = await db.raw(query, valores);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -669,7 +669,7 @@ export default class CurricularModel {
       console.log("🔍 Query ejecutada:", query);
       console.log("📊 Parámetros:", queryParams);
 
-      const { rows } = await pg.query(query, queryParams);
+      const { rows } = await db.raw(query, queryParams);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -699,7 +699,7 @@ export default class CurricularModel {
     try {
       let rows;
       if (codigo_pnf) {
-        ({ rows } = await pg.query(
+        ({ rows } = await db.raw(
           `
           SELECT 
             t.id_trayecto, 
@@ -711,12 +711,12 @@ export default class CurricularModel {
             p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
-          WHERE p.codigo_pnf = $1 AND t.activo = true AND p.activo = true
+          WHERE p.codigo_pnf =? AND t.activo = true AND p.activo = true
           ORDER BY t.valor_trayecto ASC`,
           [codigo_pnf]
         ));
       } else {
-        ({ rows } = await pg.query(`
+        ({ rows } = await db.raw(`
           SELECT 
             t.id_trayecto, 
             t.poblacion_estudiantil, 
@@ -765,7 +765,7 @@ export default class CurricularModel {
         valorTrayecto,
       });
 
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `
       SELECT 
         s.id_seccion,
@@ -780,7 +780,7 @@ export default class CurricularModel {
       LEFT JOIN turnos t ON s.id_turno = t.id_turno
       INNER JOIN trayectos tr ON s.id_trayecto = tr.id_trayecto
       INNER JOIN pnfs p ON tr.id_pnf = p.id_pnf
-      WHERE p.codigo_pnf = $1 AND tr.valor_trayecto = $2
+      WHERE p.codigo_pnf =? AND tr.valor_trayecto =?
       ORDER BY s.valor_seccion ASC;
       `,
         [codigo_pnf, valorTrayecto]
@@ -825,7 +825,7 @@ export default class CurricularModel {
         valorTrayecto,
       });
 
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `
       SELECT 
         uc.nombre_unidad_curricular,
@@ -838,7 +838,7 @@ export default class CurricularModel {
       FROM unidades_curriculares uc
       INNER JOIN trayectos tr ON uc.id_trayecto = tr.id_trayecto
       INNER JOIN pnfs p ON tr.id_pnf = p.id_pnf
-      WHERE p.codigo_pnf = $1 AND tr.valor_trayecto = $2
+      WHERE p.codigo_pnf =? AND tr.valor_trayecto =?
       ORDER BY uc.id_unidad_curricular ASC;
       `,
         [codigo_pnf, valorTrayecto]
@@ -881,7 +881,7 @@ export default class CurricularModel {
    */
   static async mostrarSecciones(trayecto) {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `
         SELECT 
           s.id_seccion,
@@ -891,7 +891,7 @@ export default class CurricularModel {
           s.id_trayecto
         FROM secciones s
         LEFT JOIN turnos t ON s.id_turno = t.id_turno
-        WHERE s.id_trayecto = $1
+        WHERE s.id_trayecto =?
         ORDER BY s.valor_seccion ASC;
         `,
         [trayecto]
@@ -920,10 +920,10 @@ export default class CurricularModel {
    */
   static async mostrarUnidadesCurriculares(trayecto) {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `
         SELECT * FROM public.vista_unidades_con_areas
-        WHERE id_trayecto = $1
+        WHERE id_trayecto =?
         ORDER BY nombre_unidad_curricular ASC;
         `,
         [trayecto]
@@ -952,10 +952,10 @@ export default class CurricularModel {
    */
   static async obtenerUnidadCurricularPorId(id) {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `
         SELECT * FROM public.vista_unidades_con_areas
-        WHERE id_unidad_curricular = $1
+        WHERE id_unidad_curricular =?
         `,
         [id]
       );
@@ -984,10 +984,10 @@ export default class CurricularModel {
   static async eliminarUnidadCurricular(id_usuario, id_unidad_curricular) {
     try {
       const query = `
-      CALL eliminar_unidad_curricular_fisicamente($1, $2, NULL);
+      CALL eliminar_unidad_curricular_fisicamente(?,  ?, NULL);
     `;
 
-      const { rows } = await pg.query(query, [
+      const { rows } = await db.raw(query, [
         id_usuario,
         id_unidad_curricular,
       ]);
@@ -1021,10 +1021,10 @@ export default class CurricularModel {
   static async eliminarPnf(id_usuario, id_pnf) {
     try {
       const query = `
-      CALL eliminar_pnf($1, $2, NULL);
+      CALL eliminar_pnf(?,  ?, NULL);
     `;
 
-      const { rows } = await pg.query(query, [id_usuario, id_pnf]);
+      const { rows } = await db.raw(query, [id_usuario, id_pnf]);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -1055,10 +1055,10 @@ export default class CurricularModel {
   static async reactivarPnf(id_usuario, id_pnf) {
     try {
       const query = `
-      CALL reactivar_pnf($1, $2, NULL);
+      CALL reactivar_pnf(?,  ?, NULL);
     `;
 
-      const { rows } = await pg.query(query, [id_usuario, id_pnf]);
+      const { rows } = await db.raw(query, [id_usuario, id_pnf]);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -1095,10 +1095,10 @@ export default class CurricularModel {
   static async CrearSecciones(idTrayecto, datos) {
     try {
       const { poblacionEstudiantil } = datos;
-      const query = `CALL public.distribuir_estudiantes_secciones($1, $2, NULL)`;
+      const query = `CALL public.distribuir_estudiantes_secciones(?,  ?, NULL)`;
       const params = [idTrayecto, poblacionEstudiantil];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -1133,10 +1133,10 @@ export default class CurricularModel {
         "usuario_accion:",
         usuario_accion.id
       );
-      const query = `CALL public.asignar_turno_seccion($1, $2, $3, NULL)`;
+      const query = `CALL public.asignar_turno_seccion(?,  ?,  ?, NULL)`;
       const params = [usuario_accion.id, idSeccion, idTurno];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -1161,7 +1161,7 @@ export default class CurricularModel {
    */
   static async mostrarTurnos() {
     try {
-      const { rows } = await pg.query(`
+      const { rows } = await db.raw(`
         SELECT 
           id_turno,
           nombre_turno,

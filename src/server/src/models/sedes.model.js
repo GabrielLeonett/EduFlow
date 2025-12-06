@@ -1,4 +1,4 @@
-import pg from "../database/pg.js";
+import db from "../database/db.js";
 import FormatterResponseModel from "../utils/FormatterResponseModel.js";
 
 /**
@@ -25,9 +25,15 @@ export default class SedeModel {
       const { nombre_sede, ubicacion_sede, google_sede, ciudad_sede } = datos;
 
       // Insertar sede usando el procedimiento almacenado
-      const { rows } = await pg.query(
-        "CALL public.registrar_sede_completo($1, $2, $3, $4, $5, NULL)",
-        [usuarioId, nombre_sede, ubicacion_sede, google_sede || null, ciudad_sede]
+      const { rows } = await db.raw(
+        "CALL public.registrar_sede_completo(?,  ?,  ?,  ?,  ?, NULL)",
+        [
+          usuarioId,
+          nombre_sede,
+          ubicacion_sede,
+          google_sede || null,
+          ciudad_sede,
+        ]
       );
 
       console.log("✅ Sede insertada en BD:", rows);
@@ -55,7 +61,7 @@ export default class SedeModel {
    */
   static async mostrarSedes() {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `SELECT * FROM public.vista_sedes_completa`
       );
 
@@ -82,11 +88,10 @@ export default class SedeModel {
     try {
       console.log("💾 [obtenerSedePorId] Buscando sede en BD ID:", idSede);
 
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `SELECT *
          FROM vista_sedes_completa 
-         WHERE id_sede = $1`,
-        [idSede]
+         WHERE id_sede = ?`[idSede]
       );
 
       if (rows.length === 0) {
@@ -132,8 +137,8 @@ export default class SedeModel {
       const { nombre, direccion, telefono, estado, google_maps } = datos;
 
       // Usar el procedimiento almacenado para actualizar
-      const { rows } = await pg.query(
-        "CALL public.actualizar_sede($1, $2, $3, $4, $5)",
+      const { rows } = await db.raw(
+        "CALL public.actualizar_sede(?,  ?,  ?,  ?,?)",
         [usuarioId, idSede, nombre, direccion, google_maps || null]
       );
 
@@ -164,7 +169,7 @@ export default class SedeModel {
       console.log("💾 [eliminarSede] Eliminando sede de BD ID:", idSede);
 
       // Eliminar sede usando el procedimiento almacenado
-      const { rows } = await pg.query("CALL public.eliminar_sede($1, $2)", [
+      const { rows } = await db.raw("CALL public.eliminar_sede(?,?)", [
         usuarioId,
         idSede,
       ]);
@@ -198,8 +203,8 @@ export default class SedeModel {
       );
 
       // Verificar si hay aulas asociadas a esta sede
-      const aulasResult = await pg.query(
-        "SELECT COUNT(*) as total FROM aulas WHERE id_sede = $1",
+      const aulasResult = await db.raw(
+        "SELECT COUNT(*) as total FROM aulas WHERE id_sede =?",
         [idSede]
       );
 

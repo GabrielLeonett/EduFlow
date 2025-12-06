@@ -6,7 +6,7 @@ import FormatResponseModel from "../utils/FormatterResponseModel.js";
 import { convertToPostgresArray } from "../utils/utilis.js";
 
 // Importación de la conexión con la base de datos
-import client from "../database/pg.js";
+import db from "../database/db.js";
 
 /**
  * @class ProfesorModel
@@ -51,7 +51,7 @@ export default class ProfesorModel {
       } = datos;
 
       const query =
-        "CALL registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL)";
+        "CALL registrar_profesor_completo(?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, NULL)";
       const values = [
         usuarioId,
         cedula,
@@ -119,7 +119,7 @@ export default class ProfesorModel {
       if (id_profesor) {
         const specificQuery = `
         SELECT * FROM profesores_informacion_completa 
-        WHERE id_profesor = $1
+        WHERE id_profesor =?
       `;
 
         const specificResult = await client.query(specificQuery, [id_profesor]);
@@ -166,12 +166,12 @@ export default class ProfesorModel {
 
         if (isProfesorId) {
           // Si es un ID, buscar EXCLUSIVAMENTE por ID
-          whereClause = `WHERE id_profesor = $1`;
+          whereClause = `WHERE id_profesor =?`;
           queryParamsArray = [parseInt(search.trim())];
           paramCount = 1;
         } else {
           // Si no es un ID, buscar en nombres, apellidos y cédula
-          whereClause = `WHERE (nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula::text ILIKE $3)`;
+          whereClause = `WHERE (nombres ILIKE? OR apellidos ILIKE?R cedula::text ILIKE?)`;
           queryParamsArray = [
             `%${search.trim()}%`,
             `%${search.trim()}%`,
@@ -265,7 +265,7 @@ export default class ProfesorModel {
       if (id_profesor) {
         const specificQuery = `
         SELECT * FROM profesores_informacion_completa 
-        WHERE id_profesor = $1
+        WHERE id_profesor =?
       `;
 
         const specificResult = await client.query(specificQuery, [id_profesor]);
@@ -295,8 +295,8 @@ export default class ProfesorModel {
       let dataQuery = `
       SELECT * FROM vista_profesores_eliminados 
       ORDER BY ${orderBy} 
-      LIMIT $1 
-      OFFSET $2
+      LIMIT? 
+      OFFSET?
     `;
 
       let countQuery = `
@@ -310,15 +310,15 @@ export default class ProfesorModel {
       if (search) {
         dataQuery = `
         SELECT * FROM vista_profesores_eliminados 
-        WHERE (nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula::text ILIKE $3)
+        WHERE (nombres ILIKE? OR apellidos ILIKE? OR cedula::text ILIKE?)
         ORDER BY ${orderBy} 
-        LIMIT $4 
-        OFFSET $5
+        LIMIT? 
+        OFFSET?
       `;
 
         countQuery = `
         SELECT COUNT(*) as total FROM vista_profesores_eliminados 
-        WHERE (nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula::text ILIKE $3)
+        WHERE (nombres ILIKE? OR apellidos ILIKE? OR cedula::text ILIKE?)
       `;
 
         dataParams = [
@@ -380,7 +380,7 @@ export default class ProfesorModel {
   static async mostrarDisponibilidad(id_profesor) {
     try {
       const { rows } = await client.query(
-        "SELECT * FROM vista_disponibilidad_docente WHERE id_profesor = $1",
+        "SELECT * FROM vista_disponibilidad_docente WHERE id_profesor =?",
         [id_profesor]
       );
 
@@ -411,7 +411,7 @@ export default class ProfesorModel {
     try {
       const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
 
-      const query = "SELECT * FROM mostrar_profesor($1, $2, $3, $4, $5, $6)";
+      const query = "SELECT * FROM mostrar_profesor(?,  ?,  ?,  ?,  ?,?)";
       const values = [dedicacion, categoria, ubicacion, area, fecha, genero];
 
       const { rows } = await client.query(query, values);
@@ -443,7 +443,7 @@ export default class ProfesorModel {
   static async buscar(busqueda) {
     try {
       const query =
-        "SELECT * FROM public.profesores_informacion_completa WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3";
+        "SELECT * FROM public.profesores_informacion_completa WHERE nombres ILIKE? OR apellidos ILIKE? OR cedula ILIKE?";
       const values = [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`];
 
       const { rows } = await client.query(query, values);
@@ -473,7 +473,7 @@ export default class ProfesorModel {
    */
   static async obtenerImagen(idProfesor) {
     try {
-      const query = "SELECT imagen FROM users WHERE cedula = $1";
+      const query = "SELECT imagen FROM users WHERE cedula =?";
       const values = [idProfesor];
 
       const { rows } = await client.query(query, values);
@@ -591,7 +591,7 @@ export default class ProfesorModel {
     try {
       const { nombre_pre_grado, tipo_pre_grado } = datos;
 
-      const query = "CALL registrar_pre_grado($1, $2, $3, NULL)";
+      const query = "CALL registrar_pre_grado(?,  ?,  ?, NULL)";
       const values = [usuarioId, nombre_pre_grado, tipo_pre_grado];
 
       const { rows } = await client.query(query, values);
@@ -626,7 +626,7 @@ export default class ProfesorModel {
     try {
       const { nombre_pos_grado, tipo_pos_grado } = datos;
 
-      const query = "CALL registrar_pos_grado($1, $2, $3, NULL)";
+      const query = "CALL registrar_pos_grado(?,  ?,  ?, NULL)";
       const values = [usuarioId, nombre_pos_grado, tipo_pos_grado];
 
       const { rows } = await client.query(query, values);
@@ -660,7 +660,7 @@ export default class ProfesorModel {
     try {
       const { area_conocimiento } = datos;
 
-      const query = "CALL registrar_area_conocimiento($1, $2, NULL)";
+      const query = "CALL registrar_area_conocimiento(?,  ?, NULL)";
       const values = [usuarioId, area_conocimiento];
 
       const { rows } = await client.query(query, values);
@@ -696,7 +696,7 @@ export default class ProfesorModel {
       const { dia_semana, hora_inicio, hora_fin } = datos;
 
       const query =
-        "CALL registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5, NULL)";
+        "CALL registrar_disponibilidad_docente_completo(?,  ?,  ?,  ?,  ?, NULL)";
       const values = [
         usuarioId,
         id_profesor,
@@ -746,7 +746,7 @@ export default class ProfesorModel {
       }
 
       const query =
-        "CALL actualizar_disponibilidad_docente($1, $2, $3, $4, $5, NULL)";
+        "CALL actualizar_disponibilidad_docente(?,  ?,  ?,  ?,  ?, NULL)";
       const values = [
         usuarioId,
         id_disponibilidad,
@@ -788,7 +788,7 @@ export default class ProfesorModel {
    */
   static async eliminarDisponibilidad(id_disponibilidad, usuarioId) {
     try {
-      const query = "CALL eliminar_disponibilidad_docente($1, $2, NULL)";
+      const query = "CALL eliminar_disponibilidad_docente(?,  ?, NULL)";
       const values = [usuarioId, id_disponibilidad];
 
       console.log("📝 Ejecutando query eliminar disponibilidad:", values);
@@ -846,7 +846,7 @@ export default class ProfesorModel {
       } = datos;
 
       const query = `CALL actualizar_profesor_completo_o_parcial(
-        NULL, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+        NULL, ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,?9
       )`;
       const values = [
         usuarioId,
@@ -903,7 +903,7 @@ export default class ProfesorModel {
         datos;
 
       const query =
-        "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)";
+        "CALL eliminar_destituir_profesor(NULL, ?,  ?,  ?,  ?,  ?,?)";
       const values = [
         usuarioId,
         id_usuario,
@@ -954,7 +954,7 @@ export default class ProfesorModel {
       } = datos;
 
       const query =
-        "CALL reingresar_profesor(NULL, $1, $2, $3, $4, $5, $6, $7)";
+        "CALL reingresar_profesor(NULL, ?,  ?,  ?,  ?,  ?,  ?,?)";
       const values = [
         usuarioId,
         id_usuario,

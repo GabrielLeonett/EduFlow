@@ -5,7 +5,7 @@
 import FormatResponseModel from "../utils/FormatterResponseModel.js";
 
 // Importación de la conexión con la base de datos
-import client from "../database/pg.js";
+import db from "../database/db.js";
 
 /**
  * Modelo de datos para la entidad Usuario.
@@ -109,7 +109,7 @@ export default class UserModel {
   static async cambiarContraseña(usuarioId, passwordHash) {
     try {
       // Procedimiento almacenado para cambio de contraseña con validaciones
-      const query = "CALL actualizar_contrasena_usuario($1, $2, NULL)";
+      const query = "CALL actualizar_contrasena_usuario(?,  ?, NULL)";
       const values = [usuarioId, passwordHash];
 
       const result = await client.query(query, values);
@@ -151,7 +151,7 @@ export default class UserModel {
   static async obtenerUsuarioPorId(id) {
     try {
       // Consulta optimizada mediante vista materializada
-      const query = "SELECT * FROM vista_usuarios WHERE cedula = $1";
+      const query = "SELECT * FROM vista_usuarios WHERE cedula =?";
       const values = [id];
 
       const { rows } = await client.query(query, values);
@@ -185,7 +185,7 @@ export default class UserModel {
    */
   static async obtenerUsuarioPorEmail(correo) {
     try {
-      const query = "SELECT * FROM vista_usuarios WHERE email = $1";
+      const query = "SELECT * FROM vista_usuarios WHERE email =?";
       const values = [correo];
 
       const { rows } = await client.query(query, values);
@@ -225,9 +225,9 @@ export default class UserModel {
       const query = `
       UPDATE users 
       SET 
-        reset_password_token = $1, 
+        reset_password_token = ?, 
         reset_password_expires = NOW() + INTERVAL '1 hour'
-      WHERE email = $2
+      WHERE email =?
       RETURNING cedula, email
     `;
       const values = [token, correo];
@@ -268,7 +268,7 @@ export default class UserModel {
       const query = `
       SELECT cedula, email, nombres, reset_password_token, reset_password_expires
       FROM users 
-      WHERE email = $1 
+      WHERE email = ?'
         AND reset_password_token IS NOT NULL
         AND reset_password_expires > NOW()
     `;
@@ -318,11 +318,11 @@ export default class UserModel {
       const query = `
       UPDATE users 
       SET 
-        password = $1,
+        password = ?,
         reset_password_token = NULL,
         reset_password_expires = NULL,
         updated_at = NOW()
-      WHERE email = $2
+      WHERE email =?
       RETURNING cedula, email, nombres, apellidos
     `;
       const values = [nuevaPasswordHash, email];
@@ -368,7 +368,7 @@ export default class UserModel {
    */
   static async desactivarUsuario(usuario_accion, id_usuario) {
     try {
-      const query = ` CALL desactivar_usuario($1, $2, NULL)`;
+      const query = ` CALL desactivar_usuario(?,  ?, NULL)`;
       const values = [id_usuario, usuario_accion];
 
       const { rows } = await client.query(query, values);
@@ -410,7 +410,7 @@ export default class UserModel {
    */
   static async activarUsuario(usuario_accion, id_usuario) {
     try {
-      const query = ` CALL activar_usuario($1, $2, NULL)`;
+      const query = ` CALL activar_usuario(?,  ?, NULL)`;
       const values = [id_usuario, usuario_accion];
 
       const { rows } = await client.query(query, values);

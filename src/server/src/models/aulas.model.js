@@ -1,5 +1,5 @@
 // Importación de la conexión a la base de datos
-import pg from "../database/pg.js";
+import db from "../database/db.js";
 
 // Importación de clase para formateo de respuestas
 import FormatterResponseModel from "../utils/FormatterResponseModel.js";
@@ -21,7 +21,7 @@ export default class AulaModel {
   static async crear(datos, id_usuario) {
     try {
       const { id_sede, codigo, tipo, capacidad, id_pnf } = datos;
-      const query = `CALL registrar_aula_completo($1, $2, $3, $4, $5, $6, NULL)`;
+      const query = `CALL registrar_aula_completo(?,  ?,  ?,  ?,  ?,  ?, NULL)`;
 
       const params = [
         id_usuario,
@@ -32,7 +32,7 @@ export default class AulaModel {
         id_pnf || null,
       ];
       console.log(query, params);
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -136,7 +136,7 @@ export default class AulaModel {
       }
 
       // 🚀 Ejecutar la consulta con parámetros
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -184,7 +184,7 @@ export default class AulaModel {
       `;
       const params = [id_aula];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -251,7 +251,7 @@ export default class AulaModel {
         WHERE id_aula = ?
       `;
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -284,7 +284,7 @@ export default class AulaModel {
       `;
       const params = [id_usuario, id_aula];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -327,7 +327,7 @@ export default class AulaModel {
       `;
       const params = [tipo];
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -374,7 +374,7 @@ export default class AulaModel {
 
       const orderBy = sortMapping[sortOrder] || "a.codigo_aula";
 
-      let whereConditions = ["a.id_sede = $1"];
+      let whereConditions = ["a.id_sede =?"];
       let params = [sede];
       let paramCount = 1;
 
@@ -420,12 +420,12 @@ export default class AulaModel {
     `;
 
       // Ejecutar query de conteo
-      const countResult = await pg.query(countQuery, params);
+      const countResult = await db.raw(countQuery, params);
       const total = parseInt(countResult.rows[0].total);
 
       // Ejecutar query principal
       const dataParams = [...params, limit, offset];
-      const { rows } = await pg.query(dataQuery, dataParams);
+      const { rows } = await db.raw(dataQuery, dataParams);
 
       // Calcular información de paginación
       const totalPages = Math.ceil(total / limit);
@@ -471,7 +471,7 @@ export default class AulaModel {
         
       `;
 
-      const { rows } = await pg.query(query, params);
+      const { rows } = await db.raw(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,

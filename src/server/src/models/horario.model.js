@@ -1,4 +1,4 @@
-import pg from "../database/pg.js";
+import db from "../database/db.js";
 import FormatResponseModel from "../utils/FormatterResponseModel.js";
 
 export default class HorarioModel {
@@ -10,8 +10,8 @@ export default class HorarioModel {
    */
   static async obtenerPorProfesor(id_profesor) {
     try {
-      const { rows } = await pg.query(
-        "SELECT * FROM public.clases_completas WHERE id_profesor = $1",
+      const { rows } = await db.raw(
+        "SELECT * FROM public.clases_completas WHERE id_profesor = ?"
         [id_profesor]
       );
       return FormatResponseModel.respuestaPostgres(
@@ -34,8 +34,8 @@ export default class HorarioModel {
    */
   static async obtenerPorId(id_horario) {
     try {
-      const { rows } = await pg.query(
-        "SELECT * FROM public.clases_completas WHERE id_horario = $1",
+      const { rows } = await db.raw(
+        "SELECT * FROM public.clases_completas WHERE id_horario =?",
         [id_horario]
       );
       return FormatResponseModel.respuestaPostgres(
@@ -57,8 +57,8 @@ export default class HorarioModel {
    */
   static async obtenerIdUSerProfesor(id_profesor) {
     try {
-      const { rows } = await pg.query(
-        "SELECT id_cedula as id FROM profesores WHERE id_profesor = $1",
+      const { rows } = await db.raw(
+        "SELECT id_cedula as id FROM profesores WHERE id_profesor =?",
         [id_profesor]
       );
       return FormatResponseModel.respuestaPostgres(
@@ -81,7 +81,7 @@ export default class HorarioModel {
    */
   static async obtenerPorSeccion(id_seccion) {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `SELECT 
           id_pnf,
           id_horario,
@@ -106,7 +106,7 @@ export default class HorarioModel {
           nombre_pnf,
           codigo_pnf
          FROM public.clases_completas 
-         WHERE id_seccion = $1`,
+         WHERE id_seccion =?`,
         [id_seccion]
       );
       return FormatResponseModel.respuestaPostgres(
@@ -129,8 +129,8 @@ export default class HorarioModel {
    */
   static async obtenerPorAula(id_aula) {
     try {
-      const { rows } = await pg.query(
-        "SELECT * FROM public.clases_completas WHERE id_aula = $1",
+      const { rows } = await db.raw(
+        "SELECT * FROM public.clases_completas WHERE id_aula =?",
         [id_aula]
       );
       return FormatResponseModel.respuestaPostgres(
@@ -153,7 +153,7 @@ export default class HorarioModel {
    */
   static async mostrarProfesorCambiarHorario(id_profesor) {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `SELECT * FROM buscar_profesor_cambiar_horario($1) AS p_resultado;`,
         [id_profesor]
       );
@@ -177,7 +177,7 @@ export default class HorarioModel {
    */
   static async mostrarAulaCambiarHorario(id_aula) {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         `SELECT * FROM buscar_aula_cambiar_horario($1) AS p_resultado;`,
         [id_aula]
       );
@@ -225,7 +225,7 @@ export default class HorarioModel {
             search || null,
           ];
           // Construcción de la consulta con 4 parámetros
-          consultaSQL = `SELECT * FROM ${funcionPostgres}($1, $2, $3, $4) AS p_resultado;`;
+          consultaSQL = `SELECT * FROM ${funcionPostgres}(?,  ?,  ?,?) AS p_resultado;`;
           console.log(consultaSQL, parametros);
           break;
 
@@ -238,7 +238,7 @@ export default class HorarioModel {
           funcionPostgres = "buscar_profesores_completar_horas";
           parametros = [id_seccion, id_unidad_curricular];
           // Construcción de la consulta con 2 parámetros
-          consultaSQL = `SELECT * FROM ${funcionPostgres}($1, $2) AS p_resultado;`;
+          consultaSQL = `SELECT * FROM ${funcionPostgres}(?,?AS p_resultado;`;
           console.log(consultaSQL, parametros);
           break;
 
@@ -247,13 +247,13 @@ export default class HorarioModel {
           funcionPostgres = "buscar_profesores_general";
           parametros = [id_seccion, horasNecesarias, search || null];
           // Construcción de la consulta con 3 parámetros
-          consultaSQL = `SELECT * FROM ${funcionPostgres}($1, $2, $3) AS p_resultado;`;
+          consultaSQL = `SELECT * FROM ${funcionPostgres}(?,  ?,?) AS p_resultado;`;
           console.log(consultaSQL, parametros);
           break;
       }
 
       // Usar la consulta y los parámetros definidos en el switch
-      const { rows } = await pg.query(
+      const { rows } = await db.raw(
         consultaSQL, // <<-- Uso de la variable dinámica
         parametros
       );
@@ -286,8 +286,8 @@ export default class HorarioModel {
     horasNecesarias,
   ) {
     try {
-      const { rows } = await pg.query(
-        "SELECT * FROM public.buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
+      const { rows } = await db.raw(
+        "SELECT * FROM public.buscar_aulas_disponibles(?,  ?,?) AS p_resultado;",
         [
           id_seccion,
           id_profesor,
@@ -335,8 +335,8 @@ export default class HorarioModel {
 
       console.log('Datos para crear horarios: ', datos)
 
-      const { rows } = await pg.query(
-        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, TRUE, $8, NULL)",
+      const { rows } = await db.raw(
+        "CALL public.registrar_horario_completo(?,  ?,  ?,  ?,  ?,  ?,  ?, TRUE,  ?, NULL)",
         [
           usuarioId,
           id_seccion,
@@ -379,8 +379,8 @@ export default class HorarioModel {
         usuarioId,
       });
 
-      const { rows } = await pg.query(
-        "CALL public.actualizar_horario_completo_o_parcial($1, $2, $3, $4, $5, $6)",
+      const { rows } = await db.raw(
+        "CALL public.actualizar_horario_completo_o_parcial(?,  ?,  ?,  ?,  ?,?)",
         [
           usuarioId,
           idHorario,
@@ -414,8 +414,8 @@ export default class HorarioModel {
    */
   static async eliminar(idHorario, usuarioId) {
     try {
-      const { rows } = await pg.query(
-        "CALL public.eliminar_horario($1, $2, NULL)",
+      const { rows } = await db.raw(
+        "CALL public.eliminar_horario(?,  ?, NULL)",
         [usuarioId, idHorario]
       );
       return FormatResponseModel.respuestaPostgres(

@@ -1,8 +1,3 @@
-// Carga las variables de entorno
-import { loadEnv } from "./utils/utilis.js";
-
-loadEnv();
-
 // Importación de dependencias
 import cookieParser from "cookie-parser";
 import express from "express";
@@ -142,7 +137,7 @@ export function initializeSocketServices() {
 }
 
 // ✅ FUNCIÓN PARA INICIAR EL SERVIDOR
-export function startServer(port = process.env.SERVER_PORT || 3001) {
+export function startServerBackend(port = 3001) {
   console.log(`🚀 Iniciando servidor en puerto ${port}...`);
 
   // Inicializar sockets
