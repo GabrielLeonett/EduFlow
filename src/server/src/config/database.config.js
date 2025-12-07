@@ -20,8 +20,8 @@ export default function databaseConfig(env) {
       host: env.DB_HOST || "localhost",
       port: parseInt(env.DB_PORT || "5432", 10),
       user: env.DB_USER || "postgres",
-      password: env.DB_PASSWORD || "",
-      database: env.DB_NAME || "uptamca_dev",
+      password: env.DB_PASSWORD || "1234",
+      database: env.DB_NAME || "proyecto_uptamca",
     };
   }
 

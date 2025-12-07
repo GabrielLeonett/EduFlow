@@ -1,4 +1,4 @@
-// Importación de la conexión a la base de datos
+// Importación de Knex
 import db from "../database/db.js";
 
 // Importación de clase para formateo de respuestas
@@ -14,28 +14,18 @@ export default class AulaModel {
    * @async
    * @method crear
    * @description Crear una nueva aula en el sistema
-   * @param {Object} datos - Datos del aula a crear
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async crear(datos, id_usuario) {
     try {
       const { id_sede, codigo, tipo, capacidad, id_pnf } = datos;
-      const query = `CALL registrar_aula_completo(?,  ?,  ?,  ?,  ?,  ?, NULL)`;
 
-      const params = [
-        id_usuario,
-        id_sede,
-        codigo,
-        tipo,
-        capacidad,
-        id_pnf || null,
-      ];
-      console.log(query, params);
-      const { rows } = await db.raw(query, params);
+      const result = await db.raw(
+        `CALL registrar_aula_completo(?, ?, ?, ?, ?, ?, NULL)`,
+        [id_usuario, id_sede, codigo, tipo, capacidad, id_pnf || null]
+      );
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        result.rows || result,
         "Aula creada exitosamente"
       );
     } catch (error) {
@@ -51,92 +41,77 @@ export default class AulaModel {
    * @static
    * @async
    * @method obtenerTodas
-   * @description Obtener todas las aulas (a través de la vista vista_sedes_completa) con soporte para parámetros de consulta
-   * @param {Object} queryParams - Parámetros de consulta (paginación, filtros, ordenamiento)
-   * @returns {Promise<Object>} Lista de aulas
+   * @description Obtener todas las aulas con soporte para parámetros de consulta
    */
   static async obtenerTodas(queryParams = {}) {
     try {
-      let query = `
-       SELECT 
-         id_sede,
-         nombre_sede,
-         ubicacion_sede,
-         google_sede,
-         id_aula,
-         codigo_aula,
-         tipo_aula,
-         capacidad_aula
-       FROM 
-         public.vistas_aulas
-       WHERE 1=1
-     `;
-      const params = [];
+      // Construir query con Knex
+      let query = db("vistas_aulas").select(
+        "id_sede",
+        "nombre_sede",
+        "ubicacion_sede",
+        "google_sede",
+        "id_aula",
+        "codigo_aula",
+        "tipo_aula",
+        "capacidad_aula"
+      );
 
-      // --- 1. Aplicar Filtros ---
-
-      // Filtro por ID de Sede
+      // Aplicar filtros
       if (queryParams.idSede) {
-        query += ` AND id_sede = ?`;
-        params.push(queryParams.idSede);
+        query = query.where("id_sede", queryParams.idSede);
       }
 
-      // Filtro por Tipo de Aula
       if (queryParams.tipo) {
-        query += ` AND tipo_aula = ?`; // Usando 'tipo_aula' de la vista
-        params.push(queryParams.tipo);
+        query = query.where("tipo_aula", queryParams.tipo);
       }
 
-      // Filtro por Código de Aula (ILIKE para búsqueda parcial)
       if (queryParams.codigo) {
-        query += ` AND codigo_aula ILIKE ?`; // Usando 'codigo_aula' de la vista
-        params.push(`%${queryParams.codigo}%`);
+        query = query.where("codigo_aula", "ilike", `%${queryParams.codigo}%`);
       }
 
-      // Filtro por Capacidad (ejemplo)
       if (queryParams.minCapacidad) {
-        query += ` AND capacidad_aula >= ?`;
-        params.push(parseInt(queryParams.minCapacidad));
+        query = query.where(
+          "capacidad_aula",
+          ">=",
+          parseInt(queryParams.minCapacidad)
+        );
       }
 
-      // --- 2. Aplicar Ordenamiento ---
-
+      // Aplicar ordenamiento
       if (queryParams.sort) {
-        // Campos permitidos para ordenar de la vista
         const allowedSortFields = [
           "nombre_sede",
           "codigo_aula",
           "tipo_aula",
           "capacidad_aula",
         ];
+
         const sortField = allowedSortFields.includes(queryParams.sort)
           ? queryParams.sort
-          : "nombre_sede"; // Default
-        const sortOrder =
-          queryParams.order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
+          : "nombre_sede";
 
-        // El ordenamiento se aplica directamente a los campos de la vista
-        query += ` ORDER BY ${sortField} ${sortOrder}`;
+        const sortOrder =
+          queryParams.order?.toUpperCase() === "DESC" ? "desc" : "asc";
+
+        query = query.orderBy(sortField, sortOrder);
       } else {
-        // Ordenamiento por defecto
-        query += ` ORDER BY nombre_sede ASC, codigo_aula ASC`;
+        query = query
+          .orderBy("nombre_sede", "asc")
+          .orderBy("codigo_aula", "asc");
       }
 
-      // --- 3. Aplicar Paginación ---
-
+      // Aplicar paginación
       if (queryParams.limit) {
         const limit = parseInt(queryParams.limit);
         const offset = queryParams.page
           ? (parseInt(queryParams.page) - 1) * limit
           : 0;
 
-        query += ` LIMIT ? OFFSET ?`;
-        // Los parámetros de límite y offset van al final
-        params.push(limit, offset);
+        query = query.limit(limit).offset(offset);
       }
 
-      // 🚀 Ejecutar la consulta con parámetros
-      const { rows } = await db.raw(query, params);
+      const rows = await query;
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -156,39 +131,29 @@ export default class AulaModel {
    * @async
    * @method buscarPorId
    * @description Buscar un aula específica por su ID
-   * @param {number} id_aula - ID del aula a buscar
-   * @returns {Promise<Object>} Datos del aula
    */
   static async buscarPorId(id_aula) {
     try {
-      const query = `
-        SELECT 
-          a.id_aula,
-          a.codigo,
-          a.nombre,
-          a.tipo,
-          a.capacidad,
-          a.equipamiento,
-          a.estado,
-          s.id_sede,
-          s.nombre as nombre_sede,
-          a.fecha_creacion,
-          a.fecha_actualizacion,
-          u_creador.nombre as usuario_creador,
-          u_actualizador.nombre as usuario_actualizador
-        FROM public.aulas a
-        INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        LEFT JOIN public.usuarios u_creador ON a.id_usuario_creacion = u_creador.id_usuario
-        LEFT JOIN public.usuarios u_actualizador ON a.id_usuario_actualizacion = u_actualizador.id_usuario
-        WHERE a.id_aula = ?
-      `;
-      const params = [id_aula];
-
-      const { rows } = await db.raw(query, params);
+      const aula = await db("aulas as a")
+        .select(
+          "a.id_aula",
+          "a.codigo_aula",
+          "a.tipo_aula",
+          "a.capacidad_aula",
+          "a.equipamiento",
+          "a.estado",
+          "s.id_sede",
+          "s.nombre_sede as nombre_sede",
+          "a.created_at",
+          "a.updated_at"
+        )
+        .join("sedes as s", "a.id_sede", "s.id_sede")
+        .where("a.id_aula", id_aula)
+        .first();
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
-        "Aula obtenida exitosamente"
+        aula ? [aula] : [],
+        aula ? "Aula obtenida exitosamente" : "Aula no encontrada"
       );
     } catch (error) {
       error.details = { path: "AulaModel.buscarPorId" };
@@ -204,17 +169,9 @@ export default class AulaModel {
    * @async
    * @method actualizar
    * @description Actualizar los datos de un aula existente
-   * @param {number} id_aula - ID del aula a actualizar
-   * @param {Object} datos - Datos actualizados del aula
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async actualizar(id_aula, datos, id_usuario) {
     try {
-      // Construir la consulta dinámicamente basada en los campos proporcionados
-      const campos = [];
-      const params = [];
-
       // Campos permitidos para actualización
       const camposPermitidos = [
         "codigo",
@@ -226,35 +183,32 @@ export default class AulaModel {
         "estado",
       ];
 
+      // Filtrar datos
+      const datosActualizacion = {};
       for (const [campo, valor] of Object.entries(datos)) {
         if (camposPermitidos.includes(campo) && valor !== undefined) {
-          campos.push(`${campo} = ?`);
-          params.push(valor);
+          datosActualizacion[campo] = valor;
         }
       }
 
-      if (campos.length === 0) {
+      if (Object.keys(datosActualizacion).length === 0) {
         return FormatterResponseModel.respuestaPostgres(
           [],
           "No hay campos válidos para actualizar"
         );
       }
 
-      // Agregar ID del aula y usuario que actualiza
-      params.push(id_usuario, id_aula);
+      // Agregar campos de auditoría
+      datosActualizacion.fecha_actualizacion = db.fn.now();
+      datosActualizacion.id_usuario_actualizacion = id_usuario;
 
-      const query = `
-        UPDATE public.aulas 
-        SET ${campos.join(
-          ", "
-        )}, fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = ?
-        WHERE id_aula = ?
-      `;
-
-      const { rows } = await db.raw(query, params);
+      // Ejecutar actualización
+      const result = await db("aulas")
+        .where("id_aula", id_aula)
+        .update(datosActualizacion);
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Aula actualizada exitosamente"
       );
     } catch (error) {
@@ -271,23 +225,17 @@ export default class AulaModel {
    * @async
    * @method eliminar
    * @description Eliminar un aula del sistema (cambiar estado a inactivo)
-   * @param {number} id_aula - ID del aula a eliminar
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async eliminar(id_aula, id_usuario) {
     try {
-      const query = `
-        UPDATE public.aulas 
-        SET estado = 'INACTIVO', fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = ?
-        WHERE id_aula = ?
-      `;
-      const params = [id_usuario, id_aula];
-
-      const { rows } = await db.raw(query, params);
+      const result = await db("aulas").where("id_aula", id_aula).update({
+        estado: "INACTIVO",
+        fecha_actualizacion: db.fn.now(),
+        id_usuario_actualizacion: id_usuario,
+      });
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Aula eliminada exitosamente"
       );
     } catch (error) {
@@ -304,33 +252,26 @@ export default class AulaModel {
    * @async
    * @method filtrarPorTipo
    * @description Filtrar aulas por tipo específico
-   * @param {string} tipo - Tipo de aula a filtrar
-   * @returns {Promise<Object>} Lista de aulas del tipo especificado
    */
   static async filtrarPorTipo(tipo) {
     try {
-      const query = `
-        SELECT 
-          a.id_aula,
-          a.codigo,
-          a.nombre,
-          a.tipo,
-          a.capacidad,
-          a.equipamiento,
-          a.estado,
-          s.id_sede,
-          s.nombre as nombre_sede
-        FROM public.aulas a
-        INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        WHERE a.tipo = ? AND a.estado = 'ACTIVO'
-        ORDER BY a.nombre ASC
-      `;
-      const params = [tipo];
-
-      const { rows } = await db.raw(query, params);
+      const aulas = await db("aulas as a")
+        .select(
+          "a.id_aula",
+          "a.codigo_aula",
+          "a.tipo_aula",
+          "a.capacidad_aula",
+          "a.equipamiento",
+          "a.estado",
+          "s.id_sede",
+          "s.nombre_sede as nombre_sede"
+        )
+        .join("sedes as s", "a.id_sede", "s.id_sede")
+        .where("a.tipo_aula", tipo)
+        .where("a.estado", "ACTIVO");
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        aulas,
         `Aulas de tipo ${tipo} obtenidas exitosamente`
       );
     } catch (error) {
@@ -347,13 +288,6 @@ export default class AulaModel {
    * @async
    * @method filtrarPorSede
    * @description Filtrar aulas por sede específica con paginación, ordenamiento y búsqueda
-   * @param {string} sede - ID de la sede a filtrar
-   * @param {Object} queryParams - Parámetros de consulta
-   * @param {string} queryParams.page - Página actual
-   * @param {string} queryParams.limit - Límite por página
-   * @param {string} queryParams.sort_order - Campo para ordenar
-   * @param {string} queryParams.search - Término de búsqueda
-   * @returns {Promise<Object>} Lista de aulas de la sede especificada con paginación
    */
   static async filtrarPorSede(sede, queryParams = {}) {
     try {
@@ -361,9 +295,9 @@ export default class AulaModel {
       const limit = parseInt(queryParams.limit) || 10;
       const offset = (page - 1) * limit;
       const search = queryParams.search || "";
-      const sortOrder = queryParams.sort_order || "codigo_aula";
+      const sortOrder = queryParams.sort_order || "codigo";
 
-      // Validar y mapear campos de ordenamiento
+      // Mapeo de campos de ordenamiento - CORREGIDO
       const sortMapping = {
         codigo: "a.codigo_aula",
         tipo: "a.tipo_aula",
@@ -374,79 +308,70 @@ export default class AulaModel {
 
       const orderBy = sortMapping[sortOrder] || "a.codigo_aula";
 
-      let whereConditions = ["a.id_sede =?"];
-      let params = [sede];
-      let paramCount = 1;
+      // Construir query base
+      let query = db("aulas as a")
+        .select(
+          "a.id_aula",
+          "a.codigo_aula",
+          "a.tipo_aula",
+          "a.capacidad_aula",
+          "a.created_at",
+          "s.id_sede",
+          "s.nombre_sede as nombre_sede"
+        )
+        .join("sedes as s", "a.id_sede", "s.id_sede")
+        .where("a.id_sede", sede);
 
-      // Agregar condiciones de búsqueda si existe el parámetro
+      // Aplicar búsqueda
       if (search) {
-        paramCount++;
-        whereConditions.push(`(
-        a.codigo_aula ILIKE $${paramCount} OR 
-        a.tipo_aula ILIKE $${paramCount} OR 
-        s.nombre_sede ILIKE $${paramCount}
-      )`);
-        params.push(`%${search}%`);
+        query = query.where(function () {
+          this.where("a.codigo_aula", "ilike", `%${search}%`)
+            .orWhere("a.tipo_aula", "ilike", `%${search}%`)
+            .orWhere("s.nombre_sede", "ilike", `%${search}%`);
+        });
       }
 
-      const whereClause =
-        whereConditions.length > 0
-          ? `WHERE ${whereConditions.join(" AND ")}`
-          : "";
+      // ¡PROBLEMA AQUÍ! - Obtener total CORREGIDO
+      // Necesitamos clonar la query SIN las columnas individuales
+      const countQuery = db("aulas as a")
+        .join("sedes as s", "a.id_sede", "s.id_sede")
+        .where("a.id_sede", sede);
 
-      // Query para contar el total
-      const countQuery = `
-      SELECT COUNT(*) as total
-      FROM public.aulas a
-      INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-      ${whereClause}
-    `;
+      if (search) {
+        countQuery.where(function () {
+          this.where("a.codigo_aula", "ilike", `%${search}%`)
+            .orWhere("a.tipo_aula", "ilike", `%${search}%`)
+            .orWhere("s.nombre_sede", "ilike", `%${search}%`);
+        });
+      }
 
-      // Query principal con paginación y ordenamiento
-      const dataQuery = `
-      SELECT 
-        a.id_aula,
-        a.tipo_aula,
-        a.capacidad_aula,
-        a.codigo_aula,
-        a.created_at as fecha_creacion,
-        s.id_sede,
-        s.nombre_sede
-      FROM public.aulas a
-      INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-      ${whereClause}
-      ORDER BY ${orderBy} ASC
-      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
-    `;
+      const totalResult = await countQuery.count("* as total").first();
+      const total = parseInt(totalResult.total);
 
-      // Ejecutar query de conteo
-      const countResult = await db.raw(countQuery, params);
-      const total = parseInt(countResult.rows[0].total);
-
-      // Ejecutar query principal
-      const dataParams = [...params, limit, offset];
-      const { rows } = await db.raw(dataQuery, dataParams);
+      // Aplicar ordenamiento y paginación
+      const aulas = await query
+        .orderBy(orderBy, "asc")
+        .limit(limit)
+        .offset(offset);
 
       // Calcular información de paginación
       const totalPages = Math.ceil(total / limit);
-      const hasNext = page < totalPages;
-      const hasPrev = page > 1;
 
       const data = {
-        aulas: rows,
+        aulas,
         pagination: {
           page,
           limit,
           total,
           totalPages,
-          hasNext,
-          hasPrev,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
         },
       };
 
       return FormatterResponseModel.respuestaPostgres(
         data,
-        `Aulas de la sede ${sede} obtenidas exitosamente`
+        `Aulas de la sede obtenidas exitosamente`
       );
     } catch (error) {
       error.details = { path: "AulaModel.filtrarPorSede" };
@@ -461,20 +386,91 @@ export default class AulaModel {
    * @static
    * @async
    * @method obtenerAulasPorPnf
-   * @description Obtener aulas disponibles para un horario específico
-   * @param {number} codigoPNF - Filtros de disponibilidad
-   * @returns {Promise<Object>} Lista de aulas disponibles
+   * @description Obtener aulas disponibles para un PNF específico
    */
   static async obtenerAulasPorPnf(codigoPNF) {
     try {
-      let query = `
-        
-      `;
-
-      const { rows } = await db.raw(query, params);
+      const aulas = await db("aulas as a")
+        .select(
+          "a.id_aula",
+          "a.codigo_aula",
+          "a.tipo_aula",
+          "a.capacidad_aula",
+          "s.nombre_sede as nombre_sede",
+          "p.nombre_pnf"
+        )
+        .join("sedes as s", "a.id_sede", "s.id_sede")
+        .leftJoin("aulas_pnfs as ap", "a.id_aula", "ap.id_aula")
+        .leftJoin("pnfs as p", "ap.id_pnf", "p.id_pnf")
+        .where("p.codigo_pnf", codigoPNF)
+        .where("a.estado", "ACTIVO")
+        .orderBy("a.codigo_aula", "asc");
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        aulas,
+        `Aulas para PNF ${codigoPNF} obtenidas exitosamente`
+      );
+    } catch (error) {
+      error.details = { path: "AulaModel.obtenerAulasPorPnf" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener aulas por PNF"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerDisponibles
+   * @description Obtener aulas disponibles para un horario específico
+   */
+  static async obtenerDisponibles(filtros = {}) {
+    try {
+      const {
+        fecha,
+        hora_inicio,
+        hora_fin,
+        id_sede = null,
+        capacidad_min = null,
+      } = filtros;
+
+      let query = db("aulas as a")
+        .select(
+          "a.id_aula",
+          "a.codigo_aula",
+          "a.tipo_aula",
+          "a.capacidad_aula",
+          "s.nombre_sede as nombre_sede"
+        )
+        .join("sedes as s", "a.id_sede", "s.id_sede")
+        .where("a.estado", "ACTIVO")
+        .whereNotExists(function () {
+          this.select(db.raw("1"))
+            .from("horarios as h")
+            .whereRaw("h.id_aula = a.id_aula")
+            .whereRaw("h.fecha = ?", [fecha])
+            .where(function () {
+              this.whereRaw("h.hora_inicio < ?", [hora_fin]).whereRaw(
+                "h.hora_fin > ?",
+                [hora_inicio]
+              );
+            });
+        });
+
+      // Filtros adicionales
+      if (id_sede) {
+        query = query.where("a.id_sede", id_sede);
+      }
+
+      if (capacidad_min) {
+        query = query.where("a.capacidad_aula", ">=", capacidad_min);
+      }
+
+      const aulas = await query.orderBy("a.codigo_aula", "asc");
+
+      return FormatterResponseModel.respuestaPostgres(
+        aulas,
         "Aulas disponibles obtenidas exitosamente"
       );
     } catch (error) {
@@ -482,6 +478,198 @@ export default class AulaModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener aulas disponibles"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerAulasConCapacidad
+   * @description Obtener aulas con capacidad suficiente para un número de estudiantes
+   */
+  static async obtenerAulasConCapacidad(capacidadMinima) {
+    try {
+      const aulas = await db("aulas as a")
+        .select(
+          "a.id_aula",
+          "a.codigo_aula",
+          "a.tipo_aula",
+          "a.capacidad_aula",
+          "s.nombre_sede as nombre_sede"
+        )
+        .join("sedes as s", "a.id_sede", "s.id_sede")
+        .where("a.estado", "ACTIVO")
+        .where("a.capacidad_aula", ">=", capacidadMinima)
+        .orderBy("a.capacidad_aula", "asc")
+        .orderBy("a.codigo_aula", "asc");
+
+      return FormatterResponseModel.respuestaPostgres(
+        aulas,
+        `Aulas con capacidad mínima de ${capacidadMinima} obtenidas exitosamente`
+      );
+    } catch (error) {
+      error.details = { path: "AulaModel.obtenerAulasConCapacidad" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener aulas con capacidad"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerEstadisticas
+   * @description Obtener estadísticas de aulas
+   */
+  static async obtenerEstadisticas() {
+    try {
+      const [totalAulas, aulasActivas, porTipo, porSede] = await Promise.all([
+        db("aulas").count("* as total").first(),
+        db("aulas").count("* as total").where("estado", "ACTIVO").first(),
+        db("aulas")
+          .select("tipo")
+          .count("* as total")
+          .where("estado", "ACTIVO")
+          .groupBy("tipo"),
+        db("aulas as a")
+          .select("s.nombre_sede as sede", db.raw("COUNT(*) as total"))
+          .join("sedes as s", "a.id_sede", "s.id_sede")
+          .where("a.estado", "ACTIVO")
+          .groupBy("s.nombre_sede"),
+      ]);
+
+      const estadisticas = {
+        total: parseInt(totalAulas.total),
+        activas: parseInt(aulasActivas.total),
+        porTipo,
+        porSede,
+      };
+
+      return FormatterResponseModel.respuestaPostgres(
+        [estadisticas],
+        "Estadísticas de aulas obtenidas exitosamente"
+      );
+    } catch (error) {
+      error.details = { path: "AulaModel.obtenerEstadisticas" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener estadísticas de aulas"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method asignarAulaAPnf
+   * @description Asignar un aula a un PNF específico
+   */
+  static async asignarAulaAPnf(id_aula, id_pnf, id_usuario) {
+    try {
+      const result = await db.raw(`CALL asignar_aula_pnf(?, ?, ?, NULL)`, [
+        id_usuario,
+        id_aula,
+        id_pnf,
+      ]);
+
+      return FormatterResponseModel.respuestaPostgres(
+        result.rows || result,
+        "Aula asignada al PNF exitosamente"
+      );
+    } catch (error) {
+      error.details = { path: "AulaModel.asignarAulaAPnf" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al asignar aula al PNF"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method removerAulaDePnf
+   * @description Remover un aula de un PNF
+   */
+  static async removerAulaDePnf(id_aula, id_pnf, id_usuario) {
+    try {
+      const result = await db("aulas_pnfs")
+        .where("id_aula", id_aula)
+        .where("id_pnf", id_pnf)
+        .delete();
+
+      return FormatterResponseModel.respuestaPostgres(
+        { affectedRows: result },
+        "Aula removida del PNF exitosamente"
+      );
+    } catch (error) {
+      error.details = { path: "AulaModel.removerAulaDePnf" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al remover aula del PNF"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method buscarAulasPorCodigo
+   * @description Buscar aulas por código (búsqueda parcial)
+   */
+  static async buscarAulasPorCodigo(codigo) {
+    try {
+      const aulas = await db("aulas as a")
+        .select(
+          "a.id_aula",
+          "a.codigo_aula",
+          "a.tipo_aula",
+          "a.capacidad_aula",
+          "s.nombre_sede as nombre_sede"
+        )
+        .join("sedes as s", "a.id_sede", "s.id_sede")
+        .where("a.codigo_aula", "ilike", `%${codigo}%`)
+        .where("a.estado", "ACTIVO")
+        .orderBy("a.codigo_aula", "asc")
+        .limit(20);
+
+      return FormatterResponseModel.respuestaPostgres(
+        aulas,
+        "Búsqueda de aulas por código completada"
+      );
+    } catch (error) {
+      error.details = { path: "AulaModel.buscarAulasPorCodigo" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al buscar aulas por código"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerTiposAula
+   * @description Obtener todos los tipos de aula distintos disponibles
+   */
+  static async obtenerTiposAula() {
+    try {
+      const tipos = await db("aulas")
+        .distinct("tipo")
+        .where("estado", "ACTIVO")
+        .orderBy("tipo", "asc");
+
+      return FormatterResponseModel.respuestaPostgres(
+        tipos,
+        "Tipos de aula obtenidos exitosamente"
+      );
+    } catch (error) {
+      error.details = { path: "AulaModel.obtenerTiposAula" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener tipos de aula"
       );
     }
   }

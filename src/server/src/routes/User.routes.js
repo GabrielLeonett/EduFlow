@@ -1,31 +1,17 @@
+// routes/user.routes.js
 import { Router } from "express";
 import { middlewareAuth } from "../middlewares/auth.js";
 import UserController from "../controllers/user.controller.js";
-
-// Desestructuración de métodos del controlador
-const {
-  login,
-  verificarUsers,
-  closeSession,
-  cambiarContraseña,
-  EnviarTokenEmail,
-  VerificarToken,
-  desactivarUsuario,
-  activarUsuario,
-  obtenerPerfil,
-} = UserController;
 
 /**
  * Router para el módulo de autenticación y gestión de usuarios.
  * Este router maneja todas las rutas relacionadas con autenticación,
  * recuperación de contraseña, gestión de sesiones y administración de usuarios.
  * 
- * @module routes/UserRouter
+ * @module routes/user.routes
  * @requires express
  * @requires ../middlewares/auth
  * @requires ../controllers/user.controller
- * @class
- * @type {express.Router}
  */
 export const UserRouter = Router();
 
@@ -39,215 +25,218 @@ export const UserRouter = Router();
  * @route POST /auth/login
  * @group Autenticación - Operaciones de inicio de sesión
  * @summary Iniciar sesión en el sistema
- * @description Autentica a un usuario mediante email y contraseña. 
- *              Genera un token JWT en caso de éxito.
+ * @description Autentica a un usuario mediante email y contraseña.
+ *              Genera tokens JWT y los almacena en cookies HTTP-Only seguras.
  * @param {Object} req.body - Datos de autenticación
- * @param {string} req.body.email - Email del usuario (formato válido requerido)
- * @param {string} req.body.password - Contraseña del usuario (mínimo 6 caracteres)
- * @returns {Object} 200 - Token de autenticación y datos básicos del usuario
- * @returns {Error} 400 - Credenciales inválidas o formato incorrecto
- * @returns {Error} 401 - Usuario inactivo o no autorizado
- * @returns {Error} 404 - Usuario no encontrado
+ * @param {string} req.body.email - Email del usuario
+ * @param {string} req.body.password - Contraseña del usuario
+ * @returns {Object} 200 - Usuario autenticado exitosamente
+ * @returns {Error} 400 - Credenciales faltantes o inválidas
+ * @returns {Error} 401 - Credenciales incorrectas
+ * @returns {Error} 409 - Sesión activa existente
  * @returns {Error} 500 - Error interno del servidor
- * @example {json} Request
- * {
- *   "email": "usuario@ejemplo.com",
- *   "password": "contraseña123"
- * }
- * @example {json} Response
- * {
- *   "success": true,
- *   "token": "eyJhbGciOiJIUzI1NiIs...",
- *   "user": {
- *     "id": "abc123",
- *     "email": "usuario@ejemplo.com",
- *     "rol": "Estudiante"
- *   }
- * }
  */
-UserRouter.post("/auth/login", middlewareAuth([], { required: false }), login);
-
-/**
- * =============================================
- * RUTAS DE AUTENTICACIÓN
- * (Requieren token válido, excepto donde se indique)
- * =============================================
- */
-
-/**
- * @route GET /auth/verify
- * @group Autenticación - Operaciones de verificación
- * @summary Verificar token de autenticación
- * @description Valida el token JWT actual y retorna los datos del usuario autenticado.
- *              Se utiliza para mantener sesiones activas en el frontend.
- * @header {string} Authorization - Token JWT (Bearer token)
- * @returns {Object} 200 - Datos del usuario autenticado
- * @returns {Error} 401 - Token inválido, expirado o no proporcionado
- * @returns {Error} 403 - Usuario desactivado
- * @security JWT
- */
-UserRouter.get(
-  "/auth/verify",
-  middlewareAuth(null, { required: true }),
-  verificarUsers
-);
-
-/**
- * @route GET /profile
- * @group Usuarios - Gestión de perfiles
- * @summary Obtener perfil del usuario autenticado
- * @description Retorna la información completa del perfil del usuario actualmente autenticado.
- *              Incluye datos personales, rol, estado y preferencias.
- * @header {string} Authorization - Token JWT (Bearer token)
- * @returns {Object} 200 - Perfil completo del usuario
- * @returns {Error} 401 - Token inválido o no proporcionado
- * @returns {Error} 404 - Usuario no encontrado
- * @security JWT
- */
-UserRouter.get(
-  "/profile",
-  middlewareAuth(null, { required: true }),
-  obtenerPerfil
-);
-
-/**
- * @route GET /auth/logout
- * @group Autenticación - Gestión de sesiones
- * @summary Cerrar sesión del usuario
- * @description Invalida el token de autenticación actual. En implementaciones con blacklist,
- *              el token se agrega a una lista de tokens invalidados.
- * @header {string} Authorization - Token JWT (Bearer token)
- * @returns {Object} 200 - Confirmación de cierre de sesión
- * @returns {Error} 401 - Token inválido o no proporcionado
- * @security JWT
- */
-UserRouter.get(
-  "/auth/logout",
-  middlewareAuth(null, { required: true }),
-  closeSession
+UserRouter.post("/auth/login", 
+  middlewareAuth([], { required: false }), 
+  UserController.login
 );
 
 /**
  * @route POST /auth/recuperar-contrasena
  * @group Autenticación - Recuperación de credenciales
  * @summary Solicitar recuperación de contraseña
- * @description Envía un token de recuperación al email del usuario. 
- *              El token tiene una validez limitada (generalmente 15-60 minutos).
+ * @description Envía un token de recuperación al email del usuario.
  * @param {Object} req.body - Datos para recuperación
  * @param {string} req.body.email - Email del usuario que solicita recuperación
- * @returns {Object} 200 - Confirmación de envío de token (email enviado)
+ * @returns {Object} 200 - Confirmación de envío de token
  * @returns {Error} 400 - Email no registrado o formato inválido
- * @returns {Error} 429 - Demasiadas solicitudes (rate limiting)
  * @returns {Error} 500 - Error al enviar el email
- * @example {json} Request
- * {
- *   "email": "usuario@ejemplo.com"
- * }
  */
-UserRouter.post(
-  "/auth/recuperar-contrasena",
-  middlewareAuth(null, { required: false }),
-  EnviarTokenEmail
+UserRouter.post("/auth/recuperar-contrasena", 
+  middlewareAuth(null, { required: false }), 
+  UserController.EnviarTokenEmail
 );
 
 /**
  * @route POST /auth/verificar-token
  * @group Autenticación - Recuperación de credenciales
  * @summary Verificar token de recuperación
- * @description Valida un token de recuperación de contraseña previamente enviado por email.
- *              Si es válido, permite proceder con el cambio de contraseña.
+ * @description Valida un token de recuperación de contraseña.
  * @param {Object} req.body - Datos de verificación
- * @param {string} req.body.token - Token de recuperación (6-8 dígitos)
+ * @param {string} req.body.token - Token de recuperación
  * @param {string} req.body.email - Email asociado al token
- * @returns {Object} 200 - Token válido, proceder con cambio de contraseña
+ * @returns {Object} 200 - Token válido
  * @returns {Error} 400 - Token inválido, expirado o email incorrecto
- * @returns {Error} 404 - Token no encontrado
- * @example {json} Request
- * {
- *   "token": "ABC123",
- *   "email": "usuario@ejemplo.com"
- * }
  */
-UserRouter.post(
-  "/auth/verificar-token",
-  middlewareAuth(null, { required: false }),
-  VerificarToken
+UserRouter.post("/auth/verificar-token", 
+  middlewareAuth(null, { required: false }), 
+  UserController.VerificarToken
+);
+
+/**
+ * =============================================
+ * RUTAS DE AUTENTICACIÓN GENERAL
+ * (Requieren token válido)
+ * =============================================
+ */
+
+/**
+ * @route GET /auth/verify
+ * @group Autenticación - Operaciones de verificación
+ * @summary Verificar sesión de usuario
+ * @description Valida la sesión actual y retorna los datos del usuario autenticado.
+ * @header {string} Authorization - Token JWT (Bearer token) o cookie
+ * @returns {Object} 200 - Datos del usuario autenticado
+ * @returns {Error} 401 - Token inválido, expirado o no proporcionado
+ */
+UserRouter.get("/auth/verify", 
+  middlewareAuth(null, { required: true }), 
+  UserController.verificarUsers
+);
+
+/**
+ * @route GET /auth/status
+ * @group Autenticación - Estado de autenticación
+ * @summary Verificar estado de autenticación
+ * @description Retorna información sobre el estado actual de autenticación.
+ * @header {string} Authorization - Token JWT (Bearer token) o cookie
+ * @returns {Object} 200 - Estado de autenticación
+ * @returns {Error} 401 - No autenticado
+ */
+UserRouter.get("/auth/status", 
+  middlewareAuth(null, { required: true }), 
+  UserController.checkAuthStatus
+);
+
+/**
+ * @route POST /auth/refresh
+ * @group Autenticación - Renovación de tokens
+ * @summary Refrescar token de acceso
+ * @description Renueva el token de acceso usando el refresh token almacenado en cookies.
+ * @cookie {string} refresh_token - Refresh token HTTP-Only
+ * @returns {Object} 200 - Nuevo token de acceso generado
+ * @returns {Error} 400 - Refresh token no proporcionado
+ * @returns {Error} 401 - Refresh token inválido o expirado
+ */
+UserRouter.post("/auth/refresh", 
+  middlewareAuth(null, { required: false }), 
+  UserController.refreshToken
+);
+
+/**
+ * @route POST /auth/logout
+ * @group Autenticación - Gestión de sesiones
+ * @summary Cerrar sesión del usuario
+ * @description Cierra la sesión actual y limpia todas las cookies de autenticación.
+ * @header {string} Authorization - Token JWT (Bearer token) o cookie
+ * @returns {Object} 200 - Sesión cerrada exitosamente
+ * @returns {Error} 401 - No autenticado
+ */
+UserRouter.post("/auth/logout", 
+  middlewareAuth(null, { required: true }), 
+  UserController.closeSession
+);
+
+/**
+ * =============================================
+ * RUTAS DE PERFIL DE USUARIO
+ * =============================================
+ */
+
+/**
+ * @route GET /profile
+ * @group Usuarios - Gestión de perfiles
+ * @summary Obtener perfil del usuario autenticado
+ * @description Retorna la información completa del perfil del usuario actual.
+ * @header {string} Authorization - Token JWT (Bearer token) o cookie
+ * @returns {Object} 200 - Perfil completo del usuario
+ * @returns {Error} 401 - No autenticado
+ * @returns {Error} 404 - Usuario no encontrado
+ */
+UserRouter.get("/profile", 
+  middlewareAuth(null, { required: true }), 
+  UserController.obtenerPerfil
 );
 
 /**
  * @route PUT /auth/cambiar-contrasena
  * @group Autenticación - Gestión de credenciales
  * @summary Cambiar contraseña del usuario
- * @description Permite cambiar la contraseña del usuario. Puede requerir:
- *              1. Token de recuperación (para usuarios que olvidaron contraseña)
- *              2. Token JWT + contraseña actual (para usuarios autenticados)
+ * @description Permite cambiar la contraseña del usuario autenticado.
+ * @header {string} Authorization - Token JWT (Bearer token) o cookie
  * @param {Object} req.body - Datos para cambio de contraseña
- * @param {string} [req.body.currentPassword] - Contraseña actual (requerido si está autenticado)
- * @param {string} req.body.newPassword - Nueva contraseña (mínimo 8 caracteres)
- * @param {string} [req.body.token] - Token de recuperación (alternativo a autenticación)
- * @param {string} [req.body.email] - Email asociado al token
+ * @param {string} req.body.currentPassword - Contraseña actual
+ * @param {string} req.body.newPassword - Nueva contraseña
  * @returns {Object} 200 - Contraseña cambiada exitosamente
- * @returns {Error} 400 - Datos inválidos, contraseña débil o token inválido
- * @returns {Error} 401 - No autorizado (contraseña actual incorrecta o token inválido)
- * @returns {Error} 403 - Usuario inactivo
- * @security JWT or RecoveryToken
- * @example {json} Request (autenticado)
- * {
- *   "currentPassword": "vieja123",
- *   "newPassword": "nueva123Segura"
- * }
- * @example {json} Request (recuperación)
- * {
- *   "token": "ABC123",
- *   "email": "usuario@ejemplo.com",
- *   "newPassword": "nueva123Segura"
- * }
+ * @returns {Error} 400 - Datos inválidos o contraseña débil
+ * @returns {Error} 401 - Contraseña actual incorrecta o no autenticado
  */
-UserRouter.put(
-  "/auth/cambiar-contrasena",
-  middlewareAuth(null, { required: false }),
-  cambiarContraseña
+UserRouter.put("/auth/cambiar-contrasena", 
+  middlewareAuth(null, { required: true }), 
+  UserController.cambiarContraseña
 );
+
+/**
+ * =============================================
+ * RUTAS DE ADMINISTRACIÓN DE USUARIOS
+ * (Requieren roles específicos)
+ * =============================================
+ */
 
 /**
  * @route DELETE /user/:id_usuario/desactivar
  * @group Administración - Gestión de usuarios
  * @summary Desactivar un usuario
  * @description Cambia el estado de un usuario activo a inactivo (soft delete).
- *              El usuario no podrá iniciar sesión hasta que sea reactivado.
- * @param {string} id_usuario.path.required - ID único del usuario a desactivar
- * @header {string} Authorization - Token JWT con rol SuperAdmin o Vicerrector
+ * @param {string} id_usuario.path.required - ID del usuario a desactivar
+ * @header {string} Authorization - Token JWT con rol autorizado
  * @returns {Object} 200 - Usuario desactivado exitosamente
  * @returns {Error} 400 - ID de usuario inválido
  * @returns {Error} 401 - No autenticado
- * @returns {Error} 403 - Permisos insuficientes (rol incorrecto)
+ * @returns {Error} 403 - Permisos insuficientes
  * @returns {Error} 404 - Usuario no encontrado
- * @returns {Error} 409 - Usuario ya desactivado
  * @security JWT [SuperAdmin, Vicerrector]
  */
-UserRouter.delete(
-  "/user/:id_usuario/desactivar",
-  middlewareAuth(["SuperAdmin", "Vicerrector"], { required: true }),
-  desactivarUsuario
+UserRouter.delete("/user/:id_usuario/desactivar", 
+  middlewareAuth(["SuperAdmin", "Vicerrector"], { required: true }), 
+  UserController.desactivarUsuario
 );
 
 /**
  * @route PUT /user/:id_usuario/activar
  * @group Administración - Gestión de usuarios
  * @summary Activar un usuario desactivado
- * @description Reactiva un usuario previamente desactivado, restaurando su acceso al sistema.
- * @param {string} id_usuario.path.required - ID único del usuario a activar
- * @header {string} Authorization - Token JWT con rol SuperAdmin o Vicerrector
+ * @description Reactiva un usuario previamente desactivado.
+ * @param {string} id_usuario.path.required - ID del usuario a activar
+ * @header {string} Authorization - Token JWT con rol autorizado
  * @returns {Object} 200 - Usuario activado exitosamente
  * @returns {Error} 400 - ID de usuario inválido
  * @returns {Error} 401 - No autenticado
- * @returns {Error} 403 - Permisos insuficientes (rol incorrecto)
+ * @returns {Error} 403 - Permisos insuficientes
  * @returns {Error} 404 - Usuario no encontrado
- * @returns {Error} 409 - Usuario ya activo
  * @security JWT [SuperAdmin, Vicerrector]
  */
-UserRouter.put(
-  "/user/:id_usuario/activar",
-  middlewareAuth(["SuperAdmin", "Vicerrector"], { required: true }),
-  activarUsuario
+UserRouter.put("/user/:id_usuario/activar", 
+  middlewareAuth(["SuperAdmin", "Vicerrector"], { required: true }), 
+  UserController.activarUsuario
 );
+
+/**
+ * =============================================
+ * RUTAS ADICIONALES PARA COMPATIBILIDAD
+ * =============================================
+ */
+
+/**
+ * @route GET /auth/logout
+ * @deprecated Usar POST /auth/logout en su lugar
+ * @group Autenticación - Gestión de sesiones
+ * @summary Cerrar sesión (método GET - legacy)
+ * @description Versión anterior para cerrar sesión. Mantenida por compatibilidad.
+ */
+UserRouter.get("/auth/logout", 
+  middlewareAuth(null, { required: true }), 
+  UserController.closeSession
+);
+
+export default UserRouter;

@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { middlewareAuth } from "../middlewares/auth.js";
+import { createUploader, handleUploadError } from "../middlewares/files.js";
 import ProfesorController from "../controllers/profesor.controller.js";
-import multer from "multer";
-import path from "path";
 
 // Destructuración de los métodos del controlador de profesores
 const {
@@ -30,29 +29,12 @@ const {
 // Creación del router para las rutas de profesores
 export const profesorRouter = Router();
 
-/**
- * =============================================
- * CONFIGURACIÓN MULTER PARA SUBIDA DE ARCHIVOS
- * =============================================
- */
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "src/uploads/profesores/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Array.from({ length: 12 }, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    ).join("");
-    const fileExtension = path.extname(file.originalname);
-    const newFileName = uniqueName + fileExtension;
-    file.originalname = newFileName;
-    cb(null, newFileName);
-  },
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+const uploadProfesor = createUploader({
+  destination: "profesores",
+  fileType: "image", // Cambiado de "default" a "image" para imágenes
+  maxFiles: 1,
+  fieldName: "imagen", // Nombre del campo en el formulario
+  useOriginalName: false,
 });
 
 /**
@@ -114,7 +96,8 @@ profesorRouter.post(
     "Vicerrector",
     "Director General de Gestión Curricular",
   ]),
-  upload.single("imagen"),
+  uploadProfesor, // Solo pasa la referencia, no la llames
+  handleUploadError, // Agrega esto para manejar errores
   registrarProfesor
 );
 
@@ -270,11 +253,10 @@ profesorRouter.post(
   crearDisponibilidad
 );
 
-
 /**
  * @name PUT /profesores/:id_profesor/disponibilidad
  * @description Actualizar disponibilidad horaria existente
- * @param {number} id_profesor - ID del profesor  
+ * @param {number} id_profesor - ID del profesor
  * @body {Object} Datos de disponibilidad (incluyendo id_disponibilidad)
  * @middleware Requiere autenticación y rol autorizado
  */
@@ -283,7 +265,7 @@ profesorRouter.put(
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
-    "Director General de Gestión Curricular", 
+    "Director General de Gestión Curricular",
     "Coordinador",
     "Profesor",
   ]),
@@ -300,10 +282,10 @@ profesorRouter.put(
 profesorRouter.delete(
   "/profesores/:id_profesor/disponibilidad/:id_disponibilidad",
   middlewareAuth([
-    "SuperAdmin", 
+    "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
-    "Coordinador", 
+    "Coordinador",
     "Profesor",
   ]),
   eliminarDisponibilidad

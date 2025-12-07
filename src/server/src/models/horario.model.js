@@ -154,7 +154,7 @@ export default class HorarioModel {
   static async mostrarProfesorCambiarHorario(id_profesor) {
     try {
       const { rows } = await db.raw(
-        `SELECT * FROM buscar_profesor_cambiar_horario($1) AS p_resultado;`,
+        `SELECT * FROM buscar_profesor_cambiar_horario(?) AS p_resultado;`,
         [id_profesor]
       );
       return FormatResponseModel.respuestaPostgres(
@@ -178,7 +178,7 @@ export default class HorarioModel {
   static async mostrarAulaCambiarHorario(id_aula) {
     try {
       const { rows } = await db.raw(
-        `SELECT * FROM buscar_aula_cambiar_horario($1) AS p_resultado;`,
+        `SELECT * FROM buscar_aula_cambiar_horario(?) AS p_resultado;`,
         [id_aula]
       );
       return FormatResponseModel.respuestaPostgres(

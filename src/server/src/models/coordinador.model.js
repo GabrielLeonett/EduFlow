@@ -15,19 +15,16 @@ export default class CoordinadorModel {
    * @async
    * @method asignarCoordinador
    * @description Asigna un profesor como coordinador de un PNF mediante un procedimiento almacenado
-   * @param {Object} datos - Datos de asignación del coordinador
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async asignarCoordinador(datos, id_usuario) {
     try {
-      const query = `CALL asignar_coordinador(?,  ?,?)`;
-      const params = [id_usuario, datos.id_profesor, datos.id_pnf];
-      console.log(params);
-      const { rows } = await db.raw(query, params);
+      const result = await db.raw(
+        `CALL asignar_coordinador(?, ?, ?)`,
+        [id_usuario, datos.id_profesor, datos.id_pnf]
+      );
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        result.rows || result,
         "Coordinador asignado correctamente"
       );
     } catch (error) {
@@ -44,38 +41,33 @@ export default class CoordinadorModel {
    * @async
    * @method validarCoordinadorActivo
    * @description Valida si un coordinador existe y está activo
-   * @param {number} cedula_profesor - Cédula del coordinador
-   * @returns {Promise<Object>} Información del coordinador
    */
   static async validarCoordinadorActivo(cedula_profesor) {
     try {
-      console.log(
-        "🔍 [CoordinadorModel] Validando coordinador activo:",
-        cedula_profesor
-      );
+      console.log("🔍 [CoordinadorModel] Validando coordinador activo:", cedula_profesor);
 
-      const query = `
-      SELECT 
-        c.id_coordinador,
-        c.id_profesor,
-        c.id_pnf,
-        p.nombre_pnf,
-        p.codigo_pnf,
-        u.nombres,
-        u.apellidos,
-        u.email,
-        c.activo,
-        c.created_at
-      FROM coordinadores c
-      INNER JOIN pnfs p ON c.id_pnf = p.id_pnf
-      INNER JOIN users u ON c.id_coordinador = u.cedula
-      WHERE c.id_profesor =? AND c.activo = true
-    `;
+      const coordinador = await db("coordinadores as c")
+        .select(
+          "c.id_coordinador",
+          "c.id_profesor",
+          "c.id_pnf",
+          "p.nombre_pnf",
+          "p.codigo_pnf",
+          "u.nombres",
+          "u.apellidos",
+          "u.email",
+          "c.activo",
+          "c.created_at"
+        )
+        .join("pnfs as p", "c.id_pnf", "p.id_pnf")
+        .join("users as u", "c.id_coordinador", "u.cedula")
+        .where("c.id_profesor", cedula_profesor)
+        .where("c.activo", true)
+        .first();
 
-      const { rows } = await db.raw(query, [cedula_profesor]);
-
-      console.log(rows);
-      const coordinador = rows[0];
+      if (!coordinador) {
+        return { existe: false, activo: false };
+      }
 
       return {
         existe: true,
@@ -87,7 +79,6 @@ export default class CoordinadorModel {
         pnf_codigo_actual: coordinador.codigo_pnf,
         nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
         email: coordinador.email,
-        fecha_designacion: coordinador.fecha_designacion,
         datos_completos: coordinador,
       };
     } catch (error) {
@@ -101,39 +92,32 @@ export default class CoordinadorModel {
    * @async
    * @method obtenerCoordinadorPorPnf
    * @description Obtiene el coordinador activo de un PNF específico
-   * @param {number} id_pnf - ID del PNF
-   * @returns {Promise<Object>} Información del coordinador
    */
   static async obtenerCoordinadorPorPnf(id_pnf) {
     try {
-      console.log(
-        "🔍 [CoordinadorModel] Buscando coordinador por PNF:",
-        id_pnf
-      );
+      console.log("🔍 [CoordinadorModel] Buscando coordinador por PNF:", id_pnf);
 
-      const query = `
-      SELECT 
-        c.id_coordinador,
-        c.id_profesor,
-        u.cedula,
-        u.nombres,
-        u.apellidos,
-        u.email,
-        c.activo,
-        c.created_at
-      FROM coordinadores c
-      INNER JOIN users u ON c.id_coordinador = u.cedula
-      WHERE c.id_pnf =? AND c.activo = true
-    `;
+      const coordinador = await db("coordinadores as c")
+        .select(
+          "c.id_coordinador",
+          "c.id_profesor",
+          "u.cedula",
+          "u.nombres",
+          "u.apellidos",
+          "u.email",
+          "c.activo",
+          "c.created_at"
+        )
+        .join("users as u", "c.id_coordinador", "u.cedula")
+        .where("c.id_pnf", id_pnf)
+        .where("c.activo", true)
+        .first();
 
-      const { rows } = await db.raw(query, [id_pnf]);
-
-      if (rows.length === 0) {
+      if (!coordinador) {
         console.log("✅ PNF sin coordinador activo");
         return null;
       }
 
-      const coordinador = rows[0];
       console.log("✅ Coordinador encontrado en PNF:", coordinador.nombres);
 
       return {
@@ -144,7 +128,6 @@ export default class CoordinadorModel {
         email: coordinador.email,
         activo: coordinador.activo,
         fecha_asignacion: coordinador.created_at,
-        fecha_designacion: coordinador.fecha_designacion,
       };
     } catch (error) {
       console.error("❌ Error al obtener coordinador por PNF:", error);
@@ -157,135 +140,68 @@ export default class CoordinadorModel {
    * @async
    * @method obtenerDatosCoordinadorCompletos
    * @description Obtiene todos los datos de un coordinador incluyendo información personal y profesional
-   * @param {number} cedula_coordinador - Cédula del coordinador
-   * @returns {Promise<Object>} Datos completos del coordinador
    */
   static async obtenerDatosCoordinadorCompletos(cedula_coordinador) {
     try {
-      console.log(
-        "🔍 [CoordinadorModel] Obteniendo datos completos del coordinador:",
-        cedula_coordinador
-      );
+      console.log("🔍 [CoordinadorModel] Obteniendo datos completos del coordinador:", cedula_coordinador);
 
+      // Para consultas complejas con JSON_AGG, es mejor usar raw
       const query = `
-      SELECT 
-        -- Datos de usuario
-        u.cedula,
-        u.nombres,
-        u.apellidos,
-        u.email,
-        u.telefono_movil,
-        u.telefono_local,
-        u.direccion,
-        u.fecha_nacimiento,
-        u.genero,
-        
-        -- Datos de coordinador
-        c.id_coordinador,
-        c.id_profesor,
-        c.id_pnf,
-        c.activo as coordinador_activo,
-        c.fecha_designacion,
-        c.created_at as fecha_asignacion,
-        
-        -- Datos del PNF
-        p.nombre_pnf,
-        p.codigo_pnf,
-        p.descripcion as pnf_descripcion,
-        
-        -- Datos del profesor
-        pr.categoria,
-        pr.dedicacion,
-        pr.fecha_ingreso,
-        pr.estatus as estatus_profesor,
-        
-        -- Áreas de conocimiento
-        (
-          SELECT JSON_AGG(ac.nombre_area)
-          FROM areas_conocimiento ac
-          INNER JOIN profesor_areas pa ON ac.id_area = pa.id_area
-          WHERE pa.id_profesor = pr.id_profesor
-        ) as areas_de_conocimiento,
-        
-        -- Formación académica (pregrados)
-        (
-          SELECT JSON_AGG(
-            JSON_BUILD_OBJECT(
-              'titulo', fp.titulo,
-              'institucion', fp.institucion,
-              'anno_graduacion', fp.anno_graduacion,
-              'completo', fp.titulo || ' - ' || fp.institucion || ' (' || fp.anno_graduacion || ')'
-            )
-          )
-          FROM formacion_profesor fp
-          WHERE fp.id_profesor = pr.id_profesor AND fp.tipo_formacion = 'pregrado'
-        ) as pre_grados,
-        
-        -- Formación académica (posgrados)
-        (
-          SELECT JSON_AGG(
-            JSON_BUILD_OBJECT(
-              'titulo', fp.titulo,
-              'institucion', fp.institucion,
-              'anno_graduacion', fp.anno_graduacion,
-              'completo', fp.titulo || ' - ' || fp.institucion || ' (' || fp.anno_graduacion || ')'
-            )
-          )
-          FROM formacion_profesor fp
-          WHERE fp.id_profesor = pr.id_profesor AND fp.tipo_formacion = 'posgrado'
-        ) as pos_grados,
-        
-        -- Disponibilidad
-        (
-          SELECT JSON_AGG(
-            JSON_BUILD_OBJECT(
-              'dia_semana', dd.dia_semana,
-              'hora_inicio', dd.hora_inicio,
-              'hora_fin', dd.hora_fin
-            )
-          )
-          FROM disponibilidad_docente dd
-          WHERE dd.id_profesor = pr.id_profesor AND dd.activo = true
-        ) as disponibilidad,
-        
-        -- Horas disponibles
-        (
-          SELECT JSON_BUILD_OBJECT(
-            'hours', COALESCE(SUM(EXTRACT(HOUR FROM (dd.hora_fin - dd.hora_inicio))), 0),
-            'minutes', COALESCE(SUM(EXTRACT(MINUTE FROM (dd.hora_fin - dd.hora_inicio))), 0)
-          )
-          FROM disponibilidad_docente dd
-          WHERE dd.id_profesor = pr.id_profesor AND dd.activo = true
-        ) as horas_disponibles
+        SELECT 
+          u.cedula,
+          u.nombres,
+          u.apellidos,
+          u.email,
+          u.telefono_movil,
+          u.telefono_local,
+          u.direccion,
+          u.fecha_nacimiento,
+          u.genero,
+          c.id_coordinador,
+          c.id_profesor,
+          c.id_pnf,
+          c.activo as coordinador_activo,
+          p.nombre_pnf,
+          p.codigo_pnf
+        FROM coordinadores c
+        INNER JOIN users u ON c.id_coordinador = u.cedula
+        INNER JOIN pnfs p ON c.id_pnf = p.id_pnf
+        WHERE c.id_coordinador = ? AND c.activo = true
+      `;
 
-      FROM coordinadores c
-      INNER JOIN users u ON c.id_coordinador = u.cedula
-      INNER JOIN pnfs p ON c.id_pnf = p.id_pnf
-      INNER JOIN profesores pr ON c.id_profesor = pr.id_profesor
-      WHERE c.id_coordinador =? AND c.activo = true
-    `;
+      const result = await db.raw(query, [cedula_coordinador]);
+      const coordinador = result.rows?.[0];
 
-      const { rows } = await db.raw(query, [cedula_coordinador]);
-
-      if (rows.length === 0) {
+      if (!coordinador) {
         return FormatterResponseModel.respuestaPostgres(
           [],
           "Coordinador no encontrado"
         );
       }
 
+      // Obtener datos adicionales del profesor
+      const [areas, pregrados, posgrados, disponibilidad] = await Promise.all([
+        this._obtenerAreasConocimiento(coordinador.id_profesor),
+        this._obtenerFormacion(coordinador.id_profesor, 'pregrado'),
+        this._obtenerFormacion(coordinador.id_profesor, 'posgrado'),
+        this._obtenerDisponibilidad(coordinador.id_profesor),
+      ]);
+
+      const datosCompletos = {
+        ...coordinador,
+        areas_de_conocimiento: areas,
+        pre_grados: pregrados,
+        pos_grados: posgrados,
+        disponibilidad: disponibilidad,
+      };
+
       return FormatterResponseModel.respuestaPostgres(
-        rows[0],
+        datosCompletos,
         "Datos del coordinador obtenidos correctamente"
       );
     } catch (error) {
-      console.error(
-        "❌ Error al obtener datos completos del coordinador:",
-        error
-      );
-      error.details = {
-        path: "CoordinadorModel.obtenerDatosCoordinadorCompletos",
-      };
+      console.error("❌ Error al obtener datos completos del coordinador:", error);
+      error.details = { path: "CoordinadorModel.obtenerDatosCoordinadorCompletos" };
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener datos del coordinador"
@@ -294,39 +210,95 @@ export default class CoordinadorModel {
   }
 
   /**
+   * Método auxiliar: Obtener áreas de conocimiento de un profesor
+   * @private
+   */
+  static async _obtenerAreasConocimiento(id_profesor) {
+    try {
+      const areas = await db("areas_conocimiento as ac")
+        .select("ac.nombre_area_conocimiento")
+        .join("profesor_areas as pa", "ac.id_area_conocimiento", "pa.id_area_conocimiento")
+        .where("pa.id_profesor", id_profesor);
+
+      return areas.map(area => area.nombre_area_conocimiento);
+    } catch (error) {
+      console.error("Error al obtener áreas de conocimiento:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Método auxiliar: Obtener formación académica
+   * @private
+   */
+  static async _obtenerFormacion(id_profesor, tipo) {
+    try {
+      const formacion = await db("formacion_profesor")
+        .select("titulo", "institucion", "anno_graduacion")
+        .where("id_profesor", id_profesor)
+        .where("tipo_formacion", tipo);
+
+      return formacion.map(item => ({
+        titulo: item.titulo,
+        institucion: item.institucion,
+        anno_graduacion: item.anno_graduacion,
+        completo: `${item.titulo} - ${item.institucion} (${item.anno_graduacion})`
+      }));
+    } catch (error) {
+      console.error(`Error al obtener ${tipo}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Método auxiliar: Obtener disponibilidad
+   * @private
+   */
+  static async _obtenerDisponibilidad(id_profesor) {
+    try {
+      const disponibilidad = await db("disponibilidad_docente")
+        .select("dia_semana", "hora_inicio", "hora_fin")
+        .where("id_profesor", id_profesor)
+        .where("activo", true);
+
+      return disponibilidad;
+    } catch (error) {
+      console.error("Error al obtener disponibilidad:", error);
+      return [];
+    }
+  }
+
+  /**
    * @static
    * @async
    * @method obtenerCoordinadoresActivos
    * @description Obtiene todos los coordinadores activos con información completa
-   * @returns {Promise<Object>} Lista de coordinadores activos
    */
   static async obtenerCoordinadoresActivos() {
     try {
       console.log("🔍 [CoordinadorModel] Obteniendo coordinadores activos");
 
-      const query = `
-      SELECT 
-        c.id_coordinador,
-        c.id_profesor,
-        u.cedula,
-        u.nombres,
-        u.apellidos,
-        u.email,
-        p.id_pnf,
-        p.nombre_pnf,
-        p.codigo_pnf,
-        c.created_at
-      FROM coordinadores c
-      INNER JOIN users u ON c.id_coordinador = u.cedula
-      INNER JOIN pnfs p ON c.id_pnf = p.id_pnf
-      WHERE c.activo = true
-      ORDER BY u.nombres, u.apellidos
-    `;
-
-      const { rows } = await db.raw(query);
+      const coordinadores = await db("coordinadores as c")
+        .select(
+          "c.id_coordinador",
+          "c.id_profesor",
+          "u.cedula",
+          "u.nombres",
+          "u.apellidos",
+          "u.email",
+          "p.id_pnf",
+          "p.nombre_pnf",
+          "p.codigo_pnf",
+          "c.created_at"
+        )
+        .join("users as u", "c.id_coordinador", "u.cedula")
+        .join("pnfs as p", "c.id_pnf", "p.id_pnf")
+        .where("c.activo", true)
+        .orderBy("u.nombres", "asc")
+        .orderBy("u.apellidos", "asc");
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        coordinadores,
         "Coordinadores activos obtenidos correctamente"
       );
     } catch (error) {
@@ -344,24 +316,20 @@ export default class CoordinadorModel {
    * @async
    * @method reasignarCoordinador
    * @description Reasigna un coordinador existente a otro PNF mediante un procedimiento almacenado
-   * @param {Object} datos - Datos de reasignación del coordinador
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async reasignarCoordinador(datos, id_usuario) {
     try {
-      const query = `CALL reasignar_coordinador(?,  ?,?)`;
-      const params = [id_usuario, datos.id_profesor, datos.id_pnf];
-      console.log("📋 Parámetros reasignación:", params);
+      const result = await db.raw(
+        `CALL reasignar_coordinador(?, ?, ?)`,
+        [id_usuario, datos.id_profesor, datos.id_pnf]
+      );
 
-      const { rows } = await db.raw(query, params);
-      console.log(rows);
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        result.rows || result,
         "Coordinador reasignado correctamente"
       );
     } catch (error) {
-      console.log(error);
+      console.error("❌ Error al reasignar coordinador:", error);
       error.details = { path: "CoordinadorModel.reasignarCoordinador" };
       throw FormatterResponseModel.respuestaError(
         error,
@@ -375,92 +343,39 @@ export default class CoordinadorModel {
    * @async
    * @method obtenerTodos
    * @description Obtener todos los coordinadores con soporte para parámetros de consulta
-   * @param {Object} queryParams - Parámetros de consulta (paginación, filtros, ordenamiento)
-   * @returns {Promise<Object>} Lista de coordinadores
    */
   static async obtenerTodos(queryParams = {}) {
     try {
-      let query = `
-      SELECT 
-        id_coordinador,
-        id_profesor,
-        id_pnf,
-        fecha_designacion,
-        fecha_actualizacion,
-        nombre_pnf,
-        codigo_pnf,
-        nombres,
-        apellidos,
-        cedula,
-        telefono_movil,
-        telefono_local,
-        fecha_nacimiento,
-        genero,
-        email,
-        direccion,
-        fecha_ingreso,
-        dedicacion,
-        categoria,
-        areas_de_conocimiento,
-        disponibilidad,
-        pre_grados,
-        pos_grados,
-        horas_disponibles,
-        estatus_coordinador,
-        anos_experiencia_coordinador
-      FROM public.coordinadores_informacion_completa 
-      WHERE 1=1
-    `;
-      const params = [];
-      let paramCount = 0;
+      // Construir query con Knex
+      let query = db("coordinadores_informacion_completa");
 
-      // --- 1. Aplicar Filtros ---
-
-      // Filtro por Estado (activo/inactivo)
+      // Aplicar filtros
       if (queryParams.estado !== undefined && queryParams.estado !== "") {
-        paramCount++;
-        query += ` AND activo = $${paramCount}`;
-        params.push(
-          queryParams.estado === "true" || queryParams.estado === true
-        );
+        const estadoBoolean = queryParams.estado === "true" || queryParams.estado === true;
+        query = query.where("activo", estadoBoolean);
       }
 
-      // Filtro por Cédula (búsqueda parcial)
       if (queryParams.cedula) {
-        paramCount++;
-        query += ` AND id_coordinador::text LIKE $${paramCount}`;
-        params.push(`%${queryParams.cedula}%`);
+        query = query.where("cedula", "ilike", `%${queryParams.cedula}%`);
       }
 
-      // Filtro por Nombre (búsqueda parcial)
       if (queryParams.nombre) {
-        paramCount++;
-        query += ` AND (nombres ILIKE $${paramCount}`;
-        params.push(`%${queryParams.nombre}%`);
-
-        paramCount++;
-        query += ` OR apellidos ILIKE $${paramCount})`;
-        params.push(`%${queryParams.nombre}%`);
+        query = query.where(function() {
+          this.where("nombres", "ilike", `%${queryParams.nombre}%`)
+            .orWhere("apellidos", "ilike", `%${queryParams.nombre}%`);
+        });
       }
 
-      // Filtro por Email (búsqueda parcial)
       if (queryParams.email) {
-        paramCount++;
-        query += ` AND email ILIKE $${paramCount}`;
-        params.push(`%${queryParams.email}%`);
+        query = query.where("email", "ilike", `%${queryParams.email}%`);
       }
 
-      // Filtro por PNF
       if (queryParams.pnf) {
-        paramCount++;
-        query += ` AND id_pnf = $${paramCount}`;
-        params.push(parseInt(queryParams.pnf));
+        query = query.where("id_pnf", parseInt(queryParams.pnf));
       }
 
-      // --- 2. Aplicar Ordenamiento ---
-
+      // Aplicar ordenamiento
       if (queryParams.sort) {
-        // Campos permitidos para ordenar
         const allowedSortFields = [
           "id_coordinador",
           "nombres",
@@ -472,45 +387,31 @@ export default class CoordinadorModel {
           "updated_at",
         ];
 
-        const sortField = allowedSortFields.includes(
-          queryParams.sort.toLowerCase()
-        )
+        const sortField = allowedSortFields.includes(queryParams.sort.toLowerCase())
           ? queryParams.sort.toLowerCase()
-          : "created_at"; // Default
+          : "created_at";
 
-        const sortOrder =
-          queryParams.order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
-
-        query += ` ORDER BY ${sortField} ${sortOrder}`;
+        const sortOrder = queryParams.order?.toUpperCase() === "DESC" ? "desc" : "asc";
+        
+        query = query.orderBy(sortField, sortOrder);
       } else {
-        // Ordenamiento por defecto
-        query += ` ORDER BY created_at DESC`;
+        query = query.orderBy("created_at", "desc");
       }
 
-      // --- 3. Aplicar Paginación ---
-
+      // Aplicar paginación
       if (queryParams.limit) {
         const limit = parseInt(queryParams.limit);
         const offset = queryParams.page
           ? (parseInt(queryParams.page) - 1) * limit
           : 0;
-
-        paramCount++;
-        query += ` LIMIT $${paramCount}`;
-        params.push(limit);
-
-        if (offset > 0) {
-          paramCount++;
-          query += ` OFFSET $${paramCount}`;
-          params.push(offset);
-        }
+        
+        query = query.limit(limit).offset(offset);
       }
 
-      // 🚀 Ejecutar la consulta con parámetros
-      const { rows } = await db.raw(query, params);
+      const coordinadores = await query;
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        coordinadores,
         "Coordinadores obtenidos exitosamente"
       );
     } catch (error) {
@@ -522,29 +423,26 @@ export default class CoordinadorModel {
     }
   }
 
+  /**
+   * @static
+   * @async
+   * @method listarCoordinadoresDestituidos
+   */
   static async listarCoordinadoresDestituidos(queryParams = {}) {
     try {
-      let query = `SELECT * FROM public.coordinadores_destituidos_completos WHERE 1=1`;
-      const params = [];
-      let paramCount = 0;
+      let query = db("coordinadores_destituidos_completos");
 
-      // Mantener otros filtros
+      // Aplicar filtros
       if (queryParams.id_pnf) {
-        paramCount++;
-        query += ` AND id_pnf = $${paramCount}`;
-        params.push(queryParams.id_pnf);
+        query = query.where("id_pnf", queryParams.id_pnf);
       }
 
       if (queryParams.nombre_pnf) {
-        paramCount++;
-        query += ` AND nombre_pnf ILIKE $${paramCount}`;
-        params.push(`%${queryParams.nombre_pnf}%`);
+        query = query.where("nombre_pnf", "ilike", `%${queryParams.nombre_pnf}%`);
       }
 
       if (queryParams.cedula) {
-        paramCount++;
-        query += ` AND cedula = $${paramCount}`;
-        params.push(queryParams.cedula);
+        query = query.where("cedula", queryParams.cedula);
       }
 
       // Aplicar ordenamiento
@@ -557,14 +455,16 @@ export default class CoordinadorModel {
           "fecha_destitucion",
           "fecha_designacion",
         ];
+        
         const sortField = allowedSortFields.includes(queryParams.sort)
           ? queryParams.sort
           : "nombres";
-        const sortOrder =
-          queryParams.order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
-        query += ` ORDER BY ${sortField} ${sortOrder}`;
+        
+        const sortOrder = queryParams.order?.toUpperCase() === "DESC" ? "desc" : "asc";
+        
+        query = query.orderBy(sortField, sortOrder);
       } else {
-        query += ` ORDER BY fecha_destitucion DESC, nombres ASC`; // Orden por destitución reciente
+        query = query.orderBy("fecha_destitucion", "desc").orderBy("nombres", "asc");
       }
 
       // Aplicar paginación
@@ -573,28 +473,18 @@ export default class CoordinadorModel {
         const offset = queryParams.page
           ? (parseInt(queryParams.page) - 1) * limit
           : 0;
-
-        paramCount++;
-        query += ` LIMIT $${paramCount}`;
-        params.push(limit);
-
-        if (offset > 0) {
-          paramCount++;
-          query += ` OFFSET $${paramCount}`;
-          params.push(offset);
-        }
+        
+        query = query.limit(limit).offset(offset);
       }
 
-      const { rows } = await db.raw(query, params);
+      const coordinadoresDestituidos = await query;
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        coordinadoresDestituidos,
         "Listado de coordinadores destituidos obtenido correctamente"
       );
     } catch (error) {
-      error.details = {
-        path: "CoordinadorModel.listarCoordinadoresDestituidos",
-      };
+      error.details = { path: "CoordinadorModel.listarCoordinadoresDestituidos" };
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener coordinadores destituidos"
@@ -607,22 +497,16 @@ export default class CoordinadorModel {
    * @async
    * @method obtenerCoordinador
    * @description Obtiene un coordinador específico por su cédula
-   * @param {number} cedula - Cédula del coordinador
-   * @returns {Promise<Object>} Datos del coordinador
    */
   static async obtenerCoordinador(cedula) {
     try {
-      const query = `
-        SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE cedula =?
-      `;
-      const params = [cedula];
-
-      const { rows } = await db.raw(query, params);
+      const coordinador = await db("coordinadores_informacion_completa")
+        .where("cedula", cedula)
+        .first();
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
-        "Coordinador obtenido correctamente"
+        coordinador ? [coordinador] : [],
+        coordinador ? "Coordinador obtenido correctamente" : "Coordinador no encontrado"
       );
     } catch (error) {
       error.details = { path: "CoordinadorModel.obtenerCoordinador" };
@@ -638,22 +522,16 @@ export default class CoordinadorModel {
    * @async
    * @method obtenerCoordinadorPorId
    * @description Obtiene un coordinador específico por su ID de coordinador
-   * @param {number} id_coordinador - ID del coordinador
-   * @returns {Promise<Object>} Datos del coordinador
    */
   static async obtenerCoordinadorPorId(id_coordinador) {
     try {
-      const query = `
-        SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE id_coordinador =?
-      `;
-      const params = [id_coordinador];
-
-      const { rows } = await db.raw(query, params);
+      const coordinador = await db("coordinadores_informacion_completa")
+        .where("id_coordinador", id_coordinador)
+        .first();
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
-        "Coordinador obtenido correctamente"
+        coordinador ? [coordinador] : [],
+        coordinador ? "Coordinador obtenido correctamente" : "Coordinador no encontrado"
       );
     } catch (error) {
       error.details = { path: "CoordinadorModel.obtenerCoordinadorPorId" };
@@ -669,18 +547,9 @@ export default class CoordinadorModel {
    * @async
    * @method actualizarCoordinador
    * @description Actualiza los datos de un coordinador existente
-   * @param {number} id_coordinador - ID del coordinador a actualizar
-   * @param {Object} datos - Datos actualizados del coordinador
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async actualizarCoordinador(id_coordinador, datos, id_usuario) {
     try {
-      // Construir la consulta dinámicamente basada en los campos proporcionados
-      const campos = [];
-      const params = [];
-      let paramCount = 0;
-
       // Campos permitidos para actualización
       const camposPermitidos = [
         "fecha_inicio",
@@ -690,39 +559,32 @@ export default class CoordinadorModel {
         "motivo_destitucion",
       ];
 
+      // Filtrar datos
+      const datosActualizacion = {};
       for (const [campo, valor] of Object.entries(datos)) {
         if (camposPermitidos.includes(campo) && valor !== undefined) {
-          paramCount++;
-          campos.push(`${campo} = $${paramCount}`);
-          params.push(valor);
+          datosActualizacion[campo] = valor;
         }
       }
 
-      if (campos.length === 0) {
+      if (Object.keys(datosActualizacion).length === 0) {
         return FormatterResponseModel.respuestaPostgres(
           [],
           "No hay campos válidos para actualizar"
         );
       }
 
-      // Agregar ID del coordinador y usuario que actualiza
-      paramCount++;
-      params.push(id_coordinador);
-      paramCount++;
-      params.push(id_usuario);
+      // Agregar campos de auditoría
+      datosActualizacion.fecha_actualizacion = db.fn.now();
+      datosActualizacion.id_usuario_actualizacion = id_usuario;
 
-      const query = `
-        UPDATE public.coordinadores 
-        SET ${campos.join(
-          ", "
-        )}, fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = $${paramCount}
-        WHERE id_coordinador = $${paramCount - 1}
-      `;
-
-      const { rows } = await db.raw(query, params);
+      // Ejecutar actualización
+      const result = await db("coordinadores")
+        .where("id_coordinador", id_coordinador)
+        .update(datosActualizacion);
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Coordinador actualizado correctamente"
       );
     } catch (error) {
@@ -739,13 +601,6 @@ export default class CoordinadorModel {
    * @async
    * @method destituirCoordinador
    * @description Destituye un coordinador mediante un procedimiento almacenado
-   * @param {number} id_coordinador - ID del coordinador a destituir
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @param {string} tipo_accion - Tipo de acción (DESTITUCION, RENUNCIA)
-   * @param {string} razon - Razón de la destitución
-   * @param {string} observaciones - Observaciones adicionales (opcional)
-   * @param {string} fecha_efectiva - Fecha efectiva de la destitución (opcional)
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async destituirCoordinador(
     id_coordinador,
@@ -756,20 +611,13 @@ export default class CoordinadorModel {
     fecha_efectiva = null
   ) {
     try {
-      const query = `CALL eliminar_destituir_coordinador(NULL, ?,  ?,  ?,  ?,  ?,?)`;
-      const params = [
-        id_usuario,
-        id_coordinador,
-        tipo_accion,
-        razon,
-        observaciones,
-        fecha_efectiva,
-      ];
-
-      const { rows } = await db.raw(query, params);
+      const result = await db.raw(
+        `CALL eliminar_destituir_coordinador(NULL, ?, ?, ?, ?, ?, ?)`,
+        [id_usuario, id_coordinador, tipo_accion, razon, observaciones, fecha_efectiva]
+      );
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        result.rows || result,
         "Coordinador destituido correctamente"
       );
     } catch (error) {
@@ -786,15 +634,6 @@ export default class CoordinadorModel {
    * @async
    * @method restituirCoordinador
    * @description Restituye (reingresa) un coordinador destituido mediante un procedimiento almacenado
-   * @param {number} id_coordinador - ID del coordinador a restituir
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @param {string} tipo_reingreso - Tipo de reingreso (REINGRESO, REINCORPORACION, REINTEGRO)
-   * @param {string} motivo_reingreso - Motivo del reingreso
-   * @param {string} observaciones - Observaciones adicionales (opcional)
-   * @param {string} fecha_efectiva - Fecha efectiva del reingreso (opcional)
-   * @param {number} registro_anterior_id - ID del registro de destitución anterior (opcional)
-   * @param {number} id_pnf - ID del PNF al que se reasigna (opcional)
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async restituirCoordinador(
     id_coordinador,
@@ -807,22 +646,13 @@ export default class CoordinadorModel {
     id_pnf = null
   ) {
     try {
-      const query = `CALL reingresar_coordinador(NULL, ?,  ?,  ?,  ?,  ?,  ?,  ?,?)`;
-      const params = [
-        id_usuario,
-        id_coordinador,
-        tipo_reingreso,
-        motivo_reingreso,
-        observaciones,
-        fecha_efectiva,
-        registro_anterior_id,
-        id_pnf,
-      ];
-
-      const { rows } = await db.raw(query, params);
+      const result = await db.raw(
+        `CALL reingresar_coordinador(NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id_usuario, id_coordinador, tipo_reingreso, motivo_reingreso, observaciones, fecha_efectiva, registro_anterior_id, id_pnf]
+      );
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        result.rows || result,
         "Coordinador restituido correctamente"
       );
     } catch (error) {
@@ -839,37 +669,31 @@ export default class CoordinadorModel {
    * @async
    * @method obtenerHistorialDestituciones
    * @description Obtiene el historial de destituciones de un coordinador
-   * @param {number} id_coordinador - ID del coordinador
-   * @returns {Promise<Object>} Historial de destituciones
    */
   static async obtenerHistorialDestituciones(id_coordinador) {
     try {
-      const query = `
-        SELECT 
-          d.id_registro,
-          d.tipo_accion,
-          d.razon,
-          d.observaciones,
-          d.fecha_efectiva,
-          d.created_at,
-          u.nombres || ' ' || u.apellidos as usuario_accion_nombre
-        FROM destituciones d
-        INNER JOIN coordinadores c ON d.usuario_id = c.id_profesor
-        INNER JOIN users u ON d.usuario_accion = u.cedula
-        WHERE c.id_coordinador =? AND d.rol_id = 2
-        ORDER BY d.created_at DESC
-      `;
-
-      const { rows } = await db.raw(query, [id_coordinador]);
+      const historial = await db("destituciones as d")
+        .select(
+          "d.id_registro",
+          "d.tipo_accion",
+          "d.razon",
+          "d.observaciones",
+          "d.fecha_efectiva",
+          "d.created_at",
+          db.raw("u.nombres || ' ' || u.apellidos as usuario_accion_nombre")
+        )
+        .join("coordinadores as c", "d.usuario_id", "c.id_profesor")
+        .join("users as u", "d.usuario_accion", "u.cedula")
+        .where("c.id_coordinador", id_coordinador)
+        .where("d.rol_id", 2)
+        .orderBy("d.created_at", "desc");
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        historial,
         "Historial obtenido correctamente"
       );
     } catch (error) {
-      error.details = {
-        path: "CoordinadorModel.obtenerHistorialDestituciones",
-      };
+      error.details = { path: "CoordinadorModel.obtenerHistorialDestituciones" };
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener historial de destituciones"
@@ -882,22 +706,15 @@ export default class CoordinadorModel {
    * @async
    * @method obtenerHistorialCoordinador
    * @description Obtiene el historial completo de coordinaciones de un profesor
-   * @param {number} cedula_profesor - Cédula del profesor
-   * @returns {Promise<Object>} Historial de coordinaciones
    */
   static async obtenerHistorialCoordinador(cedula_profesor) {
     try {
-      const query = `
-        SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE cedula =? 
-        ORDER BY fecha_inicio DESC
-      `;
-      const params = [cedula_profesor];
-
-      const { rows } = await db.raw(query, params);
+      const historial = await db("coordinadores_informacion_completa")
+        .where("cedula", cedula_profesor)
+        .orderBy("fecha_inicio", "desc");
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        historial,
         "Historial de coordinador obtenido correctamente"
       );
     } catch (error) {
@@ -906,6 +723,148 @@ export default class CoordinadorModel {
         error,
         "Error al obtener historial de coordinador"
       );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method buscarCoordinadores
+   * @description Busca coordinadores por término de búsqueda
+   */
+  static async buscarCoordinadores(termino) {
+    try {
+      const coordinadores = await db("coordinadores_informacion_completa")
+        .where(function() {
+          this.where("nombres", "ilike", `%${termino}%`)
+            .orWhere("apellidos", "ilike", `%${termino}%`)
+            .orWhere("cedula", "ilike", `%${termino}%`)
+            .orWhere("email", "ilike", `%${termino}%`)
+            .orWhere("nombre_pnf", "ilike", `%${termino}%`);
+        })
+        .orderBy("nombres", "asc")
+        .limit(50);
+
+      return FormatterResponseModel.respuestaPostgres(
+        coordinadores,
+        "Búsqueda de coordinadores completada"
+      );
+    } catch (error) {
+      error.details = { path: "CoordinadorModel.buscarCoordinadores" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al buscar coordinadores"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerEstadisticasCoordinadores
+   * @description Obtiene estadísticas de coordinadores
+   */
+  static async obtenerEstadisticasCoordinadores() {
+    try {
+      const [total, activos, porPnf, sinCoordinador] = await Promise.all([
+        db("coordinadores").count("* as total").first(),
+        db("coordinadores").count("* as total").where("activo", true).first(),
+        db("coordinadores as c")
+          .select("p.nombre_pnf", db.raw("COUNT(*) as total"))
+          .join("pnfs as p", "c.id_pnf", "p.id_pnf")
+          .where("c.activo", true)
+          .groupBy("p.nombre_pnf"),
+        db("pnfs as p")
+          .select("p.nombre_pnf")
+          .leftJoin("coordinadores as c", function() {
+            this.on("p.id_pnf", "c.id_pnf").andOn("c.activo", db.raw("?", [true]));
+          })
+          .whereNull("c.id_coordinador"),
+      ]);
+
+      const estadisticas = {
+        total: parseInt(total.total),
+        activos: parseInt(activos.total),
+        porPnf,
+        sinCoordinador: sinCoordinador.map(p => p.nombre_pnf),
+        sinCoordinadorCount: sinCoordinador.length,
+      };
+
+      return FormatterResponseModel.respuestaPostgres(
+        [estadisticas],
+        "Estadísticas de coordinadores obtenidas correctamente"
+      );
+    } catch (error) {
+      error.details = { path: "CoordinadorModel.obtenerEstadisticasCoordinadores" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener estadísticas de coordinadores"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerCoordinadoresPorSede
+   * @description Obtiene coordinadores agrupados por sede
+   */
+  static async obtenerCoordinadoresPorSede() {
+    try {
+      const coordinadores = await db("coordinadores_informacion_completa as cic")
+        .select("s.nombre_sede", db.raw("JSON_AGG(JSON_BUILD_OBJECT('nombre', cic.nombres, 'apellidos', cic.apellidos, 'pnf', cic.nombre_pnf)) as coordinadores"))
+        .join("pnfs as p", "cic.id_pnf", "p.id_pnf")
+        .join("sedes as s", "p.id_sede", "s.id_sede")
+        .where("cic.activo", true)
+        .groupBy("s.nombre_sede")
+        .orderBy("s.nombre_sede", "asc");
+
+      return FormatterResponseModel.respuestaPostgres(
+        coordinadores,
+        "Coordinadores por sede obtenidos correctamente"
+      );
+    } catch (error) {
+      error.details = { path: "CoordinadorModel.obtenerCoordinadoresPorSede" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener coordinadores por sede"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method verificarDisponibilidadCoordinador
+   * @description Verifica si un profesor puede ser coordinador
+   */
+  static async verificarDisponibilidadCoordinador(id_profesor) {
+    try {
+      const [coordinadorActivo, cargaHoraria] = await Promise.all([
+        db("coordinadores")
+          .where("id_profesor", id_profesor)
+          .where("activo", true)
+          .first(),
+        db("horarios")
+          .where("id_profesor", id_profesor)
+          .count("* as total_horas")
+          .first(),
+      ]);
+
+      return {
+        puedeSerCoordinador: !coordinadorActivo,
+        coordinadorActivo: coordinadorActivo ? {
+          id_pnf: coordinadorActivo.id_pnf,
+          fecha_designacion: coordinadorActivo.created_at
+        } : null,
+        cargaHoraria: parseInt(cargaHoraria.total_horas || 0),
+        recomendacion: !coordinadorActivo && (parseInt(cargaHoraria.total_horas || 0) < 20)
+          ? "Apto para coordinación"
+          : "No recomendado (carga horaria alta o ya es coordinador)"
+      };
+    } catch (error) {
+      console.error("Error al verificar disponibilidad:", error);
+      throw error;
     }
   }
 }

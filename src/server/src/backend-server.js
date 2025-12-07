@@ -2,9 +2,11 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import { securityMiddleware } from "./middlewares/security.js";
+import { dynamicRateLimiter } from "./middlewares/rate-limiting.js";
 import { jsonSyntaxErrorHandler } from "./middlewares/process.js";
 import helmet from "helmet";
 import { createServer } from "node:http";
+import config from "./config/index.js"; // Importar configuración
 
 import SocketServices from "./services/socket.service.js";
 import SystemMonitor from "./services/systemMonitor.service.js";
@@ -27,44 +29,107 @@ import { SystemRouter } from "./routes/system.routes.js";
 const app = express();
 export const server = createServer(app);
 
-// Configuración básica de Express
+// Obtener configuraciones
+const serverConfig = config.server;
+const securityConfigData = config.security;
+const socketConfig = serverConfig.socket;
+
+// Después de las configuraciones, ANTES de las rutas, agrega:
+if (securityConfigData.rateLimit.enabled) {
+  console.log("🛡️  Rate limiting habilitado");
+  app.use(dynamicRateLimiter);
+} else {
+  console.log("⚠️  Rate limiting deshabilitado por configuración");
+}
+
+// Middlewares de seguridad configurados
 app.use(securityMiddleware);
-app.use(helmet()); // Agregar helmet para seguridad
-app.use(express.json());
-app.use(cookieParser());
+
+// Body parsers configurados
+app.use(
+  express.json({
+    limit: securityConfigData.misc.compression ? "10mb" : "1mb",
+    strict: true,
+  })
+);
+
+app.use(cookieParser(config.auth.cookies.secret || "default-cookie-secret"));
+
 app.use(jsonSyntaxErrorHandler);
 
-// ✅ RUTAS DE API - CON PREFIJO /api PARA MEJOR ORGANIZACIÓN
-app.use("", adminRouter);
-app.use("", profesorRouter);
-app.use("", CurricularRouter);
-app.use("", UserRouter);
-app.use("", HorarioRouter);
-app.use("", SedesRouter);
-app.use("", AulaRouter);
-app.use("", coordinadorRouter);
-app.use("", NotificationRouter);
-app.use("", SystemRouter);
+// Middleware de compresión si está habilitado
+if (securityConfigData.misc.compression) {
+  import("compression").then(({ default: compression }) => {
+    app.use(
+      compression({
+        level: securityConfigData.misc.compressionLevel,
+        threshold: securityConfigData.misc.compressionThreshold,
+      })
+    );
+  });
+}
 
-// ✅ SERVICIOS DE SOCKET
+// Middleware para timeouts
+app.use((req, res, next) => {
+  req.setTimeout(securityConfigData.misc.requestTimeout);
+  res.setTimeout(securityConfigData.misc.keepAliveTimeout);
+  next();
+});
+
+// ✅ RUTAS DE API - CON PREFIJO CONFIGURABLE
+const apiPrefix = serverConfig.server.apiPrefix || "";
+app.use(apiPrefix, adminRouter);
+app.use(apiPrefix, profesorRouter);
+app.use(apiPrefix, CurricularRouter);
+app.use(apiPrefix, UserRouter);
+app.use(apiPrefix, HorarioRouter);
+app.use(apiPrefix, SedesRouter);
+app.use(apiPrefix, AulaRouter);
+app.use(apiPrefix, coordinadorRouter);
+app.use(apiPrefix, NotificationRouter);
+app.use(apiPrefix, SystemRouter);
+
+// ✅ SERVICIOS DE SOCKET CONFIGURADOS
 export function initializeSocketServices() {
   console.log("🔧 Inicializando servicios de Socket...");
 
   const servicioSocket = new SocketServices();
-  const io = servicioSocket.initializeService();
+
+  // Configurar opciones de Socket.io desde la configuración
+  const socketOptions = {
+    cors: socketConfig.options.cors,
+    transports: socketConfig.options.transports,
+    allowEIO3: socketConfig.options.allowEIO3,
+    pingTimeout: socketConfig.options.pingTimeout,
+    pingInterval: socketConfig.options.pingInterval,
+    connectTimeout: socketConfig.options.connectTimeout,
+    allowUpgrades: socketConfig.options.allowUpgrades,
+    perMessageDeflate: socketConfig.options.perMessageDeflate,
+    httpCompression: socketConfig.options.httpCompression,
+    maxHttpBufferSize: socketConfig.limits.maxHttpBufferSize,
+    maxConnections: socketConfig.limits.maxConnections,
+    maxPayload: socketConfig.limits.maxPayload,
+  };
+
+  const io = servicioSocket.initializeService(socketOptions);
 
   const notificationService = new NotificationService(io);
 
   let monitoringInterval = null;
   let superAdminCount = 0;
 
-  // Middleware de autenticación
+  // Middleware de autenticación con timeout configurable
   io.use(async (socket, next) => {
+    const authTimeout = setTimeout(() => {
+      next(new Error("Authentication timeout"));
+    }, socketConfig.auth.timeout);
+
     try {
       const { user_id, roles } = socket.handshake.auth;
 
-      if (!user_id) {
+      if (!user_id && socketConfig.auth.required) {
         console.log("❌ Conexión rechazada: Sin user_id");
+        clearTimeout(authTimeout);
         return next(new Error("Authentication error: No user_id"));
       }
 
@@ -74,28 +139,32 @@ export function initializeSocketServices() {
       };
 
       console.log(`✅ Usuario autenticado: ${socket.user.id}`);
+      clearTimeout(authTimeout);
       next();
     } catch (error) {
       console.error("❌ Error en autenticación:", error);
+      clearTimeout(authTimeout);
       next(new Error("Authentication error"));
     }
   });
 
   io.on("connection", (socket) => {
+    if (!socketConfig.enabled) return socket.disconnect();
+
     console.log("🟢 Nuevo cliente conectado:", socket.user.id);
 
-    // Unirse a sala personal
-    const userRoom = `user_${socket.user.id}`;
+    // Unirse a sala personal con prefijo configurable
+    const userRoom = `${socketConfig.rooms.userPrefix}${socket.user.id}`;
     socket.join(userRoom);
 
-    // Unirse a salas de roles
+    // Unirse a salas de roles con prefijo configurable
     if (socket.user.roles && socket.user.roles.length > 0) {
       socket.user.roles.forEach((role) => {
-        socket.join(`role_${role}`);
+        socket.join(`${socketConfig.rooms.rolePrefix}${role}`);
       });
     }
 
-    // Manejar SuperAdmin
+    // Manejar SuperAdmin con sala configurable
     if (socket.user.roles.includes("SuperAdmin")) {
       superAdminCount++;
       console.log(`👑 SuperAdmin conectado. Total: ${superAdminCount}`);
@@ -108,11 +177,11 @@ export function initializeSocketServices() {
 
     // Eventos del cliente
     socket.on("join_user_room", (data) => {
-      socket.join(`user_${socket.user.id}`);
+      socket.join(`${socketConfig.rooms.userPrefix}${socket.user.id}`);
     });
 
     socket.on("join_role_room", (role) => {
-      socket.join(`role_${role}`);
+      socket.join(`${socketConfig.rooms.rolePrefix}${role}`);
     });
 
     socket.on("mark_notification_read", (noti) => {
@@ -136,29 +205,109 @@ export function initializeSocketServices() {
   return { io, servicioSocket };
 }
 
-// ✅ FUNCIÓN PARA INICIAR EL SERVIDOR
-export function startServerBackend(port = 3001) {
-  console.log(`🚀 Iniciando servidor en puerto ${port}...`);
+// ✅ FUNCIÓN PARA INICIAR EL SERVIDOR CONFIGURADO
+export function startServerBackend(port) {
+  const host = serverConfig.server.host;
+  const isProduction = serverConfig.server.isProduction;
 
-  // Inicializar sockets
-  initializeSocketServices();
+  console.log(`🚀 Iniciando servidor en ${host}:${port}...`);
+  console.log(`📊 Entorno: ${serverConfig.server.environment}`);
+  console.log(
+    `🏷️  Aplicación: ${serverConfig.server.appName} v${serverConfig.server.appVersion}`
+  );
 
-  // Backup automático cada 24 horas
+  // Inicializar sockets si está habilitado
+  if (socketConfig.enabled) {
+    initializeSocketServices();
+    console.log("📡 WebSockets habilitados");
+  } else {
+    console.log("⚠️  WebSockets deshabilitados por configuración");
+  }
+
+  // Backup automático si está configurado
   const system = new SystemServices();
-  setInterval(() => {
-    console.log("🔧 Creando respaldo automático...");
-    system
-      .crearRespaldo()
-      .then(() => console.log("✅ Respaldo creado"))
-      .catch((err) => console.error("❌ Error en respaldo:", err));
-  }, 86400000); // 24 horas
 
-  // Iniciar servidor
-  server.listen(port, () => {
-    console.log(`✅ Servidor corriendo en: http://localhost:${port}`);
-    console.log(`📡 WebSockets disponibles`);
-    console.log(`⚙️  API: http://localhost:${port}/api`);
+  // Verificar si hay configuración de backup en las configuraciones
+  if (config.services?.system?.backup?.enabled) {
+    const backupInterval = config.services.system.backup.interval || 86400000;
+    setInterval(() => {
+      console.log("🔧 Creando respaldo automático...");
+      system
+        .crearRespaldo()
+        .then(() => console.log("✅ Respaldo creado exitosamente"))
+        .catch((err) => console.error("❌ Error en respaldo:", err));
+    }, backupInterval);
+    console.log(
+      `🔄 Backup automático configurado cada ${backupInterval / 3600000} horas`
+    );
+  }
+
+  // Iniciar servidor con configuración
+  server.listen(port, host, () => {
+    console.log("----------------------------------------");
+    const protocol = serverConfig.server.protocol;
+    const baseUrl =
+      serverConfig.server.baseUrl || `${protocol}://${host}:${port}`;
+
+    console.log(`✅ Servidor corriendo en: ${baseUrl}`);
+
+    if (socketConfig.enabled) {
+      const wsProtocol = protocol === "https" ? "wss" : "ws";
+      console.log(
+        `📡 WebSockets disponibles en: ${wsProtocol}://${host}:${port}`
+      );
+    }
+
+    console.log(`⚙️  API Base: ${baseUrl}${apiPrefix}`);
+    console.log(`🔒 Modo seguro: ${isProduction ? "Activado" : "Desactivado"}`);
+
+    // Mostrar configuraciones importantes
+    if (!isProduction) {
+      console.log("📋 Configuraciones cargadas:");
+      console.log(
+        `   - CORS: ${securityConfigData.cors.allowedOrigins.length} orígenes permitidos`
+      );
+      console.log(
+        `   - Rate Limit: ${securityConfigData.rateLimit.global.max} req/${
+          securityConfigData.rateLimit.global.windowMs / 60000
+        }min`
+      );
+      console.log(
+        `   - Socket: ${socketConfig.enabled ? "Habilitado" : "Deshabilitado"}`
+      );
+      console.log(
+        `   - Socket Conexiones máx: ${socketConfig.limits.maxConnections}`
+      );
+    }
   });
+
+  // Manejo de errores del servidor
+  server.on("error", (error) => {
+    console.error("❌ Error del servidor:", error);
+    if (error.code === "EADDRINUSE") {
+      console.error(`El puerto ${port} está en uso. Intenta con otro puerto.`);
+      process.exit(1);
+    }
+  });
+
+  // Manejo de señales de terminación
+  process.on("SIGTERM", gracefulShutdown);
+  process.on("SIGINT", gracefulShutdown);
+
+  function gracefulShutdown() {
+    console.log("🛑 Recibida señal de terminación, cerrando servidor...");
+    server.close(() => {
+      console.log("✅ Servidor cerrado exitosamente");
+      process.exit(0);
+    });
+
+    // Forzar cierre después de 10 segundos
+    setTimeout(() => {
+      console.error("❌ Forzando cierre del servidor");
+      process.exit(1);
+    }, 10000);
+  }
 }
+
 // Exportar para usar en otros archivos
 export default app;

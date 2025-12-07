@@ -68,10 +68,10 @@ export default class UserModel {
   static async loginUser(email) {
     try {
       // Función almacenada que maneja lógica de autenticación compleja
-      const query = "SELECT iniciar_session($1) AS p_resultado";
+      const query = "SELECT iniciar_session(?) AS p_resultado";
       
       // Ejecutar consulta parametrizada (previene SQL injection)
-      const { rows } = await client.query(query, [email]);
+      const { rows } = await db.raw(query, [email]);
 
       // Formatear respuesta según el estándar definido
       return FormatResponseModel.respuestaPostgres(rows, "Usuario Obtenido");
@@ -112,7 +112,7 @@ export default class UserModel {
       const query = "CALL actualizar_contrasena_usuario(?,  ?, NULL)";
       const values = [usuarioId, passwordHash];
 
-      const result = await client.query(query, values);
+      const result = await db.raw(query, values);
 
       return FormatResponseModel.respuestaPostgres(
         result.rows,
@@ -154,7 +154,7 @@ export default class UserModel {
       const query = "SELECT * FROM vista_usuarios WHERE cedula =?";
       const values = [id];
 
-      const { rows } = await client.query(query, values);
+      const { rows } = await db.raw(query, values);
 
       return FormatResponseModel.respuestaPostgres(rows, "Usuario obtenido");
     } catch (error) {
@@ -188,7 +188,7 @@ export default class UserModel {
       const query = "SELECT * FROM vista_usuarios WHERE email =?";
       const values = [correo];
 
-      const { rows } = await client.query(query, values);
+      const { rows } = await db.raw(query, values);
 
       return FormatResponseModel.respuestaPostgres(rows, "Usuario obtenido");
     } catch (error) {
@@ -232,7 +232,7 @@ export default class UserModel {
     `;
       const values = [token, correo];
 
-      const { rows } = await client.query(query, values);
+      const { rows } = await db.raw(query, values);
 
       return FormatResponseModel.respuestaPostgres(rows, "Token actualizado");
     } catch (error) {
@@ -274,7 +274,7 @@ export default class UserModel {
     `;
       const values = [email];
 
-      const { rows } = await client.query(query, values);
+      const { rows } = await db.raw(query, values);
 
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -327,7 +327,7 @@ export default class UserModel {
     `;
       const values = [nuevaPasswordHash, email];
 
-      const { rows } = await client.query(query, values);
+      const { rows } = await db.raw(query, values);
 
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -371,7 +371,7 @@ export default class UserModel {
       const query = ` CALL desactivar_usuario(?,  ?, NULL)`;
       const values = [id_usuario, usuario_accion];
 
-      const { rows } = await client.query(query, values);
+      const { rows } = await db.raw(query, values);
 
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -413,7 +413,7 @@ export default class UserModel {
       const query = ` CALL activar_usuario(?,  ?, NULL)`;
       const values = [id_usuario, usuario_accion];
 
-      const { rows } = await client.query(query, values);
+      const { rows } = await db.raw(query, values);
 
       return FormatResponseModel.respuestaPostgres(
         rows,

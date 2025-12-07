@@ -19,11 +19,21 @@ dotenv.config();
 // Ahora importar configuraciones
 import databaseConfig from "./database.config.js";
 import loggerConfig from "./logger.config.js";
+import filesConfig from "./files.config.js";
+import authConfig from "./auth.config.js";
+import securityConfig from "./security.config.js";
+import serverConfig from "./server.config.js";
 
-const config = {
-  database: databaseConfig(process.env),
-  logger: loggerConfig(process.env),
-  // Aquí agregarás más configuraciones después
+const config = () => {
+  return {
+    database: databaseConfig(process.env),
+    logger: loggerConfig(process.env),
+    files: filesConfig(process.env),
+    auth: authConfig(process.env),
+    security: securityConfig(process.env),
+    server: serverConfig(process.env),
+  };
 };
+const configuraicion = config();
 
-export default config;
+export default configuraicion;

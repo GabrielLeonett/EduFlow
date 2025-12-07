@@ -1,4 +1,4 @@
-// Importación de la conexión a la base de datos
+// Importación de Knex
 import db from "../database/db.js";
 
 // Importación de clase para formateo de respuestas
@@ -7,6 +7,7 @@ import FormatterResponseModel from "../utils/FormatterResponseModel.js";
 /**
  * @class AdminModel
  * @description Contiene los métodos para todas las operaciones relacionadas con administradores
+ * Usa Knex para todas las operaciones de base de datos
  */
 export default class AdminModel {
   /**
@@ -14,9 +15,6 @@ export default class AdminModel {
    * @async
    * @method crear
    * @description Crear un nuevo administrador en el sistema
-   * @param {Object} datos - Datos del administrador a crear
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async crear(datos, id_usuario) {
     try {
@@ -35,28 +33,28 @@ export default class AdminModel {
         genero,
       } = datos;
 
-      const query = `CALL public.registrar_administrador_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NULL);`;
-
-      const params = [
-        id_usuario, // p_usuario_accion
-        cedula, // p_id (cedula como identificador)
-        nombres, // p_nombres
-        apellidos, // p_apellidos
-        email, // p_email
-        direccion, // p_direccion
-        password, // p_password
-        telefono_movil, // p_telefono_movil
-        telefono_local, // p_telefono_local
-        imagen,
-        fecha_nacimiento, // p_fecha_nacimiento
-        genero, // p_genero
-        roles[0].id_rol, // p_id_rol
-      ];
-      console.log(params);
-      const { rows } = await db.raw(query, params);
+      // Usar Knex.raw para procedimientos almacenados
+      const result = await db.raw(
+        `CALL public.registrar_administrador_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
+        [
+          id_usuario,
+          cedula,
+          nombres,
+          apellidos,
+          email,
+          direccion,
+          password,
+          telefono_movil,
+          telefono_local,
+          imagen,
+          fecha_nacimiento,
+          genero,
+          roles[0].id_rol,
+        ]
+      );
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        result.rows || result,
         "Administrador creado exitosamente"
       );
     } catch (error) {
@@ -73,89 +71,69 @@ export default class AdminModel {
    * @async
    * @method obtenerTodos
    * @description Obtener todos los administradores con soporte para parámetros de consulta
-   * @param {Object} queryParams - Parámetros de consulta (paginación, filtros, ordenamiento)
-   * @returns {Promise<Object>} Lista de administradores
    */
   static async obtenerTodos(queryParams = {}) {
     try {
-      let query = `
-      SELECT 
-        cedula,
-        nombres,
-        apellidos,
-        imagen,
-        direccion,
-        telefono_movil,
-        telefono_local,
-        fecha_nacimiento,
-        genero,
-        email,
-        activo,
-        primera_vez,
-        last_login,
-        created_at,
-        updated_at,
-        roles,
-        id_roles,
-        nombre_roles
-      FROM public.vista_usuarios 
-      WHERE 1=1
-    `;
-      const params = [];
-      let paramCount = 0;
+      // Construir query con Knex
+      let query = db("vista_usuarios").select(
+        "cedula",
+        "nombres",
+        "apellidos",
+        "imagen",
+        "direccion",
+        "telefono_movil",
+        "telefono_local",
+        "fecha_nacimiento",
+        "genero",
+        "email",
+        "activo",
+        "primera_vez",
+        "last_login",
+        "created_at",
+        "updated_at",
+        "roles",
+        "id_roles",
+        "nombre_roles"
+      );
 
       // --- 1. Aplicar Filtros ---
 
       // Filtro por Rol (buscar en el array de roles)
       if (queryParams.rol) {
-        paramCount++;
-        query += ` AND $${paramCount} = ANY(id_roles)`;
-        params.push(parseInt(queryParams.rol));
+        query = query.whereRaw("? = ANY(id_roles)", [parseInt(queryParams.rol)]);
       }
 
       // Filtro por Estado (activo/inactivo)
       if (queryParams.estado !== undefined && queryParams.estado !== "") {
-        paramCount++;
-        query += ` AND activo = $${paramCount}`;
-        params.push(
-          queryParams.estado === "true" || queryParams.estado === true
-        );
+        const estadoBoolean = queryParams.estado === "true" || queryParams.estado === true;
+        query = query.where("activo", estadoBoolean);
       }
 
       // Filtro por Cédula (búsqueda parcial)
       if (queryParams.cedula) {
-        paramCount++;
-        query += ` AND cedula::text LIKE $${paramCount}`;
-        params.push(`%${queryParams.cedula}%`);
+        query = query.where("cedula", "ilike", `%${queryParams.cedula}%`);
       }
 
       // Filtro por Nombre (búsqueda parcial)
       if (queryParams.nombre) {
-        paramCount++;
-        query += ` AND (nombres ILIKE $${paramCount}`;
-        paramCount++;
-        query += ` OR apellidos ILIKE $${paramCount})`;
-        params.push(`%${queryParams.nombre}%`, `%${queryParams.nombre}%`);
+        query = query.where(function() {
+          this.where("nombres", "ilike", `%${queryParams.nombre}%`)
+            .orWhere("apellidos", "ilike", `%${queryParams.nombre}%`);
+        });
       }
 
       // Filtro por Email (búsqueda parcial)
       if (queryParams.email) {
-        paramCount++;
-        query += ` AND email ILIKE $${paramCount}`;
-        params.push(`%${queryParams.email}%`);
+        query = query.where("email", "ilike", `%${queryParams.email}%`);
       }
 
       // Filtro por Género
       if (queryParams.genero) {
-        paramCount++;
-        query += ` AND genero = $${paramCount}`;
-        params.push(queryParams.genero);
+        query = query.where("genero", queryParams.genero);
       }
 
       // --- 2. Aplicar Ordenamiento ---
-
       if (queryParams.sort) {
-        // Campos permitidos para ordenar (adaptados a la vista)
         const allowedSortFields = [
           "cedula",
           "nombres",
@@ -171,39 +149,30 @@ export default class AdminModel {
           queryParams.sort.toLowerCase()
         )
           ? queryParams.sort.toLowerCase()
-          : "created_at"; // Default
+          : "created_at";
 
         const sortOrder =
-          queryParams.order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
+          queryParams.order?.toUpperCase() === "DESC" ? "desc" : "asc";
 
-        query += ` ORDER BY ${sortField} ${sortOrder}`;
+        query = query.orderBy(sortField, sortOrder);
       } else {
-        // Ordenamiento por defecto
-        query += ` ORDER BY created_at DESC`;
+        query = query.orderBy("created_at", "desc");
       }
 
       // --- 3. Aplicar Paginación ---
-
       if (queryParams.limit) {
         const limit = parseInt(queryParams.limit);
         const offset = queryParams.page
           ? (parseInt(queryParams.page) - 1) * limit
           : 0;
 
-        paramCount++;
-        query += ` LIMIT $${paramCount}`;
-        params.push(limit);
-
-        paramCount++;
-        query += ` OFFSET $${paramCount}`;
-        params.push(offset);
+        query = query.limit(limit).offset(offset);
       }
 
-      console.log("🔍 Query ejecutada:", query);
-      console.log("🔍 Parámetros:", params);
+      console.log("🔍 Query Knex construida");
 
-      // 🚀 Ejecutar la consulta con parámetros
-      const { rows } = await db.raw(query, params);
+      // Ejecutar la consulta
+      const rows = await query;
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -224,40 +193,36 @@ export default class AdminModel {
    * @async
    * @method buscarPorId
    * @description Buscar un administrador específico por su cédula
-   * @param {number} cedula - Cédula del administrador a buscar
-   * @returns {Promise<Object>} Datos del administrador
    */
   static async buscarPorId(cedula) {
     try {
-      const query = `
-        SELECT 
-          cedula,
-          nombres,
-          apellidos,
-          imagen,
-          direccion,
-          telefono_movil,
-          telefono_local,
-          fecha_nacimiento,
-          genero,
-          email,
-          activo,
-          primera_vez,
-          last_login,
-          created_at,
-          updated_at,
-          roles,
-          id_roles,
-          nombre_roles
-        FROM public.vista_usuarios 
-        WHERE cedula = ?'
-      `;
-      const params = [cedula];
+      const admin = await db("vista_usuarios")
+        .select(
+          "cedula",
+          "nombres",
+          "apellidos",
+          "imagen",
+          "direccion",
+          "telefono_movil",
+          "telefono_local",
+          "fecha_nacimiento",
+          "genero",
+          "email",
+          "activo",
+          "primera_vez",
+          "last_login",
+          "created_at",
+          "updated_at",
+          "roles",
+          "id_roles",
+          "nombre_roles"
+        )
+        .where("cedula", cedula)
+        .first();
 
-      const { rows } = await db.raw(query, params);
       return FormatterResponseModel.respuestaPostgres(
-        rows,
-        "Administrador obtenido exitosamente"
+        admin ? [admin] : [],
+        admin ? "Administrador obtenido exitosamente" : "Administrador no encontrado"
       );
     } catch (error) {
       error.details = { path: "AdminModel.buscarPorId" };
@@ -273,40 +238,35 @@ export default class AdminModel {
    * @async
    * @method buscarPorEmail
    * @description Buscar administradores por email
-   * @param {string} email - Email a buscar
-   * @returns {Promise<Object>} Datos del administrador encontrado
    */
   static async buscarPorEmail(email) {
     try {
-      const query = `
-        SELECT 
-          cedula,
-          nombres,
-          apellidos,
-          imagen,
-          direccion,
-          telefono_movil,
-          telefono_local,
-          fecha_nacimiento,
-          genero,
-          email,
-          activo,
-          primera_vez,
-          last_login,
-          created_at,
-          updated_at,
-          roles,
-          id_roles,
-          nombre_roles
-        FROM public.vista_usuarios 
-        WHERE email = ? AND activo = true
-      `;
-      const params = [email];
-
-      const { rows } = await db.raw(query, params);
+      const admins = await db("vista_usuarios")
+        .select(
+          "cedula",
+          "nombres",
+          "apellidos",
+          "imagen",
+          "direccion",
+          "telefono_movil",
+          "telefono_local",
+          "fecha_nacimiento",
+          "genero",
+          "email",
+          "activo",
+          "primera_vez",
+          "last_login",
+          "created_at",
+          "updated_at",
+          "roles",
+          "id_roles",
+          "nombre_roles"
+        )
+        .where("email", email)
+        .where("activo", true);
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        admins,
         "Búsqueda por email completada"
       );
     } catch (error) {
@@ -322,49 +282,45 @@ export default class AdminModel {
    * @static
    * @async
    * @method buscar
-   * @description Buscar administradores por término de búsqueda (cédula, nombre, apellido, email)
-   * @param {string} termino - Término de búsqueda
-   * @returns {Promise<Object>} Lista de administradores encontrados
+   * @description Buscar administradores por término de búsqueda
    */
   static async buscar(termino) {
     try {
-      const query = `
-        SELECT 
-          cedula,
-          nombres,
-          apellidos,
-          imagen,
-          direccion,
-          telefono_movil,
-          telefono_local,
-          fecha_nacimiento,
-          genero,
-          email,
-          activo,
-          primera_vez,
-          last_login,
-          created_at,
-          updated_at,
-          roles,
-          id_roles,
-          nombre_roles
-        FROM public.vista_usuarios 
-        WHERE activo = true
-          AND (
-            cedula::text LIKE ? 
-            OR nombres ILIKE ? 
-            OR apellidos ILIKE ? 
-            OR email ILIKE ?
-          )
-        ORDER BY nombres, apellidos ASC
-      `;
       const searchTerm = `%${termino}%`;
-      const params = [searchTerm, searchTerm, searchTerm, searchTerm];
-
-      const { rows } = await db.raw(query, params);
+      
+      const admins = await db("vista_usuarios")
+        .select(
+          "cedula",
+          "nombres",
+          "apellidos",
+          "imagen",
+          "direccion",
+          "telefono_movil",
+          "telefono_local",
+          "fecha_nacimiento",
+          "genero",
+          "email",
+          "activo",
+          "primera_vez",
+          "last_login",
+          "created_at",
+          "updated_at",
+          "roles",
+          "id_roles",
+          "nombre_roles"
+        )
+        .where("activo", true)
+        .where(function() {
+          this.where("cedula", "ilike", searchTerm)
+            .orWhere("nombres", "ilike", searchTerm)
+            .orWhere("apellidos", "ilike", searchTerm)
+            .orWhere("email", "ilike", searchTerm);
+        })
+        .orderBy("nombres", "asc")
+        .orderBy("apellidos", "asc");
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        admins,
         "Búsqueda de administradores completada"
       );
     } catch (error) {
@@ -381,17 +337,9 @@ export default class AdminModel {
    * @async
    * @method actualizar
    * @description Actualizar los datos de un administrador existente
-   * @param {number} cedula - Cédula del administrador a actualizar
-   * @param {Object} datos - Datos actualizados del administrador
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async actualizar(cedula, datos, id_usuario) {
     try {
-      // Construir la consulta dinámicamente basada en los campos proporcionados
-      const campos = [];
-      const params = [];
-
       // Campos permitidos para actualización
       const camposPermitidos = [
         "nombres",
@@ -405,33 +353,31 @@ export default class AdminModel {
         "activo",
       ];
 
+      // Filtrar solo los campos permitidos y que tengan valor
+      const datosActualizacion = {};
       for (const [campo, valor] of Object.entries(datos)) {
         if (camposPermitidos.includes(campo) && valor !== undefined) {
-          campos.push(`${campo} = ?`);
-          params.push(valor);
+          datosActualizacion[campo] = valor;
         }
       }
 
-      if (campos.length === 0) {
+      if (Object.keys(datosActualizacion).length === 0) {
         return FormatterResponseModel.respuestaPostgres(
           [],
           "No hay campos válidos para actualizar"
         );
       }
 
-      // Agregar cédula del administrador
-      params.push(cedula);
+      // Agregar timestamp de actualización
+      datosActualizacion.updated_at = db.fn.now();
 
-      const query = `
-        UPDATE public.users 
-        SET ${campos.join(", ")}, updated_at = CURRENT_TIMESTAMP
-        WHERE cedula = ?
-      `;
-
-      const { rows } = await db.raw(query, params);
+      // Ejecutar actualización con Knex
+      const result = await db("users")
+        .where("cedula", cedula)
+        .update(datosActualizacion);
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Administrador actualizado exitosamente"
       );
     } catch (error) {
@@ -448,16 +394,9 @@ export default class AdminModel {
    * @async
    * @method actualizarPerfil
    * @description Actualizar el perfil del administrador autenticado
-   * @param {number} cedula - Cédula del administrador
-   * @param {Object} datos - Datos actualizados del perfil
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async actualizarPerfil(cedula, datos) {
     try {
-      // Construir la consulta dinámicamente basada en los campos proporcionados
-      const campos = [];
-      const params = [];
-
       // Campos permitidos para actualización de perfil
       const camposPermitidos = [
         "nombres",
@@ -468,33 +407,31 @@ export default class AdminModel {
         "telefono_local",
       ];
 
+      // Filtrar datos
+      const datosActualizacion = {};
       for (const [campo, valor] of Object.entries(datos)) {
         if (camposPermitidos.includes(campo) && valor !== undefined) {
-          campos.push(`${campo} = ?`);
-          params.push(valor);
+          datosActualizacion[campo] = valor;
         }
       }
 
-      if (campos.length === 0) {
+      if (Object.keys(datosActualizacion).length === 0) {
         return FormatterResponseModel.respuestaPostgres(
           [],
           "No hay campos válidos para actualizar en el perfil"
         );
       }
 
-      // Agregar cédula del administrador
-      params.push(cedula);
+      // Agregar timestamp
+      datosActualizacion.updated_at = db.fn.now();
 
-      const query = `
-        UPDATE public.users 
-        SET ${campos.join(", ")}, updated_at = CURRENT_TIMESTAMP
-        WHERE cedula = ?
-      `;
-
-      const { rows } = await db.raw(query, params);
+      // Ejecutar actualización
+      const result = await db("users")
+        .where("cedula", cedula)
+        .update(datosActualizacion);
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Perfil actualizado exitosamente"
       );
     } catch (error) {
@@ -510,24 +447,19 @@ export default class AdminModel {
    * @static
    * @async
    * @method desactivar
-   * @description Desactivar un administrador del sistema (cambiar estado a inactivo)
-   * @param {number} cedula - Cédula del administrador a desactivar
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
+   * @description Desactivar un administrador del sistema
    */
   static async desactivar(cedula, id_usuario) {
     try {
-      const query = `
-        UPDATE public.users 
-        SET activo = false, updated_at = CURRENT_TIMESTAMP
-        WHERE cedula = ?
-      `;
-      const params = [cedula];
-
-      const { rows } = await db.raw(query, params);
+      const result = await db("users")
+        .where("cedula", cedula)
+        .update({
+          activo: false,
+          updated_at: db.fn.now()
+        });
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Administrador desactivado exitosamente"
       );
     } catch (error) {
@@ -543,24 +475,19 @@ export default class AdminModel {
    * @static
    * @async
    * @method activar
-   * @description Activar un administrador del sistema (cambiar estado a activo)
-   * @param {number} cedula - Cédula del administrador a activar
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
+   * @description Activar un administrador del sistema
    */
   static async activar(cedula, id_usuario) {
     try {
-      const query = `
-        UPDATE public.users 
-        SET activo = true, updated_at = CURRENT_TIMESTAMP
-        WHERE cedula = ?
-      `;
-      const params = [cedula];
-
-      const { rows } = await db.raw(query, params);
+      const result = await db("users")
+        .where("cedula", cedula)
+        .update({
+          activo: true,
+          updated_at: db.fn.now()
+        });
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Administrador activado exitosamente"
       );
     } catch (error) {
@@ -576,25 +503,18 @@ export default class AdminModel {
    * @static
    * @async
    * @method cambiarRol
-   * @description Actualizar los roles de un administrador usando el nuevo procedimiento
-   * @param {number} cedula - Cédula del administrador
-   * @param {number[]} nuevos_roles_ids - Array de IDs de roles a asignar
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
+   * @description Actualizar los roles de un administrador
    */
   static async cambiarRol(cedula, nuevos_roles_ids, id_usuario) {
     try {
-      // Usar el nuevo procedimiento con array de roles
-      const query = `
-        CALL public.actualizar_roles_administrador_usuario(?,  ?,  ?, NULL)
-      `;
-
-      const params = [id_usuario, cedula, nuevos_roles_ids];
-
-      const { rows } = await db.raw(query, params);
+      // Usar Knex.raw para procedimiento almacenado
+      const result = await db.raw(
+        `CALL public.actualizar_roles_administrador_usuario(?, ?, ?, NULL)`,
+        [id_usuario, cedula, nuevos_roles_ids]
+      );
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        result.rows || result,
         "Roles de administrador actualizados exitosamente"
       );
     } catch (error) {
@@ -616,23 +536,16 @@ export default class AdminModel {
    * @async
    * @method quitarRol
    * @description Quitar un rol específico de un administrador
-   * @param {number} cedula - Cédula del administrador
-   * @param {number} rol_id - ID del rol a quitar
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async quitarRol(cedula, rol_id, id_usuario) {
     try {
-      const query = `
-        DELETE FROM public.usuario_rol 
-        WHERE usuario_id = ? AND rol_id = ?
-      `;
-      const params = [cedula, rol_id];
-
-      const { rows } = await db.raw(query, params);
+      const result = await db("usuario_rol")
+        .where("usuario_id", cedula)
+        .where("rol_id", rol_id)
+        .delete();
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Rol quitado exitosamente"
       );
     } catch (error) {
@@ -649,41 +562,37 @@ export default class AdminModel {
    * @async
    * @method filtrarPorRol
    * @description Filtrar administradores por rol específico
-   * @param {number} rol_id - ID del rol a filtrar
-   * @returns {Promise<Object>} Lista de administradores del rol especificado
    */
   static async filtrarPorRol(rol_id) {
     try {
-      const query = `
-        SELECT 
-          cedula,
-          nombres,
-          apellidos,
-          imagen,
-          direccion,
-          telefono_movil,
-          telefono_local,
-          fecha_nacimiento,
-          genero,
-          email,
-          activo,
-          primera_vez,
-          last_login,
-          created_at,
-          updated_at,
-          roles,
-          id_roles,
-          nombre_roles
-        FROM public.vista_usuarios 
-        WHERE ? = ANY(id_roles) AND activo = true
-        ORDER BY nombres, apellidos ASC
-      `;
-      const params = [parseInt(rol_id)];
-
-      const { rows } = await db.raw(query, params);
+      const admins = await db("vista_usuarios")
+        .select(
+          "cedula",
+          "nombres",
+          "apellidos",
+          "imagen",
+          "direccion",
+          "telefono_movil",
+          "telefono_local",
+          "fecha_nacimiento",
+          "genero",
+          "email",
+          "activo",
+          "primera_vez",
+          "last_login",
+          "created_at",
+          "updated_at",
+          "roles",
+          "id_roles",
+          "nombre_roles"
+        )
+        .whereRaw("? = ANY(id_roles)", [parseInt(rol_id)])
+        .where("activo", true)
+        .orderBy("nombres", "asc")
+        .orderBy("apellidos", "asc");
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        admins,
         `Administradores con rol ${rol_id} obtenidos exitosamente`
       );
     } catch (error) {
@@ -700,42 +609,37 @@ export default class AdminModel {
    * @async
    * @method filtrarPorEstado
    * @description Filtrar administradores por estado específico
-   * @param {boolean} estado - Estado a filtrar (true=activo, false=inactivo)
-   * @returns {Promise<Object>} Lista de administradores del estado especificado
    */
   static async filtrarPorEstado(estado) {
     try {
-      const query = `
-        SELECT 
-          cedula,
-          nombres,
-          apellidos,
-          imagen,
-          direccion,
-          telefono_movil,
-          telefono_local,
-          fecha_nacimiento,
-          genero,
-          email,
-          activo,
-          primera_vez,
-          last_login,
-          created_at,
-          updated_at,
-          roles,
-          id_roles,
-          nombre_roles
-        FROM public.vista_usuarios 
-        WHERE activo = ?
-        ORDER BY nombres, apellidos ASC
-      `;
-      const params = [estado];
-
-      const { rows } = await db.raw(query, params);
+      const admins = await db("vista_usuarios")
+        .select(
+          "cedula",
+          "nombres",
+          "apellidos",
+          "imagen",
+          "direccion",
+          "telefono_movil",
+          "telefono_local",
+          "fecha_nacimiento",
+          "genero",
+          "email",
+          "activo",
+          "primera_vez",
+          "last_login",
+          "created_at",
+          "updated_at",
+          "roles",
+          "id_roles",
+          "nombre_roles"
+        )
+        .where("activo", estado)
+        .orderBy("nombres", "asc")
+        .orderBy("apellidos", "asc");
 
       const estadoTexto = estado ? "activos" : "inactivos";
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        admins,
         `Administradores ${estadoTexto} obtenidos exitosamente`
       );
     } catch (error) {
@@ -752,23 +656,17 @@ export default class AdminModel {
    * @async
    * @method contarPorRolYEstado
    * @description Contar administradores por rol y estado
-   * @param {number} rol_id - ID del rol a contar
-   * @param {boolean} estado - Estado a contar
-   * @returns {Promise<Object>} Número de administradores que cumplen con los criterios
    */
   static async contarPorRolYEstado(rol_id, estado) {
     try {
-      const query = `
-        SELECT COUNT(*) as total
-        FROM public.vista_usuarios 
-        WHERE ? = ANY(id_roles) AND activo = ?
-      `;
-      const params = [parseInt(rol_id), estado];
-
-      const { rows } = await db.raw(query, params);
+      const count = await db("vista_usuarios")
+        .count("* as total")
+        .whereRaw("? = ANY(id_roles)", [parseInt(rol_id)])
+        .where("activo", estado)
+        .first();
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        [count],
         "Conteo de administradores completado"
       );
     } catch (error) {
@@ -785,22 +683,17 @@ export default class AdminModel {
    * @async
    * @method actualizarUltimoAcceso
    * @description Actualizar la fecha del último acceso del administrador
-   * @param {number} cedula - Cédula del administrador
-   * @returns {Promise<Object>} Resultado de la operación
    */
   static async actualizarUltimoAcceso(cedula) {
     try {
-      const query = `
-        UPDATE public.users 
-        SET last_login = CURRENT_TIMESTAMP
-        WHERE cedula = ?
-      `;
-      const params = [cedula];
-
-      const { rows } = await db.raw(query, params);
+      const result = await db("users")
+        .where("cedula", cedula)
+        .update({
+          last_login: db.fn.now()
+        });
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        { affectedRows: result },
         "Último acceso actualizado"
       );
     } catch (error) {
@@ -817,21 +710,16 @@ export default class AdminModel {
    * @async
    * @method obtenerRolesDisponibles
    * @description Obtener todos los roles disponibles en el sistema
-   * @returns {Promise<Object>} Lista de roles disponibles
    */
   static async obtenerRolesDisponibles() {
     try {
-      const query = `
-        SELECT id_rol, nombre_rol, descripcion 
-        FROM public.roles 
-        WHERE activo = true 
-        ORDER BY nombre_rol ASC
-      `;
-
-      const { rows } = await db.raw(query);
+      const roles = await db("roles")
+        .select("id_rol", "nombre_rol", "descripcion")
+        .where("activo", true)
+        .orderBy("nombre_rol", "asc");
 
       return FormatterResponseModel.respuestaPostgres(
-        rows,
+        roles,
         "Roles disponibles obtenidos exitosamente"
       );
     } catch (error) {
@@ -839,6 +727,164 @@ export default class AdminModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener roles disponibles"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerEstadisticas
+   * @description Obtener estadísticas de administradores
+   */
+  static async obtenerEstadisticas() {
+    try {
+      const [totalAdmins, activos, inactivos] = await Promise.all([
+        db("vista_usuarios").count("* as total").first(),
+        db("vista_usuarios").count("* as total").where("activo", true).first(),
+        db("vista_usuarios").count("* as total").where("activo", false).first(),
+      ]);
+
+      const estadisticas = {
+        total: parseInt(totalAdmins.total),
+        activos: parseInt(activos.total),
+        inactivos: parseInt(inactivos.total),
+      };
+
+      return FormatterResponseModel.respuestaPostgres(
+        [estadisticas],
+        "Estadísticas obtenidas exitosamente"
+      );
+    } catch (error) {
+      error.details = { path: "AdminModel.obtenerEstadisticas" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener estadísticas"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerPorRangoFechas
+   * @description Obtener administradores creados en un rango de fechas
+   */
+  static async obtenerPorRangoFechas(fechaInicio, fechaFin) {
+    try {
+      const admins = await db("vista_usuarios")
+        .select(
+          "cedula",
+          "nombres",
+          "apellidos",
+          "email",
+          "activo",
+          "created_at"
+        )
+        .whereBetween("created_at", [fechaInicio, fechaFin])
+        .orderBy("created_at", "desc");
+
+      return FormatterResponseModel.respuestaPostgres(
+        admins,
+        "Administradores obtenidos por rango de fechas"
+      );
+    } catch (error) {
+      error.details = { path: "AdminModel.obtenerPorRangoFechas" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener administradores por rango de fechas"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method buscarConPaginacionAvanzada
+   * @description Búsqueda avanzada con múltiples filtros y paginación
+   */
+  static async buscarConPaginacionAvanzada(filtros = {}) {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        sort = "created_at",
+        order = "desc",
+        search = "",
+        roles = [],
+        estado,
+        genero,
+        fechaDesde,
+        fechaHasta,
+      } = filtros;
+
+      // Construir query
+      let query = db("vista_usuarios");
+
+      // Aplicar filtros
+      if (search) {
+        const searchTerm = `%${search}%`;
+        query = query.where(function() {
+          this.where("cedula", "ilike", searchTerm)
+            .orWhere("nombres", "ilike", searchTerm)
+            .orWhere("apellidos", "ilike", searchTerm)
+            .orWhere("email", "ilike", searchTerm);
+        });
+      }
+
+      if (roles.length > 0) {
+        query = query.where(function() {
+          roles.forEach((rolId) => {
+            this.orWhereRaw("? = ANY(id_roles)", [parseInt(rolId)]);
+          });
+        });
+      }
+
+      if (estado !== undefined) {
+        query = query.where("activo", estado);
+      }
+
+      if (genero) {
+        query = query.where("genero", genero);
+      }
+
+      if (fechaDesde && fechaHasta) {
+        query = query.whereBetween("created_at", [fechaDesde, fechaHasta]);
+      }
+
+      // Obtener total para paginación
+      const totalResult = await query.clone().count("* as total").first();
+      const total = parseInt(totalResult.total);
+
+      // Aplicar paginación
+      const offset = (page - 1) * limit;
+      const admins = await query
+        .select("*")
+        .orderBy(sort, order)
+        .limit(limit)
+        .offset(offset);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return FormatterResponseModel.respuestaPostgres(
+        {
+          admins,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
+        },
+        "Búsqueda avanzada completada"
+      );
+    } catch (error) {
+      error.details = { path: "AdminModel.buscarConPaginacionAvanzada" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error en búsqueda avanzada"
       );
     }
   }
