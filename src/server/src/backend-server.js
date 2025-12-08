@@ -2,6 +2,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import { createServer } from "node:http";
+import csrf from "csurf";
 import config from "./config/index.js";
 
 // Middlewares
@@ -43,6 +44,22 @@ console.log("🚀 Inicializando servidor...");
 console.log(`📊 Entorno: ${serverConfig.server.environment}`);
 console.log(`🔗 Prefijo API: ${apiPrefix}`);
 
+const csrfProtection = csrf({ cookie: true });
+
+app.use(csrfProtection);
+
+// Middleware para agregar token a todas las respuestas
+app.use((req, res, next) => {
+  res.cookie('XSRF-TOKEN', req.csrfToken(), {
+    httpOnly: false, // Debe ser false para que React pueda leerlo
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  next();
+});
+
+
+
 // =============================================
 // 2. MIDDLEWARES - ORDEN CRÍTICO
 // =============================================
@@ -51,7 +68,7 @@ console.log(`🔗 Prefijo API: ${apiPrefix}`);
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigin = "http://localhost:3001";
-  
+
   // Solo aplicar CORS si el origen es el esperado
   if (origin === allowedOrigin) {
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
@@ -61,22 +78,22 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Max-Age', '86400');
     res.setHeader('Vary', 'Origin');
   }
-  
+
   // Interceptar respuestas para asegurar headers
   const originalEnd = res.end;
-  res.end = function(...args) {
+  res.end = function (...args) {
     if (origin === allowedOrigin && !this.getHeader('Access-Control-Allow-Origin')) {
       this.setHeader('Access-Control-Allow-Origin', allowedOrigin);
       this.setHeader('Access-Control-Allow-Credentials', 'true');
     }
     return originalEnd.apply(this, args);
   };
-  
+
   // Manejar OPTIONS inmediatamente
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  
+
   next();
 });
 
@@ -89,21 +106,16 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // 🛡️ Rate Limiting (si está habilitado)
-if (securityConfig.rateLimit?.enabled) {
-  app.use(dynamicRateLimiter);
-  console.log("🛡️  Rate limiting habilitado");
-}
+app.use(dynamicRateLimiter);
+console.log("🛡️  Rate limiting habilitado");
 
 // 🔒 Middleware de seguridad (CORS ya manejado arriba, este es para otros headers)
 app.use(securityMiddleware);
 
 // 📦 Body parsers
-app.use(express.json({
-  limit: securityConfig.misc?.compression ? '10mb' : '1mb',
-  strict: true,
-}));
+app.use(express.json({ limit: securityConfig.misc?.bodySizeLimit || '1mb' }));
 
-app.use(cookieParser(config.auth?.cookies?.secret || "default-cookie-secret"));
+app.use(cookieParser());
 
 // ⚠️ Error handler para JSON
 app.use(jsonSyntaxErrorHandler);
@@ -140,7 +152,7 @@ app.get(`${apiPrefix}/test-auth`,
     console.log('🔐 Middleware de auth de prueba');
     // Simular token en cookie
     const token = req.cookies?.access_token;
-    
+
     if (!token) {
       // Importante: los headers CORS ya están aplicados por el primer middleware
       return res.status(401).json({
@@ -148,14 +160,14 @@ app.get(`${apiPrefix}/test-auth`,
         error: "Token requerido"
       });
     }
-    
+
     // Simular usuario autenticado
     req.user = {
       id: 'test-user-123',
       email: 'test@example.com',
       roles: ['SuperAdmin']
     };
-    
+
     next();
   },
   (req, res) => {
@@ -193,7 +205,7 @@ routers.forEach(({ path, router }) => {
 // 404 - Ruta no encontrada
 app.use((req, res) => {
   console.log(`❌ Ruta no encontrada: ${req.method} ${req.originalUrl}`);
-  
+
   res.status(404).json({
     success: false,
     error: {
@@ -209,17 +221,17 @@ app.use((req, res) => {
 // Error handler global
 app.use((err, req, res, next) => {
   console.error('🔥 Error del servidor:', err);
-  
+
   // Asegurar headers CORS en errores
   const origin = req.headers.origin;
   if (origin === 'http://localhost:5173') {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
-  
+
   const statusCode = err.statusCode || 500;
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  
+
   res.status(statusCode).json({
     success: false,
     error: {
@@ -239,9 +251,9 @@ export function initializeSocketServices() {
     console.log("⚠️  WebSockets deshabilitados por configuración");
     return null;
   }
-  
+
   console.log("🔧 Inicializando servicios de Socket...");
-  
+
   const servicioSocket = new SocketServices();
   const socketOptions = {
     cors: {
@@ -253,34 +265,34 @@ export function initializeSocketServices() {
     pingInterval: socketConfig.options.pingInterval,
     maxHttpBufferSize: socketConfig.limits.maxHttpBufferSize,
   };
-  
+
   const io = servicioSocket.initializeService(socketOptions);
   const notificationService = new NotificationService(io);
-  
+
   // Autenticación de sockets
   io.use(async (socket, next) => {
     try {
       const { user_id, roles } = socket.handshake.auth;
-      
+
       if (!user_id && socketConfig.auth.required) {
         return next(new Error("Authentication error: No user_id"));
       }
-      
+
       socket.user = {
         id: user_id,
         roles: roles || [],
       };
-      
+
       console.log(`✅ Socket autenticado: ${socket.user.id}`);
       next();
     } catch (error) {
       next(new Error("Authentication error"));
     }
   });
-  
+
   io.on("connection", (socket) => {
     console.log("🟢 Nuevo cliente conectado:", socket.user?.id || 'anonymous');
-    
+
     if (socket.user) {
       // Unir a salas
       socket.join(`user_${socket.user.id}`);
@@ -288,19 +300,19 @@ export function initializeSocketServices() {
         socket.join(`role_${role}`);
       });
     }
-    
+
     // Eventos del cliente
     socket.on("mark_notification_read", (noti) => {
       if (socket.user) {
         notificationService.markAsRead(noti.notificationId, socket.user.id);
       }
     });
-    
+
     socket.on("disconnect", () => {
       console.log("🔌 Cliente desconectado:", socket.user?.id || 'anonymous');
     });
   });
-  
+
   console.log("✅ Servicios de Socket inicializados");
   return { io, servicioSocket };
 }
@@ -311,33 +323,33 @@ export function initializeSocketServices() {
 export function startServerBackend(port = 3000) {
   const host = serverConfig.server.host || 'localhost';
   const isProduction = serverConfig.server.isProduction;
-  
+
   // Inicializar sockets si están habilitados
   if (socketConfig.enabled) {
     initializeSocketServices();
     console.log("📡 WebSockets habilitados");
   }
-  
+
   // Backup automático (si está configurado)
   if (config.services?.system?.backup?.enabled) {
     const system = new SystemServices();
     const backupInterval = config.services.system.backup.interval || 86400000;
-    
+
     setInterval(() => {
       console.log("🔧 Creando respaldo automático...");
       system.crearRespaldo()
         .then(() => console.log("✅ Respaldo creado exitosamente"))
         .catch(console.error);
     }, backupInterval);
-    
+
     console.log(`🔄 Backup automático configurado cada ${backupInterval / 3600000} horas`);
   }
-  
+
   // Monitoreo del sistema para SuperAdmin
   if (serverConfig.server.environment === 'development') {
     SystemMonitor.iniciarMonitoreoTiempoReal(10000);
   }
-  
+
   // Iniciar servidor
   server.listen(port, host, () => {
     console.log("\n" + "=".repeat(50));
@@ -345,15 +357,15 @@ export function startServerBackend(port = 3000) {
     console.log(`📚 Documentación API: http://${host}:${port}${apiPrefix}/health`);
     console.log(`🌐 Origen permitido: http://localhost:5173`);
     console.log(`⚙️  Modo: ${isProduction ? 'Producción 🔒' : 'Desarrollo 🚧'}`);
-    
+
     if (socketConfig.enabled) {
       const wsProtocol = serverConfig.server.protocol === 'https' ? 'wss' : 'ws';
       console.log(`📡 WebSockets: ${wsProtocol}://${host}:${port}`);
     }
-    
+
     console.log("=".repeat(50) + "\n");
   });
-  
+
   // Manejo de errores del servidor
   server.on('error', (error) => {
     console.error('❌ Error del servidor:', error);
@@ -362,18 +374,18 @@ export function startServerBackend(port = 3000) {
       process.exit(1);
     }
   });
-  
+
   // Manejo de señales de terminación
   process.on('SIGTERM', gracefulShutdown);
   process.on('SIGINT', gracefulShutdown);
-  
+
   function gracefulShutdown() {
     console.log('\n🛑 Recibida señal de terminación...');
     server.close(() => {
       console.log('✅ Servidor cerrado exitosamente');
       process.exit(0);
     });
-    
+
     setTimeout(() => {
       console.error('❌ Forzando cierre del servidor');
       process.exit(1);

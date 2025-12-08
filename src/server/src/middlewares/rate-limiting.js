@@ -26,6 +26,18 @@ export function createRateLimiter(configType = "global") {
       limiterConfig = rateLimitConfig.global;
   }
 
+  console.log({
+    windowMs: limiterConfig.windowMs,
+    max: limiterConfig.max,
+    message: {
+      error: "Rate limit exceeded",
+      message: limiterConfig.message || rateLimitConfig.global.message,
+      retryAfter: Math.ceil(limiterConfig.windowMs / 1000),
+    },
+    standardHeaders: limiterConfig.standardHeaders !== false,
+    legacyHeaders: limiterConfig.legacyHeaders !== false,
+    skipSuccessfulRequests: limiterConfig.skipSuccessfulRequests === true,
+  });
   // Crear el rate limiter
   return rateLimit({
     windowMs: limiterConfig.windowMs,
