@@ -1,10 +1,7 @@
 import { Router } from "express";
 import { middlewareAuth } from "../middlewares/auth.js";
+import { createUploader, handleUploadError } from "../middlewares/files.js";
 import AdminController from "../controllers/admin.controller.js";
-import fs from "fs";
-
-import multer from "multer";
-import path from "path";
 
 // Destructuración de los métodos del controlador de administradores
 const {
@@ -18,34 +15,17 @@ const {
   updateProfile,
 } = AdminController;
 
-/**
- * =============================================
- * CONFIGURACIÓN MULTER PARA SUBIDA DE ARCHIVOS
- * =============================================
- */
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "src/uploads/administradores/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Array.from({ length: 12 }, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    ).join("");
-    const fileExtension = path.extname(file.originalname);
-    const newFileName = uniqueName + fileExtension;
-    file.originalname = newFileName;
-    cb(null, newFileName);
-  },
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
-
 // Creación del router para las rutas de administradores
 export const adminRouter = Router();
 
+//
+const uploadAdmins = createUploader({
+  destination: "admins",
+  fileType: "image", // Cambiado de "default" a "image" para imágenes
+  maxFiles: 1,
+  fieldName: "imagen", // Nombre del campo en el formulario
+  useOriginalName: false,
+});
 /**
  * =============================================
  * RUTAS DE ADMINISTRADORES (CRUD PRINCIPAL)
@@ -71,7 +51,8 @@ adminRouter.get("/admins", middlewareAuth(["SuperAdmin"]), mostrarAdmin);
 adminRouter.post(
   "/admins",
   middlewareAuth(["SuperAdmin"]),
-  upload.single("imagen"),
+  uploadAdmins,
+  handleUploadError,
   registrarAdmin
 );
 
@@ -109,7 +90,6 @@ adminRouter.delete(
  * @middleware Requiere autenticación y rol SuperAdmin
  */
 adminRouter.get("/admins/search", middlewareAuth(["SuperAdmin"]), buscarAdmin);
-
 
 /**
  * @name PATCH /admins/:id/rol

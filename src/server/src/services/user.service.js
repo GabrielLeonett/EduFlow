@@ -7,7 +7,7 @@ import {
   generarPassword,
   hashPassword,
 } from "../utils/encrypted.js";
-import { createSession } from "../utils/auth.js";
+import JWTService from "./jsonWebToken.service.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
 
@@ -15,7 +15,7 @@ import FormatterResponseService from "../utils/FormatterResponseService.js";
  * Servicio de negocio para operaciones relacionadas con usuarios.
  * Contiene la lógica de negocio para autenticación, gestión de usuarios,
  * recuperación de contraseña y administración de cuentas.
- * 
+ *
  * @module services/user.service
  * @class UserService
  * @requires ./validation.service
@@ -57,7 +57,7 @@ export default class UserService {
   /**
    * Inicia sesión de un usuario en el sistema.
    * Valida credenciales, verifica contraseña, genera token JWT y establece sesión.
-   * 
+   *
    * @static
    * @async
    * @method login
@@ -66,7 +66,7 @@ export default class UserService {
    * @param {Object|null} usuario - Usuario pre-autenticado (si middleware ya validó)
    * @returns {Promise<ServiceResponse>} Respuesta estandarizada del servicio
    * @throws {Error} Cuando ocurre un error interno no controlado
-   * 
+   *
    * @example
    * // Uso típico
    * const resultado = await UserService.login({
@@ -128,26 +128,24 @@ export default class UserService {
 
       // 4. Crear token de sesión JWT
       console.log("🎫 Creando token de sesión...");
-      const token = createSession({
-        object: {
-          id: user.id,
-          apellidos: user.apellidos,
-          nombres: user.nombres,
-          roles: user.roles,
-          ...(user.id_pnf && { id_pnf: user.id_pnf }), // Propiedad condicional
-        },
+      const token = JWTService.createSession({
+        id: user.id,
+        apellidos: user.apellidos,
+        nombres: user.nombres,
+        roles: user.roles,
+        ...(user.id_pnf && { id_pnf: user.id_pnf }), // Propiedad condicional
       });
 
       console.log(
         "✅ Login exitoso para usuario:",
         user.nombres,
-        user.apellidos
+        user.apellidos,
       );
 
       // 5. Preparar respuesta exitosa con datos del usuario
       return FormatterResponseService.success(
         {
-          token: token,
+          tokens: token,
           user: {
             id: user.id,
             apellidos: user.apellidos,
@@ -172,7 +170,7 @@ export default class UserService {
   /**
    * Envía un token de recuperación al email del usuario.
    * Genera un token seguro, lo almacena con expiración y envía email con instrucciones.
-   * 
+   *
    * @static
    * @async
    * @method EnviarTokenEmail
@@ -180,7 +178,7 @@ export default class UserService {
    * @param {RecoveryData} datos - Objeto con email para recuperación
    * @returns {Promise<ServiceResponse>} Respuesta estandarizada del servicio
    * @throws {Error} Cuando ocurre un error en el envío del email o en la base de datos
-   * 
+   *
    * @security Esta operación no revela si un email existe en el sistema por seguridad
    */
   static async EnviarTokenEmail(datos) {
@@ -292,7 +290,7 @@ export default class UserService {
   /**
    * Verifica la validez de un token de recuperación de contraseña.
    * Comprueba existencia, expiración y coincidencia del token.
-   * 
+   *
    * @static
    * @async
    * @method VerificarToken
@@ -320,7 +318,7 @@ export default class UserService {
       }
 
       const usuario = respuestaModel.data[0];
-      
+
       // 2. Verificar expiración del token (comparación de fechas)
       const ahora = new Date();
       const expiracion = new Date(usuario.reset_password_expires);
@@ -367,7 +365,7 @@ export default class UserService {
    * Cambia la contraseña del usuario mediante dos flujos posibles:
    * 1. Usuario autenticado (requiere contraseña actual)
    * 2. Recuperación con token (requiere token válido)
-   * 
+   *
    * @static
    * @async
    * @method cambiarContraseña
@@ -384,8 +382,10 @@ export default class UserService {
   static async cambiarContraseña(datos, usuarioActual = null) {
     try {
       console.log("🔍 [cambiarContraseña] Iniciando cambio de contraseña...");
-      
-      const modo = usuarioActual ? "USUARIO_AUTENTICADO" : "RECUPERACION_CON_TOKEN";
+
+      const modo = usuarioActual
+        ? "USUARIO_AUTENTICADO"
+        : "RECUPERACION_CON_TOKEN";
       console.log("📝 Modo:", modo);
 
       // 1. Validar datos según el modo de operación
@@ -399,7 +399,10 @@ export default class UserService {
       }
 
       if (!validacion.isValid) {
-        console.error("❌ Validación de contraseña fallida:", validacion.errors);
+        console.error(
+          "❌ Validación de contraseña fallida:",
+          validacion.errors
+        );
         return FormatterResponseService.validationError(
           validacion.errors,
           "Error de validación en cambio de contraseña"
@@ -435,7 +438,10 @@ export default class UserService {
         );
 
         if (!validatePassword) {
-          console.error("❌ Contraseña actual incorrecta para usuario:", usuarioActual.id);
+          console.error(
+            "❌ Contraseña actual incorrecta para usuario:",
+            usuarioActual.id
+          );
           return FormatterResponseService.unauthorized(
             "La contraseña actual es incorrecta"
           );
@@ -447,7 +453,7 @@ export default class UserService {
         // Verificar validez del token antes de proceder
         const { email, token } = datos;
         console.log("🔍 Verificando token de recuperación...");
-        
+
         const tokenVerificado = await this.VerificarToken(email, token);
         if (!tokenVerificado.success) {
           return tokenVerificado; // Retornar error de verificación
@@ -511,7 +517,7 @@ export default class UserService {
   /**
    * Verifica la sesión actual de un usuario autenticado.
    * Retorna los datos del usuario si la sesión es válida.
-   * 
+   *
    * @static
    * @async
    * @method verificarSesion
@@ -526,7 +532,7 @@ export default class UserService {
       if (!user) {
         FormatterResponseService.unauthorized("Usuario no autenticado");
       }
-      
+
       return FormatterResponseService.success(
         user,
         "Sesión verificada exitosamente",
@@ -556,7 +562,7 @@ export default class UserService {
   /**
    * Obtiene el perfil completo de un usuario autenticado.
    * Retorna información del usuario excluyendo datos sensibles como contraseñas.
-   * 
+   *
    * @static
    * @async
    * @method obtenerPerfil
@@ -620,7 +626,7 @@ export default class UserService {
   /**
    * Actualiza el perfil de un usuario autenticado.
    * Permite modificar información personal del usuario.
-   * 
+   *
    * @static
    * @async
    * @method actualizarPerfil
@@ -659,7 +665,10 @@ export default class UserService {
       const validacion =
         ValidationService.validateActualizacionPerfil(datosActualizacion);
       if (!validacion.isValid) {
-        console.error("❌ Validación de actualización fallida:", validacion.errors);
+        console.error(
+          "❌ Validación de actualización fallida:",
+          validacion.errors
+        );
         return FormatterResponseService.validationError(
           validacion.errors,
           "Error de validación en actualización de perfil"
@@ -705,7 +714,7 @@ export default class UserService {
   /**
    * Cierra la sesión del usuario actual.
    * En sistemas complejos, aquí se invalidarían tokens en el servidor.
-   * 
+   *
    * @static
    * @async
    * @method cerrarSesion
@@ -738,7 +747,7 @@ export default class UserService {
   /**
    * Desactiva un usuario del sistema (administradores solamente).
    * Realiza soft delete y notifica al usuario vía WebSocket si está conectado.
-   * 
+   *
    * @static
    * @async
    * @method desactivarUsuario
@@ -830,7 +839,7 @@ export default class UserService {
   /**
    * Reactiva un usuario previamente desactivado (administradores solamente).
    * Restaura el acceso del usuario al sistema.
-   * 
+   *
    * @static
    * @async
    * @method activarUsuario

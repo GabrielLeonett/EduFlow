@@ -150,7 +150,7 @@ export const UTILS = {
     ];
     return dias[diaIndex] || "";
   },
-  
+
   horariosAcademicos: [
     "07:00",
     "07:45",
@@ -169,7 +169,6 @@ export const UTILS = {
     "17:30",
     "18:15",
     "19:00",
-     
   ],
 
   sumar45Minutos: (horaInicio, bloques) => {
@@ -192,8 +191,7 @@ export const UTILS = {
   },
 };
 
-
-import dns from 'dns/promises';
+import dns from "dns/promises";
 
 /**
  * Verifica si hay conexión a internet
@@ -202,10 +200,21 @@ import dns from 'dns/promises';
 export async function verificarConexionInternet() {
   try {
     // Intentar resolver un dominio confiable
-    await dns.resolve('google.com');
+    await dns.resolve("google.com");
     return true;
   } catch (error) {
-    console.error('❌ Sin conexión a internet:', error.message);
+    console.error("❌ Sin conexión a internet:", error.message);
     return false;
   }
 }
+
+// src/server/utils/math.utils.js
+export const mathUtils = {
+  sum: (a, b) => a + b,
+  subtract: (a, b) => a - b,
+  multiply: (a, b) => a * b,
+  divide: (a, b) => {
+    if (b === 0) throw new Error("No se puede dividir por cero");
+    return a / b;
+  },
+};

@@ -1,3 +1,9 @@
-import { startServer } from "./src/server.js";
+import { startServerBackend } from "./src/backend-server.js";
+import { startServerFrontend } from "./src/frontend-server.js";
+import { loadEnv } from "./src/utils/utilis.js";
 
-startServer(3000);
+loadEnv();
+
+startServerBackend(3000);
+
+startServerFrontend(3001);

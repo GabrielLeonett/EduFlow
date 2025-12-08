@@ -39,8 +39,8 @@ const pnfSchema = z.object({
     .min(3, "El código debe tener mínimo 3 caracteres")
     .max(7, "El código debe tener máximo 7 caracteres")
     .regex(
-      /^[A-Z]{3}-(?:[A-Z]{1,3}|\d{1,3})$/,
-      "Formato inválido. Use AAA-AAA o AAA-913"
+      /^[A-Z]{3}-(?:[A-Z]{3,6})$/,
+      "Formato inválido. Use AAAAAA"
     )
     .trim()
     .toUpperCase(),
