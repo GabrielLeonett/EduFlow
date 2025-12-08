@@ -23,7 +23,7 @@ export default function ModalRegisterLineaInvestigacion({
   setState,
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const axios = useApi(true);
+  const axios = useApi();
   const alert = useSweetAlert();
 
   if (!id_trayecto) {

@@ -30,7 +30,7 @@ import {
 } from "@mui/icons-material";
 
 export default function RegistraAdministrador() {
-  const axios = useApi(false);
+  const axios = useApi();
   const theme = useTheme();
   const alert = useSweetAlert();
   const {

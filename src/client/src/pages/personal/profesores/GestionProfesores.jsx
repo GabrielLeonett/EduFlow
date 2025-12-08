@@ -25,7 +25,7 @@ import CustomAutocomplete from "../../../components/CustomAutocomplete";
 import CustomLabel from "../../../components/customLabel";
 
 export default function GestionProfesores() {
-  const axios = useApi(false);
+  const axios = useApi();
   const navigate = useNavigate();
 
   const [profesores, setProfesores] = useState([]);

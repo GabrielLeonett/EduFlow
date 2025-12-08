@@ -33,7 +33,7 @@ import ModalEditarCampoProfesor from "./ModalEditarCampoProfesor.jsx";
 import CustomChip from "./CustomChip.jsx";
 
 export default function CardProfesor({ profesor }) {
-  const axios = useApi(false);
+  const axios = useApi();
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));

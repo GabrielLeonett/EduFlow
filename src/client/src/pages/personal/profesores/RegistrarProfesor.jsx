@@ -34,7 +34,7 @@ import CustomButton from "../../../components/customButton";
 import ResponsiveAppBar from "../../../components/navbar";
 
 export default function FormRegister() {
-  const axios = useApi(false);
+  const axios = useApi();
   const theme = useTheme();
   const alert = useSweetAlert();
   

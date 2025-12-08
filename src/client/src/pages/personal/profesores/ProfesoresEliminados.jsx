@@ -20,7 +20,7 @@ import { useTour } from "../../../hook/useTour";
 import CustomButton from "../../../components/customButton";
 
 export default function GestionProfesores() {
-  const axios = useApi(false);
+  const axios = useApi();
 
   const [profesores, setProfesores] = useState([]);
   const [profesorSearch, setProfesorSearch] = useState(null);

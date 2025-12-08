@@ -459,7 +459,7 @@ export default class ProfesorModel {
    */
   static async obtenerAreasConocimiento() {
     try {
-      const areas = await db("AREAS_DE_CONOCIMIENTO")
+      const areas = await db("areas_de_conocimiento")
         .select("id_area_conocimiento", "nombre_area_conocimiento");
 
       return FormatResponseModel.respuestaPostgres(

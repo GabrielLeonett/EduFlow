@@ -17,7 +17,7 @@ export default function ModalRegistroSeccion({
   idTrayecto,
 }) {
   const { register, handleSubmit, reset } = useForm();
-  const axios = useApi(true);
+  const axios = useApi();
   const alert = useSweetAlert();
 
 const onSubmit = async (data) => {

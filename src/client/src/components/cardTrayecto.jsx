@@ -20,7 +20,7 @@ import ModalEditarCampoTrayecto from "./ModalEditarCampoTrayecto";
 
 export default function CardTrayecto({ Trayecto, codigoPNF, onActualizar }) {
   const theme = useTheme();
-  const axios = useApi(false);
+  const axios = useApi();
   const navigate = useNavigate(); // Hook para navegación
 
   // Estados

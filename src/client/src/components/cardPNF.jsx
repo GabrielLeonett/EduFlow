@@ -32,7 +32,7 @@ import ModalEditarCampoPNF from "./ModalEditarCampoPNF";
 
 export default function CardPNF({ PNF, onActualizar }) {
   const theme = useTheme();
-  const axios = useApi(false);
+  const axios = useApi();
   const navigate = useNavigate();
   const alert = useSweetAlert();
 

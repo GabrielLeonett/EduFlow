@@ -27,7 +27,7 @@ import CardCoordinadorDestituido from "../../../components/CardCoordinadorDestit
 import { useTour } from "../../../hook/useTour";
 
 export default function CoordinadoresDestituidos() {
-  const axios = useApi(false);
+  const axios = useApi();
   const theme = useTheme();
 
   const [coordinadores, setCoordinadores] = useState([]);

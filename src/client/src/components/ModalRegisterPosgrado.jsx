@@ -29,7 +29,7 @@ const TIPOS_POSGRADO = [
 
 export default function ModalRegisterPosgrado({ open, onClose, setState }) {
   const [isLoading, setIsLoading] = useState(false);
-  const axios = useApi(true);
+  const axios = useApi();
   const alert = useSweetAlert();
 
   const {

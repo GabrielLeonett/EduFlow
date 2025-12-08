@@ -33,7 +33,7 @@ export default function RegistrarUnidadCurricular() {
   const [openModalLinea, setOpenModalLinea] = useState(false);
   const location = useLocation();
   const { idTrayecto } = location.state;
-  const axios = useApi(true);
+  const axios = useApi();
   const alert = useSweetAlert();
 
   useEffect(() => {

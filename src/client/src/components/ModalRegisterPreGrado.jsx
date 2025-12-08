@@ -15,7 +15,7 @@ import useSweetAlert from "../hook/useSweetAlert.jsx";
 
 export default function ModalRegisterPreGrado({ open, onClose, setState }) {
   const [isLoading, setIsLoading] = useState(false);
-  const axios  = useApi(true);
+  const axios  = useApi();
   const alert = useSweetAlert();
   const { register, handleSubmit, reset, watch } = useForm({
     defaultValues: {

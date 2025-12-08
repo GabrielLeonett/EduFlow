@@ -5,5 +5,4 @@ import { loadEnv } from "./src/utils/utilis.js";
 loadEnv();
 
 startServerBackend(3000);
-
-startServerFrontend(3001);
+startServerFrontend(3001)

@@ -9,7 +9,7 @@ export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const alert = useSweetAlert();
-  const axios = useApi(true);
+  const axios = useApi();
   const { connect, on, off, emit, isConnected } = useWebSocket(); // ✅ Agregar emit
 
   const [user, setUser] = useState(null);

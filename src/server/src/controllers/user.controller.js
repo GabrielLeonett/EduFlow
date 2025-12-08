@@ -19,7 +19,7 @@ export default class UserController {
 
       // 1. VALIDACIONES BÁSICAS (FALTABAN)
       if (!req.body || typeof req.body !== "object") {
-        return FormatterResponseController.validationError(res, {
+        return FormatterResponseController.respuestaError(res, {
           error: "Datos de entrada inválidos",
         });
       }
@@ -99,7 +99,7 @@ export default class UserController {
       // 5. Si el login falló, devolver error sin cookies
       console.error("❌ Login fallido para:", email, resultado);
       console.log("🔍 Llamando a respuesta con error...");
-      const respuestaError = FormatterResponseController.respuesta(
+      const respuestaError = FormatterResponseController.respuestaServicio(
         res,
         resultado
       );
@@ -418,7 +418,7 @@ export default class UserController {
         return FormatterResponseController.respuestaServicio(res, safeResponse);
       }
 
-      return FormatterResponseController.respuesta(res, resultado);
+      return FormatterResponseController.respuestaServicio(res, resultado);
     } catch (error) {
       console.error("💥 Error refrescando token:", error);
       return FormatterResponseController.respuestaError(res, {

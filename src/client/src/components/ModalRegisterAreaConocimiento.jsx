@@ -14,7 +14,7 @@ export default function ModalRegisterAreaConocimiento({
   setState,
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const axios = useApi(true);
+  const axios = useApi();
   const alert = useSweetAlert();
 
   const { register, handleSubmit, reset } = useForm({
