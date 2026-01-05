@@ -1,0 +1,2449 @@
+{
+  "yaakVersion": "2025.6.1",
+  "yaakSchema": 4,
+  "timestamp": "2025-10-21T03:20:34.288965",
+  "resources": {
+    "workspaces": [
+      {
+        "model": "workspace",
+        "id": "wk_2GOhvcRhW5",
+        "createdAt": "2025-01-07T16:03:32",
+        "updatedAt": "2025-10-17T20:05:46.169355300",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "En este espacio de trabajo estaran todos los endopoints y como probarlos",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "j5VYK4dUY8"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "cgJ5zVFgNA"
+          }
+        ],
+        "name": "UPTAMCA",
+        "encryptionKeyChallenge": null,
+        "settingValidateCertificates": true,
+        "settingFollowRedirects": true,
+        "settingRequestTimeout": 0
+      }
+    ],
+    "environments": [
+      {
+        "model": "environment",
+        "id": "ev_pGUYJmTXKg",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "createdAt": "2025-08-06T20:30:38.850315300",
+        "updatedAt": "2025-10-17T03:03:15.401501800",
+        "name": "ENV DEVELOPMENT",
+        "public": false,
+        "base": false,
+        "parentModel": "environment",
+        "parentId": "ev_G7xAFmaud5",
+        "variables": [
+          {
+            "enabled": true,
+            "name": "Auorizathion_Cookie",
+            "value": "autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiIsIlZpY2VycmVjdG9yIl0sInBhc3N3b3JkIjoiJDJiJDEwJGkwT0xENnpoWXdPLnRCTW1BdjVJTHVteUlXclJrSDBGcklpRWRTbGUyVndCSHo5LlNXWnlxIiwiaWF0IjoxNzYwNjcwMTgyLCJleHAiOjE3NjEyNzQ5ODJ9.Au8aJT2aIZ-7N2mPpap-T3UYUGZNc7SG_KS6HEKVHa4",
+            "id": "XvUqY9wQVK"
+          },
+          {
+            "enabled": true,
+            "name": "BACKEND_URL_LOCAL",
+            "value": "http://localhost:3000",
+            "id": "UwRPmDMdpU"
+          }
+        ],
+        "color": null
+      },
+      {
+        "model": "environment",
+        "id": "ev_G7xAFmaud5",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "createdAt": "2025-02-24T16:48:49",
+        "updatedAt": "2025-08-06T20:30:02.166743900",
+        "name": "Global Variables",
+        "public": false,
+        "base": true,
+        "parentModel": "workspace",
+        "parentId": null,
+        "variables": [],
+        "color": null
+      }
+    ],
+    "folders": [
+      {
+        "model": "folder",
+        "id": "fl_ezKUBGE5UG",
+        "createdAt": "2025-10-19T00:21:13.879731400",
+        "updatedAt": "2025-10-19T00:21:13.879731900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_tCYQy8J56D",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 0.002
+      },
+      {
+        "model": "folder",
+        "id": "fl_EMFmtEBTAZ",
+        "createdAt": "2025-10-19T00:21:13.878557900",
+        "updatedAt": "2025-10-19T00:21:13.878558200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_tCYQy8J56D",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 1000.00195
+      },
+      {
+        "model": "folder",
+        "id": "fl_gBXqaziM4H",
+        "createdAt": "2025-10-19T00:21:13.878212600",
+        "updatedAt": "2025-10-19T00:21:13.878213",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_tCYQy8J56D",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 3000.002
+      },
+      {
+        "model": "folder",
+        "id": "fl_t6haCHmPXH",
+        "createdAt": "2025-10-19T00:21:13.877674300",
+        "updatedAt": "2025-10-19T00:21:13.877674600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_tCYQy8J56D",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 2000.002
+      },
+      {
+        "model": "folder",
+        "id": "fl_tCYQy8J56D",
+        "createdAt": "2025-10-19T00:21:13.875901100",
+        "updatedAt": "2025-10-19T00:21:26.416415600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_qShYpT3BJe",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Aulas",
+        "sortPriority": 0.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_mPrHpFxmo8",
+        "createdAt": "2025-10-19T00:20:17.823957200",
+        "updatedAt": "2025-10-19T00:20:17.823957400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_SYzSxozmpM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 2000.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_8fB3AE2hj4",
+        "createdAt": "2025-10-19T00:20:17.823661",
+        "updatedAt": "2025-10-19T00:20:17.823661300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_SYzSxozmpM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 3000.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_VnNC7DcLLa",
+        "createdAt": "2025-10-19T00:20:17.823297",
+        "updatedAt": "2025-10-19T00:20:17.823297700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_SYzSxozmpM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 1000.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_sKf8qEddeA",
+        "createdAt": "2025-10-19T00:20:17.822751100",
+        "updatedAt": "2025-10-19T00:20:17.822751500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_SYzSxozmpM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 0.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_SYzSxozmpM",
+        "createdAt": "2025-10-19T00:20:17.819888300",
+        "updatedAt": "2025-10-19T00:20:58.861976300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_qShYpT3BJe",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Sedes",
+        "sortPriority": 0.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_qShYpT3BJe",
+        "createdAt": "2025-10-17T21:20:27.853303800",
+        "updatedAt": "2025-10-19T00:18:40.941339600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Infrastructura",
+        "sortPriority": 0.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_ysDpfNmTxT",
+        "createdAt": "2025-10-09T21:59:43.650006200",
+        "updatedAt": "2025-10-09T21:59:43.650006400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_c69gz7wtQV",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 2000.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_f2uEjmEy8v",
+        "createdAt": "2025-10-09T21:59:43.649744700",
+        "updatedAt": "2025-10-09T21:59:43.649744900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_c69gz7wtQV",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 3000.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_3mui2m6837",
+        "createdAt": "2025-10-09T21:59:43.649484200",
+        "updatedAt": "2025-10-09T21:59:43.649484400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_c69gz7wtQV",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 1000.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_mBJpWMhHSH",
+        "createdAt": "2025-10-09T21:59:43.649189",
+        "updatedAt": "2025-10-09T21:59:43.649189200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_c69gz7wtQV",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 0.001
+      },
+      {
+        "model": "folder",
+        "id": "fl_c69gz7wtQV",
+        "createdAt": "2025-10-09T21:59:43.646211",
+        "updatedAt": "2025-10-19T00:18:31.333846600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DpJKmBwGiU",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Secciones",
+        "sortPriority": 0.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_WMip5okDNT",
+        "createdAt": "2025-09-30T03:42:32.247054900",
+        "updatedAt": "2025-10-03T17:12:59.117276300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_f8Yt5zveaq",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 1000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_KeWsQ8Pnr2",
+        "createdAt": "2025-09-30T03:42:30.670871800",
+        "updatedAt": "2025-10-19T00:18:24.574824700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_qQjYaAPHjM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_JcczWVQSu7",
+        "createdAt": "2025-09-30T03:42:29.062256500",
+        "updatedAt": "2025-10-19T00:18:24.589978800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_qQjYaAPHjM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 4000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_dKqdHNwcnA",
+        "createdAt": "2025-09-30T03:42:25.855118800",
+        "updatedAt": "2025-10-03T17:12:59.138438500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_f8Yt5zveaq",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 4000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_UkRPeGAuKB",
+        "createdAt": "2025-09-30T03:42:07.919177900",
+        "updatedAt": "2025-09-30T03:42:21.335156300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_VqPKi8swdp",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 3000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_LLAu6RWSEt",
+        "createdAt": "2025-09-30T03:42:06.414414",
+        "updatedAt": "2025-10-19T00:18:24.582359800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_qQjYaAPHjM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 3000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_jmjkotYKip",
+        "createdAt": "2025-09-30T03:42:04.366073900",
+        "updatedAt": "2025-09-30T03:42:21.327692400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_VqPKi8swdp",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_3jmuvcVjsp",
+        "createdAt": "2025-09-30T03:42:02.071808900",
+        "updatedAt": "2025-09-30T03:42:21.320679",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_VqPKi8swdp",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 1000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_Fr5xvM5QMX",
+        "createdAt": "2025-09-30T03:41:39.055121100",
+        "updatedAt": "2025-09-30T03:41:54.257366200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_tFVg8NjEyh",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 0.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_iVtSPAiETb",
+        "createdAt": "2025-09-30T03:41:37.646082400",
+        "updatedAt": "2025-09-30T03:41:54.272129500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_tFVg8NjEyh",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_3jZJK5ipvT",
+        "createdAt": "2025-09-30T03:41:35.142250",
+        "updatedAt": "2025-10-03T17:12:59.131190800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_f8Yt5zveaq",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 3000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_a2a6qZFzhz",
+        "createdAt": "2025-09-30T03:41:33.398802700",
+        "updatedAt": "2025-09-30T03:41:54.265609300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_tFVg8NjEyh",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 1000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_yrh68xUatm",
+        "createdAt": "2025-09-30T03:41:11.710148100",
+        "updatedAt": "2025-10-19T00:18:31.371937800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DpJKmBwGiU",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 5000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_iERhKSTm3g",
+        "createdAt": "2025-09-30T03:41:10.102581",
+        "updatedAt": "2025-10-19T00:18:31.349540300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DpJKmBwGiU",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_3jGBvPebFa",
+        "createdAt": "2025-09-30T03:41:08.678039900",
+        "updatedAt": "2025-10-19T00:18:31.357705900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DpJKmBwGiU",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 3000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_UHpmBTnDqt",
+        "createdAt": "2025-09-30T03:41:06.855304",
+        "updatedAt": "2025-10-19T00:18:31.364595900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DpJKmBwGiU",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 4000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_kyCeiqXKY9",
+        "createdAt": "2025-09-30T03:40:57.695354",
+        "updatedAt": "2025-09-30T03:41:00.914647700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_ZZBFSQiUEw",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 0.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_rCRfzSgNp7",
+        "createdAt": "2025-09-30T03:40:47.015129600",
+        "updatedAt": "2025-09-30T03:41:00.921569200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_ZZBFSQiUEw",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 1000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_SnN6iBGtv4",
+        "createdAt": "2025-09-30T03:40:41.087030100",
+        "updatedAt": "2025-10-03T17:12:59.124342400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_f8Yt5zveaq",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_uowXRrKbKc",
+        "createdAt": "2025-09-30T03:40:35.391348300",
+        "updatedAt": "2025-09-30T03:41:00.929169500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_ZZBFSQiUEw",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 3000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_3tg5fQ2vCZ",
+        "createdAt": "2025-09-30T03:40:26.369065500",
+        "updatedAt": "2025-10-19T00:18:24.597483800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_qQjYaAPHjM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 5000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_u5tBqAUAde",
+        "createdAt": "2025-09-30T03:40:22.592536800",
+        "updatedAt": "2025-09-30T03:41:54.279734300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_tFVg8NjEyh",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 3000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_MLYE8ELYHQ",
+        "createdAt": "2025-09-30T03:40:17.073430800",
+        "updatedAt": "2025-09-30T03:41:00.943309200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_ZZBFSQiUEw",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_MPBb48g36i",
+        "createdAt": "2025-09-30T03:40:08.379935600",
+        "updatedAt": "2025-09-30T03:42:21.312821600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_VqPKi8swdp",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 0.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_ZSLnJdMjtc",
+        "createdAt": "2025-09-29T16:35:57.780858200",
+        "updatedAt": "2025-09-29T16:36:14.918941500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_PhJR6bkCrk",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "DELETE",
+        "sortPriority": 1000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_hdvwFkrGH9",
+        "createdAt": "2025-09-29T16:35:41.597247500",
+        "updatedAt": "2025-09-29T16:36:14.902962200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_PhJR6bkCrk",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "GET",
+        "sortPriority": 0.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_MJD9wUoHNg",
+        "createdAt": "2025-09-29T16:35:19.490493400",
+        "updatedAt": "2025-09-29T16:36:16.062522400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_PhJR6bkCrk",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "POST",
+        "sortPriority": 2500.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_uPVpqCqxLq",
+        "createdAt": "2025-09-29T16:35:03.983044500",
+        "updatedAt": "2025-09-29T16:36:14.966391200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_PhJR6bkCrk",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PUT",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_ZZBFSQiUEw",
+        "createdAt": "2025-08-17T15:44:28.648680200",
+        "updatedAt": "2025-10-19T00:18:40.949917100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Coordinadores",
+        "sortPriority": 1000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_DpJKmBwGiU",
+        "createdAt": "2025-08-12T23:06:49.662814400",
+        "updatedAt": "2025-10-19T00:18:24.557988500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_qQjYaAPHjM",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Trayectos",
+        "sortPriority": 0.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_tFVg8NjEyh",
+        "createdAt": "2025-06-04T00:05:47.027089600",
+        "updatedAt": "2025-10-19T00:18:40.957048800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Horario",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_VqPKi8swdp",
+        "createdAt": "2025-06-03T23:32:17.909391",
+        "updatedAt": "2025-10-19T00:18:31.342593600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DpJKmBwGiU",
+        "authentication": {},
+        "authenticationType": null,
+        "description": "En este estaran todos los endpoints de unidad curricular",
+        "headers": [],
+        "name": "Unidad_Curricular",
+        "sortPriority": 1000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_qQjYaAPHjM",
+        "createdAt": "2025-05-28T21:56:39.699690600",
+        "updatedAt": "2025-10-19T00:18:40.965081500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "PNF",
+        "sortPriority": 3000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_PhJR6bkCrk",
+        "createdAt": "2025-05-25T23:02:15.939802900",
+        "updatedAt": "2025-10-19T00:18:40.972433500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Profesores",
+        "sortPriority": 4000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_f8Yt5zveaq",
+        "createdAt": "2025-05-04T21:17:39.644749400",
+        "updatedAt": "2025-10-19T00:18:40.980144700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "En esta carpeta estaran los endpoints que todos los usurios pueden acceder y no es necesario tener permisologia estricta",
+        "headers": [],
+        "name": "Users",
+        "sortPriority": 5000.0
+      }
+    ],
+    "httpRequests": [
+      {
+        "model": "http_request",
+        "id": "rq_NvNJ7NFQAD",
+        "createdAt": "2025-10-20T20:32:54.907634200",
+        "updatedAt": "2025-10-20T20:46:33.102671600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_t6haCHmPXH",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"codigo\": \"AULA-101\",      \n  \"tipo\": \"Convencional\",   \n  \"id_sede\": 5,              \n  \"capacidad\": 30   \n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "MFdGKfEQPK"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "ahzZTkq83x"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 0.002,
+        "url": "${[ BACKEND_URL_LOCAL ]}/aulas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_hZYeRzYjwF",
+        "createdAt": "2025-10-20T20:32:46.956209500",
+        "updatedAt": "2025-10-20T20:33:17.074937900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_ezKUBGE5UG",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"codigo\": \"AULA-101\",      \n  \"tipo\": \"Convencional\",   \n  \"id_sede\": 1,              \n  \"capacidad\": 30,     \n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "jyXkuJ2uIk"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/aulas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_9Pku27vi9f",
+        "createdAt": "2025-10-19T00:41:25.124439800",
+        "updatedAt": "2025-10-20T20:24:05.982461500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_sKf8qEddeA",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.001,
+        "url": "${[ BACKEND_URL_LOCAL ]}/sedes",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "5",
+            "id": "7hScu2Wqsp"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "h6rYhG9T8T"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_RziPmLEXPk",
+        "createdAt": "2025-10-19T00:22:15.521954",
+        "updatedAt": "2025-10-19T00:22:29.942358",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_sKf8qEddeA",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/sedes",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_aBL4WHaZAZ",
+        "createdAt": "2025-10-18T22:22:10.018425500",
+        "updatedAt": "2025-10-18T22:22:26.723522500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_3tg5fQ2vCZ",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "N0IJNnmEvZ"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "KJjxy2SESf"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.003,
+        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/secciones",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":idTrayecto",
+            "value": "1",
+            "id": "s3MZa57uBF"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "KVhXd4Ws4j"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_MfxeABtMuJ",
+        "createdAt": "2025-10-18T22:21:07.897167300",
+        "updatedAt": "2025-10-18T22:21:37.159552800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_3tg5fQ2vCZ",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "N0IJNnmEvZ"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "KJjxy2SESf"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.002,
+        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/unidades-curriculares",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":idTrayecto",
+            "value": "1",
+            "id": "s3MZa57uBF"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "KVhXd4Ws4j"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_62T4XCuK4V",
+        "createdAt": "2025-10-18T22:17:58.992870700",
+        "updatedAt": "2025-10-20T21:24:56.354564700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_3tg5fQ2vCZ",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "N0IJNnmEvZ"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "KJjxy2SESf"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.001,
+        "url": "${[ BACKEND_URL_LOCAL ]}/pnf/:codigoPNF/trayectos",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":codigoPNF",
+            "value": "ISW-012",
+            "id": "yXNj0i5mi5"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "6RpS0pncfi"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_qAVSaNsYJY",
+        "createdAt": "2025-10-18T20:37:38.310741500",
+        "updatedAt": "2025-10-18T20:38:18.986299400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Fr5xvM5QMX",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idSeccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "n3vKBJbK5V"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 1000.002,
+        "url": "${[ BACKEND_URL_LOCAL ]}/horarios/aula/:id_aula",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id_aula",
+            "value": "",
+            "id": "DtKViRRJeI"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "HizPX6p3UJ"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_JHRVoev6Kr",
+        "createdAt": "2025-10-18T17:22:47.798200500",
+        "updatedAt": "2025-10-21T03:14:14.513400100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Fr5xvM5QMX",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idSeccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "n3vKBJbK5V"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 1000.001,
+        "url": "${[ BACKEND_URL_LOCAL ]}/horarios/profesor/:id_profesor",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id_profesor",
+            "value": "33335569",
+            "id": "PSgXgw3QTc"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "JTihByf3MW"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_AWPjbEsjcV",
+        "createdAt": "2025-10-17T21:20:34.689707800",
+        "updatedAt": "2025-10-20T20:19:21.718252500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_mPrHpFxmo8",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombreSede\": \"Núcleo de Tecnología y Ciencias Administrativas\",\n  \"UbicacionSede\": \"Los Teques, Edo. Miranda\",\n  \"GoogleSede\": \"https://maps.app.goo.gl/EHHeHjA7uXgNA32s9\",\n  \"CiudadSede\": \"Los Teques\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "uy8uy4eFAr"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/sedes",
+        "urlParameters": [
+          {
+            "enabled": false,
+            "name": ":id",
+            "value": "1",
+            "id": "TPzQHwzVEU"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "E0HnRnpKw2"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_eKzYMEFkzS",
+        "createdAt": "2025-10-17T20:22:40.218508600",
+        "updatedAt": "2025-10-17T21:04:07.877158300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_dKqdHNwcnA",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": "{\n  \"antiguaPassword\": \"Hoola12.\",\n  \"password\": \"1234ABCD\",\n  \"repetirPassword\": \"1234ABCD\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "mim9yYkfCg"
+          }
+        ],
+        "method": "PUT",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/auth/password",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_8KZMvSyt8b",
+        "createdAt": "2025-10-17T02:59:08.691217",
+        "updatedAt": "2025-10-19T00:18:47.229946",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_WMip5okDNT",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "yRPmNnbZ8A"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "St0eRYjQ7B"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 250.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/notifications",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_3YQDzmDbCJ",
+        "createdAt": "2025-10-09T22:00:20.653148200",
+        "updatedAt": "2025-10-20T21:03:48.299663600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_ZZBFSQiUEw",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "FdVcDeXf98"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "0kv9n8IGVc"
+          },
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "QzWidgKhgs"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 500.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/coordinadores",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_AbxNXgNBJw",
+        "createdAt": "2025-10-09T21:59:43.648711500",
+        "updatedAt": "2025-10-20T21:30:53.902565200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_mBJpWMhHSH",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": ""
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "KB4KrvknKV"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "fExEBYIWZ6"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "8dRdEMAW28"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "http://localhost:3000/Secciones",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "Trayecto",
+            "value": "1",
+            "id": "nQwJFEuB0s"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "cI0bzVHUbi"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_HSHvPtKn2v",
+        "createdAt": "2025-10-09T21:59:43.648233700",
+        "updatedAt": "2025-10-20T21:37:47.378588",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_UHpmBTnDqt",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"poblacionEstudiantil\": 120\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "3jAzDY48pz"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "5tm8tSsXYg"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/secciones",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":idTrayecto",
+            "value": "1",
+            "id": "dQenU2YSy6"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "Zjx0ADxb8r"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_ijA2ANNt7d",
+        "createdAt": "2025-10-07T02:46:31.866429600",
+        "updatedAt": "2025-10-21T02:38:25.155047700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_hdvwFkrGH9",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": ""
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "mim9yYkfCg"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "MyvtuKW7Yh"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "4gqTx7KP9S"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.001,
+        "url": "${[ BACKEND_URL_LOCAL ]}/profesores/:id/imagen",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "33335569",
+            "id": "QzACHQA0I4"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "8DPju8trrF"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_nimzkemYiX",
+        "createdAt": "2025-10-03T17:12:29.796249300",
+        "updatedAt": "2025-10-17T20:06:31.543444500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_WMip5okDNT",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": false,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "K9heu6EZ36"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "kjtuFCfXeT"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 500.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/notifications",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_RKEWjs3JiM",
+        "createdAt": "2025-09-29T17:36:41.982436900",
+        "updatedAt": "2025-09-29T17:36:52.785290900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_uPVpqCqxLq",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_profesor\": 31264460,\n  \"nombres\": \"Gabriel Dayer\",\n  \"apellidos\": \"Leonett Armas\",\n  \"municipio\": \"Guaicaipuro\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "54TgN99ZI0"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "3jpkY6kJHS"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "uHjfS0nsUW"
+          }
+        ],
+        "method": "PUT",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}profesores/actualizar",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_cMhqVTHrWu",
+        "createdAt": "2025-09-29T16:38:25.178416900",
+        "updatedAt": "2025-09-29T17:38:11.261865100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_ZSLnJdMjtc",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_profesor\": 31264460,\n  \"tipo_accion\": \"DESTITUCION\",\n  \"razon\": \"Incumplimiento grave de las normas institucionales y múltiples quejas verificadas\",\n  \"observaciones\": \"Se realizó investigación interna que confirmó las irregularidades\",\n  \"fecha_efectiva\": \"2024-09-29\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "54TgN99ZI0"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "3jpkY6kJHS"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "uHjfS0nsUW"
+          }
+        ],
+        "method": "DELETE",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}Profesores/Delete",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_k4r8aJcgDm",
+        "createdAt": "2025-09-25T01:26:26.464985800",
+        "updatedAt": "2025-10-21T02:04:40.205829400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_MJD9wUoHNg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"dia_semana\": \"Viernes\",\n  \"hora_inicio\": \"08:00:00\",\n  \"hora_fin\": \"10:00:00\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "IRwFKYfzs9"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "SebhQUGHRg"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 4000.0,
+        "url": "http://localhost:3000/profesores/:id/disponibilidad",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id",
+            "value": "1",
+            "id": "bP3htu9qmB"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "XedMe7NBr7"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_4CFfSTh68m",
+        "createdAt": "2025-09-25T00:43:25.262956700",
+        "updatedAt": "2025-10-20T20:32:51.166735800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_EMFmtEBTAZ",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"codigo\": \"AULA-101\",      \n  \"tipo\": \"Convencional\",   \n  \"id_sede\": 1,              \n  \"capacidad\": 30,     \n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "jyXkuJ2uIk"
+          }
+        ],
+        "method": "PUT",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/aulas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_mAdvq7D9GK",
+        "createdAt": "2025-08-29T23:21:32.247914400",
+        "updatedAt": "2025-10-21T03:15:33.784146400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Fr5xvM5QMX",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idSeccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "XVvN927XFw"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/horarios/seccion/:id_seccion",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id_seccion",
+            "value": "3",
+            "id": "EnrH4dH6mq"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "ZqikWryMYE"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_hk9eF5WzJD",
+        "createdAt": "2025-08-29T11:12:25.623299700",
+        "updatedAt": "2025-10-17T18:05:00.272564900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_hdvwFkrGH9",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": ""
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "mim9yYkfCg"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYxNTMzOTgsImV4cCI6MTc1Njc1ODE5OH0.7JVI8454guKEHLoJI_u8Br8pnobjFxFC7thHvtm5R7c;",
+            "id": "MyvtuKW7Yh"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "Vfr2XvjvV7"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 3000.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/Profesores/to/Horarios",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_MfwQzLkNoV",
+        "createdAt": "2025-08-26T02:50:26.228615900",
+        "updatedAt": "2025-10-21T03:15:46.235271800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Fr5xvM5QMX",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idSeccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "n3vKBJbK5V"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 1500.001,
+        "url": "${[ BACKEND_URL_LOCAL ]}/exportar/seccion/:id_seccion",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":id_seccion",
+            "value": "3",
+            "id": "zNP2abFTh2"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "eKIXQcrV79"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_pH3MwrumXR",
+        "createdAt": "2025-08-16T16:01:51.612274600",
+        "updatedAt": "2025-10-21T03:17:28.610296800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_UkRPeGAuKB",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idTrayecto\": 2,\n  \"nombreUnidadCurricular\": \"Programación Orientada a Objetos\",\n  \"descripcionUnidadCurricular\": \"Principios de POO con implementación en Java\",\n  \"cargaHorasAcademicas\": 75,\n  \"codigoUnidadCurricular\": \"POO-J1\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "rw4p0ctvha"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/unidades-curriculares",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":idTrayecto",
+            "value": "1",
+            "id": "Gc0wqEJfFz"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "b2XX0Ninr0"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_JrNbFd5Dfj",
+        "createdAt": "2025-08-12T23:06:59.537108100",
+        "updatedAt": "2025-10-18T17:15:33.839756",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_yrh68xUatm",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "KB4KrvknKV"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "4WT53J0Q4j"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "http://localhost:3000/Trayectos",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": "PNF",
+            "value": "INF-01",
+            "id": "nQwJFEuB0s"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "hgXkCuGgMx"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_CMDYHJahUJ",
+        "createdAt": "2025-08-06T22:04:46.582603800",
+        "updatedAt": "2025-10-20T22:23:55.981961400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_MJD9wUoHNg",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": "{\n  \"area_conocimiento\" : \"Matemáticas\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "mim9yYkfCg"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "MyvtuKW7Yh"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "fAn5ryGt0j"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 2000.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/catalogos/areas-conocimiento",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_DqxgHPA9wT",
+        "createdAt": "2025-08-06T22:04:45.516969700",
+        "updatedAt": "2025-10-20T22:08:57.684978100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_MJD9wUoHNg",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": "{\n    \"tipo\": \"Ingeniería\",\n    \"nombre\": \"en Informática\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "mim9yYkfCg"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "MyvtuKW7Yh"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "sDTZitxctU"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 3500.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/catalogos/pregrados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Je2fGvUePw",
+        "createdAt": "2025-08-06T22:04:44.432619600",
+        "updatedAt": "2025-10-20T22:08:26.963559100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_MJD9wUoHNg",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": "{\n    \"tipo\": \"Especialización\",\n    \"nombre\": \"en IA\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "mim9yYkfCg"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "MyvtuKW7Yh"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "aFH33iue7Q"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 3000.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/catalogos/posgrados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Ux2bFArkHB",
+        "createdAt": "2025-08-06T20:32:13.245238700",
+        "updatedAt": "2025-10-17T15:56:32.841273900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_hdvwFkrGH9",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": ""
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "mim9yYkfCg"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "MyvtuKW7Yh"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "GXmEQ8gTV9"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/catalogos/posgrados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_ZkjybpmvYz",
+        "createdAt": "2025-08-06T20:31:53.885462900",
+        "updatedAt": "2025-10-20T22:09:24.082359500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_hdvwFkrGH9",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": ""
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "MU94C94fa3"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 1000.0,
+        "url": "http://localhost:3000/catalogos/areas-conocimiento",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_9XnJhSSvRN",
+        "createdAt": "2025-08-01T22:49:40.304824100",
+        "updatedAt": "2025-10-20T22:09:52.402370800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_hdvwFkrGH9",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": ""
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "0EtzH9RIxr"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 2000.0,
+        "url": "http://localhost:3000/catalogos/pregrados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_2ZbyrkfCn4",
+        "createdAt": "2025-06-11T21:00:05.278394900",
+        "updatedAt": "2025-10-18T22:09:01.902308600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_3tg5fQ2vCZ",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "N0IJNnmEvZ"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "KJjxy2SESf"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/pnf",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_DUwj8LDUDt",
+        "createdAt": "2025-06-04T00:07:59.840285600",
+        "updatedAt": "2025-10-21T02:54:48.003171",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_a2a6qZFzhz",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idSeccion\": 3,\n  \"idProfesor\": 7,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:00:00\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "vuYDKNYB2u"
+          },
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "AZ4UeHhD3S"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "Tr6qESF3Bc"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/horarios",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_WYCiVLkH5Q",
+        "createdAt": "2025-06-03T23:32:55.582150400",
+        "updatedAt": "2025-10-20T21:55:04.587672100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_jmjkotYKip",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombreUnidadCurricular\": \"Matemáticas I\",\n  \"descripcionUnidadCurricular\": \"Fundamentos de matemáticas para ingeniería\",\n  \"cargaHorasAcademicas\": 4,\n  \"codigoUnidadCurricular\": \"MAT-101\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "6jaIgewCv4"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/unidades-curriculares",
+        "urlParameters": [
+          {
+            "enabled": true,
+            "name": ":idTrayecto",
+            "value": "1",
+            "id": "nZs8JPnfZj"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "GPjReQVnIZ"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_tygdJQL73x",
+        "createdAt": "2025-05-28T21:56:42.653119200",
+        "updatedAt": "2025-10-20T21:17:43.805673100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_KeWsQ8Pnr2",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombrePNF\": \"Ingeniería de Software\",\n  \"descripcionPNF\": \"Programa académico enfocado en el desarrollo de sistemas de software de calidad, abarcando desde el análisis de requerimientos hasta el despliegue y mantenimiento de aplicaciones.\",\n  \"codigoPNF\": \"ISW-012\",\n  \"sedePNF\": 5,\n  \"duracionTrayectosPNF\": 4\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "WB8uhZwTfc"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "AhE88QW6hq"
+          }
+        ],
+        "method": "POST",
+        "name": "localhost:3000/PNF/create",
+        "sortPriority": 0.0,
+        "url": "http://localhost:3000/pnf",
+        "urlParameters": [
+          {
+            "enabled": false,
+            "name": "autorization",
+            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTA3ODcxNDcsImV4cCI6MTc1MTM5MTk0N30.R4EgRhYKudud-yMKpxmeZXOfnjvhRtp7z0diPp6ksX4;",
+            "id": "SDmfi7Syws"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "XJWzmGMDkH"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_f8MhtWvz6f",
+        "createdAt": "2025-05-26T22:51:15.055310400",
+        "updatedAt": "2025-10-17T15:56:11.216619400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_MJD9wUoHNg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"busqueda\": \"Gabriel\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "gTcIftMGJJ"
+          }
+        ],
+        "method": "POST",
+        "name": "localhost:3000/Profesor/search",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/Profesor/search",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_v9avGWUV8S",
+        "createdAt": "2025-05-26T21:55:40.916746700",
+        "updatedAt": "2025-10-17T17:42:04.394408600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_hdvwFkrGH9",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Cookie",
+            "value": "${[ Auorizathion_Cookie ]}",
+            "id": "pxreJzkuma"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "hiUPXAq3Ky"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "hpENmvyGb6"
+          }
+        ],
+        "method": "GET",
+        "name": "",
+        "sortPriority": 4000.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/profesores",
+        "urlParameters": [
+          {
+            "enabled": false,
+            "name": "dedicacion",
+            "value": "1",
+            "id": "HAFvcxGYG8"
+          },
+          {
+            "enabled": false,
+            "name": "categoria",
+            "value": "Instructor",
+            "id": "iZdKxY8zQR"
+          },
+          {
+            "enabled": false,
+            "name": "ubicacion",
+            "value": "2",
+            "id": "AM7pUdAQ4k"
+          },
+          {
+            "enabled": false,
+            "name": "genero",
+            "value": "masculino",
+            "id": "sjIWa68S4u"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "4JqBJ2nrvW"
+          }
+        ]
+      },
+      {
+        "model": "http_request",
+        "id": "rq_DuKG85ZgFy",
+        "createdAt": "2025-05-25T23:02:19.386014400",
+        "updatedAt": "2025-10-21T02:37:49.594292200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_MJD9wUoHNg",
+        "authentication": {},
+        "authenticationType": "none",
+        "body": {
+          "form": [
+            {
+              "enabled": true,
+              "file": "C:\\Users\\Admin\\Pictures\\imagen josue perfil.jpg",
+              "id": "rMM9NVV0NG",
+              "name": "imagen"
+            },
+            {
+              "enabled": true,
+              "id": "p9ncFstpGB",
+              "name": "cedula",
+              "value": "33335569"
+            },
+            {
+              "enabled": true,
+              "id": "xYjhTd04PM",
+              "name": "nombres",
+              "value": "Josue Enyerbe"
+            },
+            {
+              "enabled": true,
+              "id": "rDv6bAG66x",
+              "name": "apellidos",
+              "value": "Solorzano Leonett"
+            },
+            {
+              "enabled": true,
+              "id": "3SX2CqAYf7",
+              "name": "municipio",
+              "value": "Guaicaipuro"
+            },
+            {
+              "enabled": true,
+              "id": "0MIc7NZfpj",
+              "name": "email",
+              "value": "delegadogabrielleonett@gmail.com"
+            },
+            {
+              "enabled": true,
+              "id": "8vYAIDFcf5",
+              "name": "telefono_movil",
+              "value": "04142245310"
+            },
+            {
+              "enabled": true,
+              "id": "JAUd2CfBmF",
+              "name": "fecha_nacimiento",
+              "value": "02-10-2007"
+            },
+            {
+              "enabled": true,
+              "id": "t79YbfrBde",
+              "name": "genero",
+              "value": "masculino"
+            },
+            {
+              "enabled": true,
+              "id": "hiCRUhbCCe",
+              "name": "fecha_ingreso",
+              "value": "20-10-2025"
+            },
+            {
+              "enabled": true,
+              "id": "K3qN07wUWA",
+              "name": "dedicacion",
+              "value": "Tiempo Completo"
+            },
+            {
+              "enabled": true,
+              "id": "iQ3qrQyWqq",
+              "name": "categoria",
+              "value": "Asistente"
+            },
+            {
+              "enabled": false,
+              "id": "c57KC30uz0",
+              "name": "areas_de_conocimiento",
+              "value": "\"[\"Ingenieria del software\"]\""
+            },
+            {
+              "enabled": true,
+              "id": "7QD0vQ0i3A",
+              "name": "pre_grado",
+              "value": "{      \"id_pre_grado\": 1,      \"nombre_pre_grado\": \"en Informática\",      \"tipo_pre_grado\": \"Ingeniería\"    }"
+            },
+            {
+              "enabled": true,
+              "id": "xgDTnGs9bt",
+              "name": "direccion",
+              "value": "Av.Bermudez"
+            },
+            {
+              "enabled": true,
+              "id": "iMIGbVGD75",
+              "name": "",
+              "value": ""
+            }
+          ]
+        },
+        "bodyType": "multipart/form-data",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "WmtkKYgiFS"
+          },
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "multipart/form-data",
+            "id": "7JMhIN0iSv"
+          }
+        ],
+        "method": "POST",
+        "name": "localhost:3000/Profesor/register",
+        "sortPriority": 1000.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/profesores",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_8agvrZr3Wg",
+        "createdAt": "2025-05-02T21:33:28.273386",
+        "updatedAt": "2025-10-17T21:00:29.049458600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_SnN6iBGtv4",
+        "authentication": {},
+        "authenticationType": "bearer",
+        "body": {
+          "text": "{\n  \"email\": \"superadmin@uptamca.ve\",\n  \"password\": \"Hoola12.\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "mim9yYkfCg"
+          }
+        ],
+        "method": "POST",
+        "name": "",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL_LOCAL ]}/auth/login",
+        "urlParameters": []
+      }
+    ],
+    "grpcRequests": [],
+    "websocketRequests": []
+  }
+}

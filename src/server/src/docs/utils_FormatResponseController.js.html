@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>utils/FormatResponseController.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="CurricularController.html">CurricularController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="CurricularModel.html">CurricularModel</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="FormatResponseController.html">FormatResponseController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="FormatResponseModel.html">FormatResponseModel</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="HorarioController.html">HorarioController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ProfesorController.html">ProfesorController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="UserController.html">UserController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="UserModel.html">UserModel</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-ProfesorModel.html">ProfesorModel</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.RegisterProfesor">RegisterProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.buscarProfesor">buscarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.mostrarProfesor">mostrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.mostrarProfesorAPI">mostrarProfesorAPI</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-emailService.html">emailService</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-emailService.html#~enviarEmail">enviarEmail</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-passwordUtils.html">passwordUtils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~comparePassword">comparePassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~generarPassword">generarPassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~hashPassword">hashPassword</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">buscarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#generateReport">generateReport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">login</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">loginUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPostGrados</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPreGrados</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarProfesorAPI</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarTrayectos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarUnTrayecto</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarHorario</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#registrarHorario-Registraunnuevohorarioenlabasededatos">registrarHorario - Registra un nuevo horario en la base de datos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarUnidadCurricular</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">regitrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">regitrarUnidadCurricular</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaDatos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaExito</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaPostgres</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaSuccess</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">validacionesComunes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#validationErrors">validationErrors</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">verificarUsers</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">utils/FormatResponseController.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// Funcion para generar reportes en caso de errores internos
+import generateReport from "./generateReport.js";
+
+/**
+ * @class FormatResponseController
+ * @description Maneja las posibles respuestas que dará el controlador
+ * @author Gabriel Leonett
+ */
+export default class FormatResponseController {
+  /**
+   * @static
+   * @method respuestaExito
+   * @description Devuelve una respuesta exitosa estructurada
+   * @param {Object} res Objeto response de Express
+   * @param {Object} respuestaDatos Objeto con los datos para la respuesta
+   * @param {number} [respuestaDatos.status=200] Código HTTP (default: 200)
+   * @param {string} [respuestaDatos.title='Excelente'] Titulo descriptivo
+   * @param {string} [respuestaDatos.message='Operación exitosa'] Mensaje descriptivo
+   * @param {Object} [respuestaDatos.data] Datos a enviar en la respuesta
+   * @param {Object} [respuestaDatos.metadata] Metadatos adicionales
+   * @returns {Object} Respuesta estructurada
+   */
+  static respuestaExito(res, respuestaDatos = {}) {
+    try {
+      const response = {
+        success: true,
+        title: respuestaDatos.title || "Excelente",
+        status: respuestaDatos.status || 200,
+        message: respuestaDatos.message || "Operación exitosa",
+        data: respuestaDatos.data || null,
+        error: null,
+      };
+
+      if (respuestaDatos.metadata) {
+        response.metadata = respuestaDatos.metadata;
+      }
+
+      return res.status(response.status).json(response);
+    } catch (error) {
+      return this.respuestaError(res, {
+        status: 500,
+        message: "Error al procesar respuesta exitosa",
+        error: error.message,
+      });
+    }
+  }
+
+  /**
+   * @static
+   * @method respuestaError
+   * @description Devuelve una respuesta de error estructurada
+   * @param {Object} res Objeto response de Express
+   * @param {Object} respuestaDatos Objeto con los datos para la respuesta
+   * @param {number} [respuestaDatos.status=500] Código HTTP
+   * @param {string} [respuestaDatos.title='Error'] Titulo descriptivo
+   * @param {string} [respuestaDatos.message='Error interno'] Mensaje descriptivo
+   * @param {Object} [respuestaDatos.error] Detalles del error
+   * @returns {Object} Respuesta de error estructurada
+   */
+  static respuestaError(res, respuestaDatos = {}) {
+    try {
+      if (respuestaDatos.status === undefined) {
+        throw respuestaDatos;
+      }
+
+      const status = respuestaDatos.status || 500;
+      const response = {
+        success: false,
+        status,
+        title: respuestaDatos.title,
+        message: respuestaDatos.message || "Error interno",
+        data: null,
+        error: respuestaDatos.error || null,
+      };
+
+      return res.status(status).json(response);
+    } catch (internalError) {
+      // Fallback para errores en el manejador de errores
+      generateReport({
+        status: 500,
+        state: "critical",
+        title: "Error en el manejador de errores",
+        message: internalError.message,
+        stack: internalError.stack,
+      });
+
+      return res.status(500).json({
+        success: false,
+        status: 500,
+        message: "Error interno en el servidor",
+        data: null,
+        error: null, // No exponer detalles internos
+      });
+    }
+  }
+
+  /**
+   * @static
+   * @method respuestaDatos
+   * @description Versión simplificada de respuesta exitosa (solo datos)
+   * @param {Object} res Objeto response de Express
+   * @param {Object} data Datos a enviar en la respuesta
+   * @param {Object} [metadata] Metadatos adicionales
+   * @returns {Object} Respuesta estructurada
+   */
+  static respuestaDatos(res, data, metadata) {
+    return this.respuestaExito(res, {
+      status: 200,
+      success: true,
+      message: "",
+      data,
+      metadata,
+    });
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Thu Jul 31 2025 12:10:09 GMT-0400 (hora de Venezuela) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

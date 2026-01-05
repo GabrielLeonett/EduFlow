@@ -1,0 +1,60 @@
+### 1. Crear PNF (Programa Nacional de Formación)
+POST http://localhost:3000/PNF/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+
+{
+  "sedePNF": 1,
+  "nombrePNF": "Ingeniería de Software",
+  "descripcionPNF": "Programa académico enfocado en el desarrollo de sistemas de software de calidad",
+  "codigoPNF": "ISW01"
+}
+
+### 2. Obtener todos los PNFs
+GET http://localhost:3000/PNF
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+
+### 3. Crear Unidad Curricular
+POST http://localhost:3000/Unidad_Curricular/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+
+{
+  "idTrayecto": 2,
+  "nombreUnidadCurricular": "Programación Orientada a Objetos",
+  "descripcionUnidadCurricular": "Principios de POO con implementación en Java",
+  "cargaHorasAcademicas": 75,
+  "codigoUnidadCurricular": "POO-J1"
+}
+
+### 4. Obtener Unidades Curriculares (filtradas por trayecto)
+GET http://localhost:3000/Unidad_Curricular?Trayecto=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+
+### 5. Obtener todos los Trayectos
+GET http://localhost:3000/Trayectos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+
+### 6. Crear Secciones para un Trayecto
+POST http://localhost:3000/Trayecto/1/create-secciones
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+
+{
+  "poblacionEstudiantil": 400
+}
+
+### 7. Obtener Secciones (filtradas por trayecto)
+GET http://localhost:3000/Secciones?Trayecto=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+
+### 8. Asignar Turno a Sección
+POST http://localhost:3000/Secciones/asignar-turno
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+
+{
+  "idSeccion": 1,
+  "idTurno": 1
+}

@@ -1,0 +1,6 @@
+Para ejecutar las migraciones debes de tener la base de datos: proyecto_uptamca en el puerto 5432 hosteada en localhost y con la contrasena 1234
+
+1. Debes estar en el terminal posicionado en la carpeta server
+2. ejecutar el comando npx knex migrate:latest
+3. ejecutar el comando npx knex seed:run 
+
