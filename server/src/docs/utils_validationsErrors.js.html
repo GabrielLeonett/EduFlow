@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>utils/validationsErrors.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="CurricularController.html">CurricularController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="CurricularModel.html">CurricularModel</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="FormatResponseController.html">FormatResponseController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="FormatResponseModel.html">FormatResponseModel</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="HorarioController.html">HorarioController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ProfesorController.html">ProfesorController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="UserController.html">UserController</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="UserModel.html">UserModel</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-ProfesorModel.html">ProfesorModel</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.RegisterProfesor">RegisterProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.buscarProfesor">buscarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.mostrarProfesor">mostrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-ProfesorModel.html#.mostrarProfesorAPI">mostrarProfesorAPI</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-emailService.html">emailService</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-emailService.html#~enviarEmail">enviarEmail</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-passwordUtils.html">passwordUtils</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~comparePassword">comparePassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~generarPassword">generarPassword</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-passwordUtils.html#~hashPassword">hashPassword</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">buscarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#generateReport">generateReport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">login</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">loginUser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPostGrados</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarPreGrados</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarProfesorAPI</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarTrayectos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">mostrarUnTrayecto</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarHorario</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#registrarHorario-Registraunnuevohorarioenlabasededatos">registrarHorario - Registra un nuevo horario en la base de datos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarProfesor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">registrarUnidadCurricular</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">regitrarPNF</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">regitrarUnidadCurricular</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaDatos</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaExito</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaPostgres</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">respuestaSuccess</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">validacionesComunes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#validationErrors">validationErrors</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html">verificarUsers</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">utils/validationsErrors.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @function validationErrors 
+ * @description Formatea los errores de validación de Zod u otros validadores
+ * @param {Object} validationResult - Resultado de la validación
+ * @param {Boolean} validationResult.success - Estado de la validacion
+ * @param {Object} [options] - Opciones para configurar el formato de los errores
+ * @param {Boolean} [options.includeCode=false] - Incluir código del error Zod
+ * @param {Boolean} [options.includeTypes=false] - Incluir tipos esperado/recibido
+ * @param {Boolean} [options.fullPath=true] - Unir path con puntos (ej: 'user.email')
+ * @returns {Boolean} Verdadero en caso de que no haya errores
+ * @returns {Array&lt;Object>} Array de errores formateados
+ * @author Gabriel Leonett
+ */
+export default function validationErrors(validationResult, options = {}) {
+    const {
+        includeCode = false,
+        includeTypes = false,
+        fullPath = true
+    } = options;
+
+    if (validationResult.success) {
+        return true;
+    }
+
+    // Si no hay error o la validación fue exitosa
+    if (!validationResult?.error) {
+        return [];
+    }
+
+    let errors = [];
+
+    // Caso 1: Estructura Zod (error.issues)
+    if (validationResult.error?.issues) {
+        errors = validationResult.error.issues.map(error => {
+            const errorObj = {
+                path: fullPath ? error.path?.join('.') || 'unknown' : error.path || ['unknown'],
+                message: error.message || 'Error de validación no especificado'
+            };
+
+            if (includeCode) {
+                errorObj.code = error.code || 'VALIDATION_ERROR';
+            }
+
+            if (includeTypes) {
+                errorObj.expected = error.expected;
+                errorObj.received = error.received;
+            }
+
+            return errorObj;
+        });
+    }
+    // Caso 2: Estructura con array directo
+    else if (Array.isArray(validationResult.error)) {
+        errors = validationResult.error.map(error => ({
+            path: error.path || (fullPath ? 'unknown' : ['unknown']),
+            message: error.message || 'Error de validación no especificado',
+            ...(includeCode &amp;&amp; { code: error.code || 'VALIDATION_ERROR' })
+        }));
+    }
+    // Caso 3: Otras estructuras
+    else {
+        errors = [{
+            path: fullPath ? 'general' : ['general'],
+            message: validationResult.error?.message || 'Error de validación desconocido',
+            ...(includeCode &amp;&amp; { code: validationResult.error?.code || 'VALIDATION_ERROR' })
+        }];
+    }
+
+    return errors;
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Thu Jul 31 2025 12:10:09 GMT-0400 (hora de Venezuela) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

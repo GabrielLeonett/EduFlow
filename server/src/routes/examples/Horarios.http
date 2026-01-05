@@ -1,0 +1,20 @@
+### 1. Crear nuevo horario (POST)
+# Esta petición crea un nuevo registro de horario
+POST http://localhost:3000/Horario/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTU3OTMzMDEsImV4cCI6MTc1NjM5ODEwMX0.RTH-hjJvVAlQuacmM-5ZMKj3zAi33RUqC2GiXy6n7uY
+{
+  "idSeccion": 2,
+  "idProfesor": 1,
+  "idUnidadCurricular": 1,
+  "idAula": 1,
+  "diaSemana": "Lunes",
+  "horaInicio": "10:20:00"
+}
+
+### 2. Obtener todos los horarios (GET)
+# Esta petición obtiene la lista completa de horarios
+GET http://localhost:3000/Horarios
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTQ5MzAwNTYsImV4cCI6MTc1NTUzNDg1Nn0.7JcsL1fjDNj2R3zTOLPNhFLgBKus6gCkMpJmhq3BT4I
+Cookie: autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTU3OTMzMDEsImV4cCI6MTc1NjM5ODEwMX0.RTH-hjJvVAlQuacmM-5ZMKj3zAi33RUqC2GiXy6n7uY

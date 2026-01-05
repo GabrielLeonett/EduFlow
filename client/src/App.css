@@ -1,0 +1,412 @@
+@import "tailwindcss";
+
+/* Esto resuelve definitivamente */
+.swal2-container {
+  z-index: 9999 !important;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins", serif;
+}
+
+.Label,
+.C3,
+.C2,
+.C1,
+.B4,
+.B3,
+.B2,
+.B1,
+.S2,
+.S1,
+h5,
+h4,
+h3,
+h2,
+h1 {
+  font-family: "Poppins", serif;
+  padding: 8px;
+}
+
+h1 {
+  font-weight: bold;
+  font-size: 48px;
+  line-height: 58px;
+}
+
+h2 {
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 48px;
+}
+
+h3 {
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 38px;
+}
+
+h4 {
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 34px;
+}
+
+h5 {
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 28px;
+}
+
+.S1 {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.S2 {
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.B1 {
+  font-weight: 400;
+  font-size: 16px;
+  font-style: normal;
+  line-height: 24px;
+}
+
+.B2 {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.B3 {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.B4 {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.C1 {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.C2 {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.C3 {
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.Label {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.bg-primary {
+  background-color: #1c75ba;
+  fill: #1c75ba;
+}
+
+.bg-primary-900 {
+  background-color: #1c75ba;
+  fill: #1c75ba;
+}
+
+.bg-primary-800 {
+  background-color: #1f82cf;
+  fill: #1f82cf;
+}
+
+.bg-primary-700 {
+  background-color: #298fdf;
+  fill: #298fdf;
+}
+
+.bg-primary-600 {
+  background-color: #3e9ae2;
+  fill: #3e9ae2;
+}
+
+.bg-primary-500 {
+  background-color: #53a6e5;
+  fill: #53a6e5;
+}
+
+.bg-primary-400 {
+  background-color: #69b1e8;
+  fill: #69b1e8;
+}
+
+.bg-primary-300 {
+  background-color: #7ebcec;
+  fill: #7ebcec;
+}
+
+.bg-primary-200 {
+  background-color: #94c7ef;
+  fill: #94c7ef;
+}
+
+.bg-primary-100 {
+  background-color: #a9d2f2;
+  fill: #a9d2f2;
+}
+
+.bg-primary-50 {
+  background-color: #eaf4fc;
+  fill: #eaf4fc;
+}
+
+.bg-darkmode {
+  background-color: #262d33;
+  fill: #262d33;
+}
+
+.bg-darkmode-900 {
+  background-color: #262d33;
+  fill: #262d33;
+}
+
+.bg-darkmode-800 {
+  background-color: #242b30;
+  fill: #242b30;
+}
+
+.bg-darkmode-700 {
+  background-color: #232a2f;
+  fill: #232a2f;
+}
+
+.bg-darkmode-600 {
+  background-color: #22282e;
+  fill: #22282e;
+}
+
+.bg-darkmode-500 {
+  background-color: #21272d;
+  fill: #21272d;
+}
+
+.bg-darkmode-400 {
+  background-color: #20262b;
+  fill: #20262b;
+}
+
+.bg-darkmode-300 {
+  background-color: #1f252a;
+  fill: #1f252a;
+}
+
+.bg-darkmode-200 {
+  background-color: #1e2429;
+  fill: #1e2429;
+}
+
+.bg-darkmode-100 {
+  background-color: #1d2328;
+  fill: #1d2328;
+}
+
+.bg-darkmode-50 {
+  background-color: #1c2226;
+  fill: #1c2226;
+}
+
+.bg-secundary {
+  background-color: #fe8012;
+  fill: #fe8012;
+}
+
+.bg-secundary-900 {
+  background-color: #fe8012;
+  fill: #fe8012;
+}
+
+.bg-secundary-800 {
+  background-color: #fe8c28;
+  fill: #fe8c28;
+}
+
+.bg-secundary-700 {
+  background-color: #fe973d;
+  fill: #fe973d;
+}
+
+.bg-secundary-600 {
+  background-color: #fea353;
+  fill: #fea353;
+}
+
+.bg-secundary-500 {
+  background-color: #feae68;
+  fill: #feae68;
+}
+
+.bg-secundary-400 {
+  background-color: #feba7e;
+  fill: #feba7e;
+}
+
+.bg-secundary-300 {
+  background-color: #ffc593;
+  fill: #ffc593;
+}
+
+.bg-secundary-200 {
+  background-color: #ffd1a9;
+  fill: #ffd1a9;
+}
+
+.bg-secundary-100 {
+  background-color: #ffdcbe;
+  fill: #ffdcbe;
+}
+
+.bg-secundary-50 {
+  background-color: #fff3e9;
+  fill: #fff3e9;
+}
+
+.primary-900 {
+  color: #1c75ba;
+}
+
+.primary {
+  color: #1c75ba;
+}
+
+.primary-800 {
+  color: #1f82cf;
+}
+
+.primary-700 {
+  color: #298fdf;
+}
+
+.primary-600 {
+  color: #3e9ae2;
+}
+
+.primary-500 {
+  color: #53a6e5;
+}
+
+.primary-400 {
+  color: #69b1e8;
+}
+
+.primary-300 {
+  color: #7ebcec;
+}
+
+.primary-200 {
+  color: #94c7ef;
+}
+
+.primary-100 {
+  color: #a9d2f2;
+}
+
+.primary-50 {
+  color: #eaf4fc;
+}
+
+.secundary {
+  color: #fe8012;
+}
+
+.secundary-900 {
+  color: #fe8012;
+}
+
+.secundary-800 {
+  color: #fe8c28;
+}
+
+.secundary-700 {
+  color: #fe973d;
+}
+
+.secundary-600 {
+  color: #fea353;
+}
+
+.secundary-500 {
+  color: #feae68;
+}
+
+.secundary-400 {
+  color: #feba7e;
+}
+
+.secundary-300 {
+  color: #ffc593;
+}
+
+.secundary-200 {
+  color: #ffd1a9;
+}
+
+.secundary-100 {
+  color: #ffdcbe;
+}
+
+.secundary-50 {
+  color: #fff3e9;
+}
+
+#logo-pluma-loop {
+  clip-path: inset(0 0 100% 0);
+  animation: revealLoop 3s ease infinite;
+  /* Comienza inmediatamente */
+}
+
+#logo-libro-loop {
+  clip-path: inset(0 100% 0 0);
+  animation: revealLoop 2s ease infinite;
+  animation-delay: 1s; /* Comienza después de pluma */
+}
+
+#logo-letras-loop {
+  clip-path: inset(0 100% 0 0);
+  animation: revealLoop 1.5s ease infinite;
+  animation-delay: 2s; /* Comienza después de libro */
+}
+
+@keyframes revealLoop {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+  }
+  33% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  66% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+  }
+}
+/*Componente de React*/
