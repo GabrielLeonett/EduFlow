@@ -971,7 +971,7 @@ export default class ProfesorService {
       // Validar datos de reingreso
       const requiredValidation = ValidationService.validateRequiredFields(
         datos,
-        ["id_usuario", "tipo_reingreso", "motivo_reingreso"]
+        ["id_profesor", "tipo_reingreso", "motivo_reingreso"]
       );
 
       if (!requiredValidation.isValid) {
@@ -995,7 +995,7 @@ export default class ProfesorService {
 
       // Validar ID de profesor
       const profesorIdValidation = ValidationService.validateId(
-        datos.id_usuario,
+        datos.id_profesor,
         "profesor"
       );
       if (!profesorIdValidation.isValid) {
@@ -1007,11 +1007,13 @@ export default class ProfesorService {
 
       // Verificar que el profesor existe y está inactivo
       const profesores = await ProfesorModel.mostrarProfesoresEliminados({
-        id_profesor: datos.id_usuario,
+        search: datos.id_profesor,
       });
-      const profesor = profesores.data.profesor;
+      const profesor = profesores.data.profesores.find(
+        (p) => p.id_profesor === datos.id_profesor
+      );
       if (!profesor) {
-        return FormatterResponseService.notFound("Profesor", datos.id_usuario);
+        return FormatterResponseService.notFound("Profesor", datos.id_profesor);
       }
 
       // Verificar que el profesor está inactivo
@@ -1051,7 +1053,7 @@ export default class ProfesorService {
         user_id: profesor.cedula,
         contenido: `Usted ha sido ${accionContenido} en el sistema. Motivo: ${datos.motivo_reingreso}`,
         metadatos: {
-          profesor_id: datos.id_usuario,
+          profesor_id: datos.id_profesor,
           tipo_reingreso: datos.tipo_reingreso,
           motivo_reingreso: datos.motivo_reingreso,
           observaciones: datos.observaciones,
@@ -1068,7 +1070,7 @@ export default class ProfesorService {
         tipo: `profesor_reingreso`,
         contenido: `Se ha ${accionContenido} al profesor ${profesor.nombres} ${profesor.apellidos} (${profesor.cedula})`,
         metadatos: {
-          profesor_id: datos.id_usuario,
+          profesor_id: datos.id_profesor,
           profesor_cedula: profesor.cedula,
           profesor_nombre: `${profesor.nombres} ${profesor.apellidos}`,
           tipo_reingreso: datos.tipo_reingreso,

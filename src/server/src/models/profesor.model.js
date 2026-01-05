@@ -252,38 +252,13 @@ export default class ProfesorModel {
    */
   static async mostrarProfesoresEliminados(queryParams) {
     try {
-      console.log("Query params: ", queryParams);
+      console.log('Query params: ', queryParams)
       const {
         page = 1,
         limit = 20,
         sort_order = "nombres",
         search = "",
-        id_profesor = null,
       } = queryParams;
-
-      // Si se proporciona un ID específico, buscar solo ese profesor
-      if (id_profesor) {
-        const specificQuery = `
-        SELECT * FROM profesores_informacion_completa 
-        WHERE id_profesor = $1
-      `;
-
-        const specificResult = await client.query(specificQuery, [id_profesor]);
-
-        if (specificResult.rows.length === 0) {
-          return FormatResponseModel.respuestaPostgres(
-            { profesor: null },
-            "Profesor no encontrado"
-          );
-        }
-
-        return FormatResponseModel.respuestaPostgres(
-          {
-            profesor: specificResult.rows[0],
-          },
-          "Profesor obtenido exitosamente"
-        );
-      }
 
       // Calcular offset
       const offset = (page - 1) * limit;
@@ -307,7 +282,7 @@ export default class ProfesorModel {
       let countParams = [];
 
       // Solo agregar búsqueda si hay término
-      if (search) {
+      if (search && search.trim() !== "") {
         dataQuery = `
         SELECT * FROM vista_profesores_eliminados 
         WHERE (nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula::text ILIKE $3)

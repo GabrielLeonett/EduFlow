@@ -169,6 +169,18 @@ export default function RegistrarAula() {
     }, 100);
   }, [reset]);
 
+  const handleDebug = () => {
+    console.log("Estado actual del formulario:", {
+      values: watch(),
+      errors,
+      isValid,
+      selectedSede,
+      sedesCount: sedes.length,
+      pnfsCount: pnfs.length,
+      loadingSedes,
+      loadingPnfs,
+    });
+  };
 
   return (
     <>
@@ -429,6 +441,13 @@ export default function RegistrarAula() {
                   Limpiar
                 </CustomButton>
                 
+                <CustomButton
+                  tipo="secondary"
+                  onClick={handleDebug}
+                  sx={{ minWidth: 120 }}
+                >
+                  Debug
+                </CustomButton>
 
                 <CustomButton
                   tipo="primary"
