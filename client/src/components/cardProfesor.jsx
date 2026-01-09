@@ -31,11 +31,13 @@ import useApi from "../hook/useApi.jsx";
 import ModalDestitucion from "./ModalDestitucion.jsx";
 import ModalEditarCampoProfesor from "./ModalEditarCampoProfesor.jsx";
 import CustomChip from "./CustomChip.jsx";
+import useSweetAlert from "../hook/useSweetAlert.jsx";
 
 export default function CardProfesor({ profesor }) {
   const axios = useApi(false);
   const theme = useTheme();
   const navigate = useNavigate();
+  const alert = useSweetAlert();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [profesorActual, setProfesorActual] = useState(profesor);
@@ -420,7 +422,8 @@ export default function CardProfesor({ profesor }) {
               horas disponibles:
               {profesor.horas_disponibles?.hours
                 ? `${profesor.horas_disponibles.hours}h`
-                : null} {profesor.horas_disponibles?.minutes
+                : null}{" "}
+              {profesor.horas_disponibles?.minutes
                 ? `${profesor.horas_disponibles.minutes}min`
                 : null}
             </Typography>

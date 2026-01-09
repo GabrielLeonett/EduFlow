@@ -253,6 +253,7 @@ export default class ProfesorModel {
   static async mostrarProfesoresEliminados(queryParams) {
     try {
       console.log("Query params: ", queryParams);
+
       const {
         page = 1,
         limit = 20,
@@ -264,7 +265,7 @@ export default class ProfesorModel {
       // Si se proporciona un ID específico, buscar solo ese profesor
       if (id_profesor) {
         const specificQuery = `
-        SELECT * FROM profesores_informacion_completa 
+        SELECT * FROM vista_profesores_eliminados  
         WHERE id_profesor = $1
       `;
 
@@ -899,20 +900,19 @@ export default class ProfesorModel {
    */
   static async eliminar(datos, usuarioId) {
     try {
-      const { id_usuario, tipo_accion, razon, observaciones, fecha_efectiva } =
+      const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } =
         datos;
 
       const query =
         "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)";
       const values = [
         usuarioId,
-        id_usuario,
+        id_profesor,
         tipo_accion,
         razon,
         observaciones,
         fecha_efectiva,
       ];
-      console.log(values, datos);
 
       const { rows } = await client.query(query, values);
 
@@ -924,7 +924,7 @@ export default class ProfesorModel {
       error.details = {
         path: "ProfesorModel.eliminar",
         usuario_id: usuarioId,
-        id_usuario: datos.id_usuario,
+        id_profesor: datos.id_profesor,
       };
       throw FormatResponseModel.respuestaError(
         error,

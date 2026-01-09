@@ -1021,7 +1021,7 @@ export default class CurricularModel {
   static async eliminarPnf(id_usuario, id_pnf) {
     try {
       const query = `
-      CALL eliminar_pnf($1, $2, NULL);
+      CALL activar_desactivar_pnf(NULL,$1, $2, 'DESACTIVAR');
     `;
 
       const { rows } = await pg.query(query, [id_usuario, id_pnf]);
@@ -1055,7 +1055,7 @@ export default class CurricularModel {
   static async reactivarPnf(id_usuario, id_pnf) {
     try {
       const query = `
-      CALL reactivar_pnf($1, $2, NULL);
+      CALL activar_desactivar_pnf(NULL,$1, $2, 'ACTIVAR');
     `;
 
       const { rows } = await pg.query(query, [id_usuario, id_pnf]);

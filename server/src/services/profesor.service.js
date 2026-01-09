@@ -866,7 +866,7 @@ export default class ProfesorService {
 
       // Verificar que el profesor existe
       const profesores = await ProfesorModel.obtenerTodos({
-        search: datos.id_profesor,
+        search: datos.id_profesor.toString(),
       });
       const profesor = profesores.data.profesores.find(
         (profe) => profe.id_profesor === datos.id_profesor
@@ -1009,6 +1009,7 @@ export default class ProfesorService {
       const profesores = await ProfesorModel.mostrarProfesoresEliminados({
         id_profesor: datos.id_usuario,
       });
+      
       const profesor = profesores.data.profesor;
       if (!profesor) {
         return FormatterResponseService.notFound("Profesor", datos.id_usuario);
