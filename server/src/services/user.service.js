@@ -381,6 +381,7 @@ export default class UserService {
 
         // Validar contraseña actual
         console.log("🔐 Validando contraseña actual...");
+        console.log(datos, password);
         const validatePassword = await comparePassword(
           datos.antigua_password,
           password

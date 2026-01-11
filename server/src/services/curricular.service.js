@@ -1153,6 +1153,7 @@ export default class CurricularService {
         user_action.id,
         "usuario"
       );
+
       if (!usuarioValidation.isValid) {
         return FormatterResponseService.validationError(
           usuarioValidation.errors,
@@ -1161,6 +1162,7 @@ export default class CurricularService {
       }
 
       const validation = ValidationService.validatePartialPnf(datos);
+      
       if (!validation.isValid) {
         return FormatterResponseService.validationError(
           validation.errors,

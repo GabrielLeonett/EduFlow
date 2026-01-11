@@ -1,731 +1,49 @@
 {
-  "yaakVersion": "2025.6.1",
+  "yaakVersion": "2025.9.3",
   "yaakSchema": 4,
-  "timestamp": "2025-10-21T03:20:34.288965",
+  "timestamp": "2026-01-11T16:43:19.828174300",
   "resources": {
     "workspaces": [
       {
         "model": "workspace",
         "id": "wk_2GOhvcRhW5",
         "createdAt": "2025-01-07T16:03:32",
-        "updatedAt": "2025-10-17T20:05:46.169355300",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "En este espacio de trabajo estaran todos los endopoints y como probarlos",
+        "updatedAt": "2026-01-10T17:15:26.368389500",
+        "authentication": {
+          "name": "Authorization",
+          "payload": "{\n  \"id\": 999999999,\n  \"email\": \"superadmin@uptamca.ve\",\n  \"nombres\": \"Super\",\n  \"apellidos\": \"Administrador\",\n  \"roles\": [\n    \"SuperAdmin\"\n  ],\n  \"userId\": 999999999,\n  \"primera_vez\": false,\n  \"iss\": \"uptamca-api\",\n  \"aud\": \"uptamca-client\"\n}",
+          "secret": "44W2My8AgYWB82Zwtjg$^fEGc!ufqN@dCfJREEty2^jBNUedXj"
+        },
+        "authenticationType": "jwt",
+        "description": "# 📊 Resumen Total de Rutas de tu API\n\n## 📁 **TOTAL: 58 RUTAS**\n\n## 1. **Administradores (Admin)** - 10 rutas\n```\nGET    /admins\nPOST   /admins\nPUT    /admins/:id\nDELETE /admins/:id\nGET    /admins/search\nPATCH  /admins/:id/rol\nGET    /admin/profile\nPUT    /admin/profile\nGET    /admin/reports\nGET    /admin/stats\nGET    /admin/logs\n```\n\n## 2. **Aulas (Aula)** - 9 rutas\n```\nGET    /aulas\nGET    /aulas/:id\nPOST   /aulas\nPUT    /aulas/:id\nDELETE /aulas/:id\nGET    /aulas/tipo/:tipo\nGET    /aulas/sede/:id_sede\nGET    /aulas/pnf/:codigoPNF\nGET    /api/aulas\n```\n\n## 3. **Coordinadores (Coordinador)** - 10 rutas\n```\nGET    /coordinadores\nGET    /coordinadores/destituidos\nGET    /coordinadores/:id\nPOST   /coordinadores\nPUT    /coordinadores/:id\nPUT    /coordinadores/:cedula/reasignar-pnf\nDELETE /coordinadores/:id/destituir\nPOST   /coordinadores/:id/restitur\nGET    /coordinadores/:id/historial-destituciones\n```\n\n## 4. **Curricular (PNF/Trayectos/Unidades/Secciones)** - 22 rutas\n```\nGET    /pnf\nPOST   /pnf\nPUT    /pnf/:idPNF\nGET    /pnf/:codigoPNF/trayectos\nPUT    /trayectos/:idTrayecto/descripcion\nGET    /trayectos/:idTrayecto/unidades-curriculares\nGET    /unidades-curriculares/:codigoPNF/:valorTrayecto\nPOST   /trayectos/:idTrayecto/unidades-curriculares\nPOST   /catalogo/:idTrayecto/linea-investigacion\nGET    /catalogo/lineas-investigacion\nGET    /catalogo/trayectos/:idTrayecto/lineas-investigacion\nPUT    /unidades-curriculares/:id_unidad_curricular\nDELETE /unidades-curriculares/:id_unidad_curricular\nPOST   /pnfs/:id_pnf/activar\nDELETE /pnfs/:id_pnf\nGET    /trayectos/:idTrayecto/secciones\nGET    /secciones/:codigoPNF/:valorTrayecto\nPOST   /trayectos/:idTrayecto/secciones\nPUT    /secciones/:idSeccion/turno\nGET    /secciones\n```\n\n## 5. **Horarios (Horario)** - 13 rutas\n```\nGET    /horarios/seccion/:id_seccion\nGET    /horarios/profesor/:id_profesor\nGET    /horarios/aula/:id_aula\nPOST   /profesor/cambiar/horario/:id_profesor\nPOST   /aula/cambiar/horario/:id_aula\nPOST   /profesores/to/seccion/:id_seccion\nPOST   /aulas/to/seccion/:id_seccion\nGET    /exportar/seccion/:id_seccion\nPOST   /horarios\nPUT    /horarios/:id\nDELETE /horarios/:id_horario\n```\n\n## 6. **Profesores (Profesor)** - 21 rutas\n```\nGET    /profesores\nGET    /api/profesores\nPOST   /profesores\nPUT    /profesores/:id\nDELETE /profesores/:id\nGET    /profesores/eliminados\nPOST   /profesores/reingresar\nGET    /profesores/search\nGET    /profesores/:id/imagen\nGET    /profesores/:id/disponibilidad\nPOST   /profesores/:id_profesor/disponibilidad\nPUT    /profesores/:id_profesor/disponibilidad\nDELETE /profesores/:id_profesor/disponibilidad/:id_disponibilidad\nGET    /catalogos/pregrados\nPOST   /catalogos/pregrados\nGET    /catalogos/posgrados\nPOST   /catalogos/posgrados\nGET    /catalogos/areas-conocimiento\nPOST   /catalogos/areas-conocimiento\n```\n\n## 7. **Sedes (Sedes)** - 6 rutas\n```\nGET    /sedes\nGET    /sedes/:id\nPOST   /sedes\nPUT    /sedes/:id\nDELETE /sedes/:id\n```\n\n## 8. **Sistema (System)** - 20 rutas\n```\nPOST   /system/backup\nGET    /system/backups\nPOST   /system/restore\nDELETE /system/backups/cleanup\nDELETE /system/backups/:backupFileName\nGET    /system/backups/download/:backupFileName\nGET    /system/reportes/estadisticas\nGET    /system/metricas/sistema\nGET    /system/metricas/academicas\nGET    /system/mapa-calor/horarios\nGET    /system/estado\nGET    /system/info\nGET    /system/logs\nPOST   /system/backup/manual\nGET    /api/system/backups\nGET    /api/system/estadisticas\nGET    /api/system/status\nGET    /api/system/metricas\nGET    /auditory/system\n```\n\n## 9. **Usuarios/Autenticación (User)** - 14 rutas\n```\nPOST   /auth/login\nPOST   /auth/recuperar-contrasena\nPOST   /auth/verificar-token\nGET    /auth/verify\nGET    /auth/status\nPOST   /auth/refresh\nPOST   /auth/logout\nGET    /profile\nPUT    /auth/cambiar-contrasena\nDELETE /user/:id_usuario/desactivar\nPUT    /user/:id_usuario/activar\nGET    /auth/logout\n```\n\n## 📋 **Resumen por módulo:**\n\n| Módulo | Rutas | Métodos Principales |\n|--------|-------|-------------------|\n| Administradores | 10 | GET: 4, POST: 1, PUT: 2, DELETE: 1, PATCH: 1 |\n| Aulas | 9 | GET: 6, POST: 1, PUT: 1, DELETE: 1 |\n| Coordinadores | 10 | GET: 4, POST: 2, PUT: 2, DELETE: 2 |\n| Curricular | 22 | GET: 11, POST: 4, PUT: 3, DELETE: 2 |\n| Horarios | 13 | GET: 4, POST: 5, PUT: 1, DELETE: 1 |\n| Profesores | 21 | GET: 7, POST: 5, PUT: 3, DELETE: 3 |\n| Sedes | 6 | GET: 2, POST: 1, PUT: 1, DELETE: 1 |\n| Sistema | 20 | GET: 12, POST: 3, DELETE: 3 |\n| Usuarios/Auth | 14 | GET: 5, POST: 5, PUT: 2, DELETE: 1 |\n| **TOTAL** | **125** | **GET: 51, POST: 26, PUT: 15, DELETE: 15, PATCH: 1** |\n\n## 🔧 **Métodos HTTP utilizados:**\n- **GET**: 51 rutas (40.8%)\n- **POST**: 26 rutas (20.8%) \n- **PUT**: 15 rutas (12%)\n- **DELETE**: 15 rutas (12%)\n- **PATCH**: 1 ruta (0.8%)\n- **Total**: 125 métodos HTTP en 58 rutas únicas\n\n## 🎯 **Puntos clave:**\n1. **Módulo más grande**: Curricular (22 rutas) - Gestión completa de PNFs, trayectos, unidades y secciones\n2. **Autenticación requerida**: Todas excepto 3 rutas públicas de login/recuperación\n3. **Roles implementados**: SuperAdmin, Vicerrector, Director General, Coordinador, Profesor\n4. **CRUD completo**: Todos los módulos principales tienen operaciones CRUD\n5. **Sistema de archivos**: Soporte para upload de imágenes en Profesores y Administradores\n\n## 📁 **Estructura de la API:**\n```\napi/\n├── auth/          # Autenticación y usuarios\n├── admin/         # Administradores del sistema\n├── aulas/         # Gestión de aulas físicas\n├── coordinadores/ # Gestión de coordinadores\n├── curricular/    # PNFs, trayectos, unidades, secciones\n├── horarios/      # Horarios académicos\n├── profesores/    # Gestión de profesores\n├── sedes/         # Sedes universitarias\n└── system/        # Sistema, backup, métricas\n```\n\n# 💰 Valoración de API Completa (Sistema Universitario)\n\n## 📊 **Análisis del Proyecto:**\n\n### **Características Técnicas:**\n- ✅ **58 rutas organizadas en 9 módulos**\n- ✅ **Sistema de autenticación JWT con roles**\n- ✅ **Gestión completa de entidades académicas**\n- ✅ **Sistema de backup/restauración**\n- ✅ **Upload de archivos/imágenes**\n- ✅ **API REST bien estructurada**\n- ✅ **Middleware de autorización por roles**\n- ✅ **Documentación Swagger/OpenAPI implícita**\n\n## 💵 **Estimación de Valor (Mercado Latinoamérica):**\n\n### **1. Como Producto Terminado (Licencia):**\n- **Precio base**: $3,000 - $5,000 USD\n- **Por módulo funcional**: +$500 - $1,000 c/u\n- **Total estimado**: **$8,000 - $12,000 USD**\n\n### **2. Desarrollo Personalizado (Freelance):**\n- **Horas estimadas**: 400-600 horas\n- **Tarifa promedio dev senior**: $30-50 USD/hora\n- **Valor desarrollo**: **$12,000 - $30,000 USD**\n\n### **3. SaaS/Mensual (si se hostea):**\n- **Plan básico**: $99 - $299 USD/mes\n- **Plan empresarial**: $500 - $1,000 USD/mes\n- **Implementación**: $2,000 - $5,000 USD (one-time)\n\n## 📈 **Factores que Aumentan el Valor:**\n\n### **+ Valor si el 80% funciona (46/58 rutas):**\n| Factor | Impacto | Valor Adicional |\n|--------|---------|-----------------|\n| ✅ Autenticación robusta | Alto | +$1,000 - $2,000 |\n| ✅ Gestión de horarios | Alto | +$1,500 - $3,000 |\n| ✅ Sistema de backup | Medio | +$500 - $1,000 |\n| ✅ Upload de archivos | Medio | +$500 - $1,000 |\n| ✅ Múltiples roles | Alto | +$1,000 - $2,000 |\n| ✅ Documentación | Bajo-Medio | +$300 - $800 |\n\n### **Valor ajustado por funcionalidad:**\n```\nBase (80% funcional): $8,000 - $12,000\n+ Módulos críticos: +$2,500 - $5,000\n+ Complejidad académica: +$1,500 - $3,000\n- Falta 20% rutas: -$1,000 - $2,000\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nTotal Ajustado: $11,000 - $18,000 USD\n```\n\n## 🏫 **Mercado Específico (Educación Superior):**\n\n### **Para universidades venezolanas:**\n- **Precio local adaptado**: 5,000 - 15,000 USD\n- **Mantenimiento anual**: 15-20% del valor\n- **Capacitación**: $500 - $1,500 adicional\n\n### **Factores regionales:**\n| País | Rango Precio | Observaciones |\n|------|-------------|---------------|\n| Venezuela | $5,000 - $12,000 | Considerar situación económica |\n| Colombia | $8,000 - $18,000 | Mercado más estable |\n| México | $10,000 - $25,000 | Mayor poder adquisitivo |\n| España | €8,000 - €20,000 | Mercado europeo |\n\n## 🔧 **Costos de Mejora (para el 20% faltante):**\n\n### **Para completar al 100%:**\n- **Desarrollo restante**: 80-120 horas\n- **Testing/QA**: 40-60 horas\n- **Documentación**: 20-40 horas\n- **Costo aproximado**: **$3,000 - $6,000 USD adicionales**\n\n## 💼 **Estrategias de Precio Recomendadas:**\n\n### **Opción 1: Precio Fijo (Recomendado)**\n```\n✅ Sistema completo: $12,000 USD\n✅ Implementación: $2,000 USD\n✅ Mantenimiento 1 año: $2,400 USD (20%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nTotal inicial: $14,000 USD\n```\n\n### **Opción 2: Por Módulos**\n```\n- Módulo Auth: $1,500 USD\n- Módulo Curricular: $3,000 USD\n- Módulo Horarios: $2,500 USD\n- Módulo Profesores: $2,000 USD\n- Módulo Sistema: $1,500 USD\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nTotal: $10,500 USD\n```\n\n### **Opción 3: SaaS Mensual**\n```\n- Plan Básico: $199 USD/mes (hasta 100 usuarios)\n- Plan Premium: $499 USD/mes (usuarios ilimitados)\n- Setup: $2,000 USD\n- SLA 99.9%: +$100 USD/mes\n```\n\n## 📋 **Checklist para Maximizar Valor:**\n\n### **Antes de vender:**\n- [ ] Documentación técnica completa\n- [ ] Testeo de todas las rutas (Postman collection)\n- [ ] Demo funcional online\n- [ ] Casos de éxito/testimonios\n- [ ] Plan de implementación\n- [ ] Soporte técnico definido\n\n### **Para aumentar valor:**\n- [ ] Panel administrativo (UI)\n- [ ] Reportes en PDF/Excel\n- [ ] Integración con otros sistemas\n- [ ] Mobile app complementaria\n- [ ] Multi-idioma\n- [ ] API pública documentada",
         "headers": [
           {
             "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "j5VYK4dUY8"
+            "name": "autorization",
+            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NjgwNjM3MzYsImV4cCI6MTc2ODY2ODUzNn0.eAvWt12kiM8BDeWeGIyPyyROuB0mrnbWUdqm3nXhvPw;",
+            "id": "mTJsdD6cVS"
           },
           {
             "enabled": true,
             "name": "",
             "value": "",
-            "id": "cgJ5zVFgNA"
+            "id": "wTxuWQ5Dbn"
           }
         ],
-        "name": "UPTAMCA",
-        "encryptionKeyChallenge": null,
+        "name": "UPTAMCA APIs",
+        "encryptionKeyChallenge": "eUE0azNuQwEnL3rTPkW6X564btJwfxnl5UCrLitYvNWJCsP8UjMFkRzF79jCBBlH5VL4vwj169vZGb+G61UH9ZVE1Eu60b2I6fWal8gHb2MVvABjHmgcRXKUOojLSzOT+YU=",
         "settingValidateCertificates": true,
         "settingFollowRedirects": true,
         "settingRequestTimeout": 0
       }
     ],
-    "environments": [
-      {
-        "model": "environment",
-        "id": "ev_pGUYJmTXKg",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "createdAt": "2025-08-06T20:30:38.850315300",
-        "updatedAt": "2025-10-17T03:03:15.401501800",
-        "name": "ENV DEVELOPMENT",
-        "public": false,
-        "base": false,
-        "parentModel": "environment",
-        "parentId": "ev_G7xAFmaud5",
-        "variables": [
-          {
-            "enabled": true,
-            "name": "Auorizathion_Cookie",
-            "value": "autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiIsIlZpY2VycmVjdG9yIl0sInBhc3N3b3JkIjoiJDJiJDEwJGkwT0xENnpoWXdPLnRCTW1BdjVJTHVteUlXclJrSDBGcklpRWRTbGUyVndCSHo5LlNXWnlxIiwiaWF0IjoxNzYwNjcwMTgyLCJleHAiOjE3NjEyNzQ5ODJ9.Au8aJT2aIZ-7N2mPpap-T3UYUGZNc7SG_KS6HEKVHa4",
-            "id": "XvUqY9wQVK"
-          },
-          {
-            "enabled": true,
-            "name": "BACKEND_URL_LOCAL",
-            "value": "http://localhost:3000",
-            "id": "UwRPmDMdpU"
-          }
-        ],
-        "color": null
-      },
-      {
-        "model": "environment",
-        "id": "ev_G7xAFmaud5",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "createdAt": "2025-02-24T16:48:49",
-        "updatedAt": "2025-08-06T20:30:02.166743900",
-        "name": "Global Variables",
-        "public": false,
-        "base": true,
-        "parentModel": "workspace",
-        "parentId": null,
-        "variables": [],
-        "color": null
-      }
-    ],
+    "environments": [],
     "folders": [
       {
         "model": "folder",
-        "id": "fl_ezKUBGE5UG",
-        "createdAt": "2025-10-19T00:21:13.879731400",
-        "updatedAt": "2025-10-19T00:21:13.879731900",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_tCYQy8J56D",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 0.002
-      },
-      {
-        "model": "folder",
-        "id": "fl_EMFmtEBTAZ",
-        "createdAt": "2025-10-19T00:21:13.878557900",
-        "updatedAt": "2025-10-19T00:21:13.878558200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_tCYQy8J56D",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 1000.00195
-      },
-      {
-        "model": "folder",
-        "id": "fl_gBXqaziM4H",
-        "createdAt": "2025-10-19T00:21:13.878212600",
-        "updatedAt": "2025-10-19T00:21:13.878213",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_tCYQy8J56D",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 3000.002
-      },
-      {
-        "model": "folder",
-        "id": "fl_t6haCHmPXH",
-        "createdAt": "2025-10-19T00:21:13.877674300",
-        "updatedAt": "2025-10-19T00:21:13.877674600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_tCYQy8J56D",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 2000.002
-      },
-      {
-        "model": "folder",
-        "id": "fl_tCYQy8J56D",
-        "createdAt": "2025-10-19T00:21:13.875901100",
-        "updatedAt": "2025-10-19T00:21:26.416415600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_qShYpT3BJe",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "Aulas",
-        "sortPriority": 0.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_mPrHpFxmo8",
-        "createdAt": "2025-10-19T00:20:17.823957200",
-        "updatedAt": "2025-10-19T00:20:17.823957400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_SYzSxozmpM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 2000.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_8fB3AE2hj4",
-        "createdAt": "2025-10-19T00:20:17.823661",
-        "updatedAt": "2025-10-19T00:20:17.823661300",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_SYzSxozmpM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 3000.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_VnNC7DcLLa",
-        "createdAt": "2025-10-19T00:20:17.823297",
-        "updatedAt": "2025-10-19T00:20:17.823297700",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_SYzSxozmpM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 1000.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_sKf8qEddeA",
-        "createdAt": "2025-10-19T00:20:17.822751100",
-        "updatedAt": "2025-10-19T00:20:17.822751500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_SYzSxozmpM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 0.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_SYzSxozmpM",
-        "createdAt": "2025-10-19T00:20:17.819888300",
-        "updatedAt": "2025-10-19T00:20:58.861976300",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_qShYpT3BJe",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "Sedes",
-        "sortPriority": 0.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_qShYpT3BJe",
-        "createdAt": "2025-10-17T21:20:27.853303800",
-        "updatedAt": "2025-10-19T00:18:40.941339600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": null,
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "Infrastructura",
-        "sortPriority": 0.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_ysDpfNmTxT",
-        "createdAt": "2025-10-09T21:59:43.650006200",
-        "updatedAt": "2025-10-09T21:59:43.650006400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_c69gz7wtQV",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 2000.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_f2uEjmEy8v",
-        "createdAt": "2025-10-09T21:59:43.649744700",
-        "updatedAt": "2025-10-09T21:59:43.649744900",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_c69gz7wtQV",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 3000.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_3mui2m6837",
-        "createdAt": "2025-10-09T21:59:43.649484200",
-        "updatedAt": "2025-10-09T21:59:43.649484400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_c69gz7wtQV",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 1000.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_mBJpWMhHSH",
-        "createdAt": "2025-10-09T21:59:43.649189",
-        "updatedAt": "2025-10-09T21:59:43.649189200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_c69gz7wtQV",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 0.001
-      },
-      {
-        "model": "folder",
-        "id": "fl_c69gz7wtQV",
-        "createdAt": "2025-10-09T21:59:43.646211",
-        "updatedAt": "2025-10-19T00:18:31.333846600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_DpJKmBwGiU",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "Secciones",
-        "sortPriority": 0.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_WMip5okDNT",
-        "createdAt": "2025-09-30T03:42:32.247054900",
-        "updatedAt": "2025-10-03T17:12:59.117276300",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_f8Yt5zveaq",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 1000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_KeWsQ8Pnr2",
-        "createdAt": "2025-09-30T03:42:30.670871800",
-        "updatedAt": "2025-10-19T00:18:24.574824700",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_qQjYaAPHjM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 2000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_JcczWVQSu7",
-        "createdAt": "2025-09-30T03:42:29.062256500",
-        "updatedAt": "2025-10-19T00:18:24.589978800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_qQjYaAPHjM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 4000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_dKqdHNwcnA",
-        "createdAt": "2025-09-30T03:42:25.855118800",
-        "updatedAt": "2025-10-03T17:12:59.138438500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_f8Yt5zveaq",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 4000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_UkRPeGAuKB",
-        "createdAt": "2025-09-30T03:42:07.919177900",
-        "updatedAt": "2025-09-30T03:42:21.335156300",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_VqPKi8swdp",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 3000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_LLAu6RWSEt",
-        "createdAt": "2025-09-30T03:42:06.414414",
-        "updatedAt": "2025-10-19T00:18:24.582359800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_qQjYaAPHjM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 3000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_jmjkotYKip",
-        "createdAt": "2025-09-30T03:42:04.366073900",
-        "updatedAt": "2025-09-30T03:42:21.327692400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_VqPKi8swdp",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 2000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_3jmuvcVjsp",
-        "createdAt": "2025-09-30T03:42:02.071808900",
-        "updatedAt": "2025-09-30T03:42:21.320679",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_VqPKi8swdp",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 1000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_Fr5xvM5QMX",
-        "createdAt": "2025-09-30T03:41:39.055121100",
-        "updatedAt": "2025-09-30T03:41:54.257366200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_tFVg8NjEyh",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 0.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_iVtSPAiETb",
-        "createdAt": "2025-09-30T03:41:37.646082400",
-        "updatedAt": "2025-09-30T03:41:54.272129500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_tFVg8NjEyh",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 2000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_3jZJK5ipvT",
-        "createdAt": "2025-09-30T03:41:35.142250",
-        "updatedAt": "2025-10-03T17:12:59.131190800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_f8Yt5zveaq",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 3000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_a2a6qZFzhz",
-        "createdAt": "2025-09-30T03:41:33.398802700",
-        "updatedAt": "2025-09-30T03:41:54.265609300",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_tFVg8NjEyh",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 1000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_yrh68xUatm",
-        "createdAt": "2025-09-30T03:41:11.710148100",
-        "updatedAt": "2025-10-19T00:18:31.371937800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_DpJKmBwGiU",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 5000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_iERhKSTm3g",
-        "createdAt": "2025-09-30T03:41:10.102581",
-        "updatedAt": "2025-10-19T00:18:31.349540300",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_DpJKmBwGiU",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 2000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_3jGBvPebFa",
-        "createdAt": "2025-09-30T03:41:08.678039900",
-        "updatedAt": "2025-10-19T00:18:31.357705900",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_DpJKmBwGiU",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 3000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_UHpmBTnDqt",
-        "createdAt": "2025-09-30T03:41:06.855304",
-        "updatedAt": "2025-10-19T00:18:31.364595900",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_DpJKmBwGiU",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 4000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_kyCeiqXKY9",
-        "createdAt": "2025-09-30T03:40:57.695354",
-        "updatedAt": "2025-09-30T03:41:00.914647700",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_ZZBFSQiUEw",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 0.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_rCRfzSgNp7",
-        "createdAt": "2025-09-30T03:40:47.015129600",
-        "updatedAt": "2025-09-30T03:41:00.921569200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_ZZBFSQiUEw",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 1000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_SnN6iBGtv4",
-        "createdAt": "2025-09-30T03:40:41.087030100",
-        "updatedAt": "2025-10-03T17:12:59.124342400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_f8Yt5zveaq",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 2000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_uowXRrKbKc",
-        "createdAt": "2025-09-30T03:40:35.391348300",
-        "updatedAt": "2025-09-30T03:41:00.929169500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_ZZBFSQiUEw",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 3000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_3tg5fQ2vCZ",
-        "createdAt": "2025-09-30T03:40:26.369065500",
-        "updatedAt": "2025-10-19T00:18:24.597483800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_qQjYaAPHjM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 5000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_u5tBqAUAde",
-        "createdAt": "2025-09-30T03:40:22.592536800",
-        "updatedAt": "2025-09-30T03:41:54.279734300",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_tFVg8NjEyh",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 3000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_MLYE8ELYHQ",
-        "createdAt": "2025-09-30T03:40:17.073430800",
-        "updatedAt": "2025-09-30T03:41:00.943309200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_ZZBFSQiUEw",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 2000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_MPBb48g36i",
-        "createdAt": "2025-09-30T03:40:08.379935600",
-        "updatedAt": "2025-09-30T03:42:21.312821600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_VqPKi8swdp",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 0.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_ZSLnJdMjtc",
-        "createdAt": "2025-09-29T16:35:57.780858200",
-        "updatedAt": "2025-09-29T16:36:14.918941500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_PhJR6bkCrk",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "DELETE",
-        "sortPriority": 1000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_hdvwFkrGH9",
-        "createdAt": "2025-09-29T16:35:41.597247500",
-        "updatedAt": "2025-09-29T16:36:14.902962200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_PhJR6bkCrk",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "GET",
-        "sortPriority": 0.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_MJD9wUoHNg",
-        "createdAt": "2025-09-29T16:35:19.490493400",
-        "updatedAt": "2025-09-29T16:36:16.062522400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_PhJR6bkCrk",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "POST",
-        "sortPriority": 2500.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_uPVpqCqxLq",
-        "createdAt": "2025-09-29T16:35:03.983044500",
-        "updatedAt": "2025-09-29T16:36:14.966391200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_PhJR6bkCrk",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "PUT",
-        "sortPriority": 2000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_ZZBFSQiUEw",
-        "createdAt": "2025-08-17T15:44:28.648680200",
-        "updatedAt": "2025-10-19T00:18:40.949917100",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": null,
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "Coordinadores",
-        "sortPriority": 1000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_DpJKmBwGiU",
-        "createdAt": "2025-08-12T23:06:49.662814400",
-        "updatedAt": "2025-10-19T00:18:24.557988500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_qQjYaAPHjM",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "",
-        "headers": [],
-        "name": "Trayectos",
-        "sortPriority": 0.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_tFVg8NjEyh",
-        "createdAt": "2025-06-04T00:05:47.027089600",
-        "updatedAt": "2025-10-19T00:18:40.957048800",
+        "id": "fl_W9YKzXf2Se",
+        "createdAt": "2025-12-15T18:34:37.485845",
+        "updatedAt": "2025-12-23T18:41:48.640250100",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": null,
         "authentication": {},
@@ -733,41 +51,111 @@
         "description": "",
         "headers": [],
         "name": "Horario",
-        "sortPriority": 2000.0
+        "sortPriority": 0.0
       },
       {
         "model": "folder",
-        "id": "fl_VqPKi8swdp",
-        "createdAt": "2025-06-03T23:32:17.909391",
-        "updatedAt": "2025-10-19T00:18:31.342593600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_DpJKmBwGiU",
-        "authentication": {},
-        "authenticationType": null,
-        "description": "En este estaran todos los endpoints de unidad curricular",
-        "headers": [],
-        "name": "Unidad_Curricular",
-        "sortPriority": 1000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_qQjYaAPHjM",
-        "createdAt": "2025-05-28T21:56:39.699690600",
-        "updatedAt": "2025-10-19T00:18:40.965081500",
+        "id": "fl_Hj75saeNkS",
+        "createdAt": "2025-12-15T18:34:31.133567500",
+        "updatedAt": "2025-12-23T18:41:48.706688200",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": null,
         "authentication": {},
         "authenticationType": null,
         "description": "",
         "headers": [],
-        "name": "PNF",
+        "name": "Curricular",
+        "sortPriority": 1000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_DDhbMkx9xg",
+        "createdAt": "2025-12-15T18:34:16.549565900",
+        "updatedAt": "2025-12-23T18:41:48.647419300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "System",
+        "sortPriority": 2000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_aissvbEqLL",
+        "createdAt": "2025-12-15T18:21:06.412801100",
+        "updatedAt": "2025-12-23T18:41:48.655024200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Admin",
         "sortPriority": 3000.0
       },
       {
         "model": "folder",
-        "id": "fl_PhJR6bkCrk",
-        "createdAt": "2025-05-25T23:02:15.939802900",
-        "updatedAt": "2025-10-19T00:18:40.972433500",
+        "id": "fl_AFvbpnfQaH",
+        "createdAt": "2025-12-15T18:19:46.893636",
+        "updatedAt": "2025-12-23T18:41:48.663227300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Sedes",
+        "sortPriority": 4000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_zpaTrR6sYi",
+        "createdAt": "2025-12-15T18:19:40.782348700",
+        "updatedAt": "2025-12-23T18:41:48.670653100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Aulas",
+        "sortPriority": 5000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_m55bto3Fxu",
+        "createdAt": "2025-12-15T18:19:32.797177600",
+        "updatedAt": "2025-12-23T18:41:48.677616900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Coordinadores",
+        "sortPriority": 6000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_HKVUL2VwP7",
+        "createdAt": "2025-12-15T18:18:57.348295",
+        "updatedAt": "2026-01-10T18:04:05.822312600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": null,
+        "authentication": {},
+        "authenticationType": null,
+        "description": "",
+        "headers": [],
+        "name": "Users",
+        "sortPriority": 7000.0
+      },
+      {
+        "model": "folder",
+        "id": "fl_bRV3PZgk5c",
+        "createdAt": "2025-12-15T18:18:00.820075700",
+        "updatedAt": "2025-12-23T18:41:48.693209300",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": null,
         "authentication": {},
@@ -775,1618 +163,108 @@
         "description": "",
         "headers": [],
         "name": "Profesores",
-        "sortPriority": 4000.0
-      },
-      {
-        "model": "folder",
-        "id": "fl_f8Yt5zveaq",
-        "createdAt": "2025-05-04T21:17:39.644749400",
-        "updatedAt": "2025-10-19T00:18:40.980144700",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": null,
-        "authentication": {},
-        "authenticationType": null,
-        "description": "En esta carpeta estaran los endpoints que todos los usurios pueden acceder y no es necesario tener permisologia estricta",
-        "headers": [],
-        "name": "Users",
-        "sortPriority": 5000.0
+        "sortPriority": 8000.0
       }
     ],
     "httpRequests": [
       {
         "model": "http_request",
-        "id": "rq_NvNJ7NFQAD",
-        "createdAt": "2025-10-20T20:32:54.907634200",
-        "updatedAt": "2025-10-20T20:46:33.102671600",
+        "id": "rq_A2A3uv23jd",
+        "createdAt": "2026-01-10T19:28:57.884782100",
+        "updatedAt": "2026-01-10T19:32:05.495188600",
         "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_t6haCHmPXH",
+        "folderId": "fl_aissvbEqLL",
         "authentication": {},
         "authenticationType": null,
-        "body": {
-          "text": "{\n  \"codigo\": \"AULA-101\",      \n  \"tipo\": \"Convencional\",   \n  \"id_sede\": 5,              \n  \"capacidad\": 30   \n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "MFdGKfEQPK"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "ahzZTkq83x"
-          }
-        ],
-        "method": "POST",
-        "name": "",
-        "sortPriority": 0.002,
-        "url": "${[ BACKEND_URL_LOCAL ]}/aulas",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_hZYeRzYjwF",
-        "createdAt": "2025-10-20T20:32:46.956209500",
-        "updatedAt": "2025-10-20T20:33:17.074937900",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_ezKUBGE5UG",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"codigo\": \"AULA-101\",      \n  \"tipo\": \"Convencional\",   \n  \"id_sede\": 1,              \n  \"capacidad\": 30,     \n}"
-        },
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "jyXkuJ2uIk"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/aulas",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_9Pku27vi9f",
-        "createdAt": "2025-10-19T00:41:25.124439800",
-        "updatedAt": "2025-10-20T20:24:05.982461500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_sKf8qEddeA",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.001,
-        "url": "${[ BACKEND_URL_LOCAL ]}/sedes",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":id",
-            "value": "5",
-            "id": "7hScu2Wqsp"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "h6rYhG9T8T"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_RziPmLEXPk",
-        "createdAt": "2025-10-19T00:22:15.521954",
-        "updatedAt": "2025-10-19T00:22:29.942358",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_sKf8qEddeA",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/sedes",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_aBL4WHaZAZ",
-        "createdAt": "2025-10-18T22:22:10.018425500",
-        "updatedAt": "2025-10-18T22:22:26.723522500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_3tg5fQ2vCZ",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "N0IJNnmEvZ"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "KJjxy2SESf"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.003,
-        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/secciones",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":idTrayecto",
-            "value": "1",
-            "id": "s3MZa57uBF"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "KVhXd4Ws4j"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_MfxeABtMuJ",
-        "createdAt": "2025-10-18T22:21:07.897167300",
-        "updatedAt": "2025-10-18T22:21:37.159552800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_3tg5fQ2vCZ",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "N0IJNnmEvZ"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "KJjxy2SESf"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.002,
-        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/unidades-curriculares",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":idTrayecto",
-            "value": "1",
-            "id": "s3MZa57uBF"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "KVhXd4Ws4j"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_62T4XCuK4V",
-        "createdAt": "2025-10-18T22:17:58.992870700",
-        "updatedAt": "2025-10-20T21:24:56.354564700",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_3tg5fQ2vCZ",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "N0IJNnmEvZ"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "KJjxy2SESf"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.001,
-        "url": "${[ BACKEND_URL_LOCAL ]}/pnf/:codigoPNF/trayectos",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":codigoPNF",
-            "value": "ISW-012",
-            "id": "yXNj0i5mi5"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "6RpS0pncfi"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_qAVSaNsYJY",
-        "createdAt": "2025-10-18T20:37:38.310741500",
-        "updatedAt": "2025-10-18T20:38:18.986299400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_Fr5xvM5QMX",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"idSeccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\"\n}"
-        },
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "n3vKBJbK5V"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 1000.002,
-        "url": "${[ BACKEND_URL_LOCAL ]}/horarios/aula/:id_aula",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":id_aula",
-            "value": "",
-            "id": "DtKViRRJeI"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "HizPX6p3UJ"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_JHRVoev6Kr",
-        "createdAt": "2025-10-18T17:22:47.798200500",
-        "updatedAt": "2025-10-21T03:14:14.513400100",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_Fr5xvM5QMX",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"idSeccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\"\n}"
-        },
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "n3vKBJbK5V"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 1000.001,
-        "url": "${[ BACKEND_URL_LOCAL ]}/horarios/profesor/:id_profesor",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":id_profesor",
-            "value": "33335569",
-            "id": "PSgXgw3QTc"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "JTihByf3MW"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_AWPjbEsjcV",
-        "createdAt": "2025-10-17T21:20:34.689707800",
-        "updatedAt": "2025-10-20T20:19:21.718252500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_mPrHpFxmo8",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"nombreSede\": \"Núcleo de Tecnología y Ciencias Administrativas\",\n  \"UbicacionSede\": \"Los Teques, Edo. Miranda\",\n  \"GoogleSede\": \"https://maps.app.goo.gl/EHHeHjA7uXgNA32s9\",\n  \"CiudadSede\": \"Los Teques\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "uy8uy4eFAr"
-          }
-        ],
-        "method": "POST",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/sedes",
-        "urlParameters": [
-          {
-            "enabled": false,
-            "name": ":id",
-            "value": "1",
-            "id": "TPzQHwzVEU"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "E0HnRnpKw2"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_eKzYMEFkzS",
-        "createdAt": "2025-10-17T20:22:40.218508600",
-        "updatedAt": "2025-10-17T21:04:07.877158300",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_dKqdHNwcnA",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": "{\n  \"antiguaPassword\": \"Hoola12.\",\n  \"password\": \"1234ABCD\",\n  \"repetirPassword\": \"1234ABCD\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "mim9yYkfCg"
-          }
-        ],
-        "method": "PUT",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/auth/password",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_8KZMvSyt8b",
-        "createdAt": "2025-10-17T02:59:08.691217",
-        "updatedAt": "2025-10-19T00:18:47.229946",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_WMip5okDNT",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "yRPmNnbZ8A"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "St0eRYjQ7B"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 250.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/notifications",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_3YQDzmDbCJ",
-        "createdAt": "2025-10-09T22:00:20.653148200",
-        "updatedAt": "2025-10-20T21:03:48.299663600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_ZZBFSQiUEw",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "FdVcDeXf98"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "0kv9n8IGVc"
-          },
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "QzWidgKhgs"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 500.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/coordinadores",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_AbxNXgNBJw",
-        "createdAt": "2025-10-09T21:59:43.648711500",
-        "updatedAt": "2025-10-20T21:30:53.902565200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_mBJpWMhHSH",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": ""
-        },
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "KB4KrvknKV"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "fExEBYIWZ6"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "8dRdEMAW28"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "http://localhost:3000/Secciones",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": "Trayecto",
-            "value": "1",
-            "id": "nQwJFEuB0s"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "cI0bzVHUbi"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_HSHvPtKn2v",
-        "createdAt": "2025-10-09T21:59:43.648233700",
-        "updatedAt": "2025-10-20T21:37:47.378588",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_UHpmBTnDqt",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"poblacionEstudiantil\": 120\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "3jAzDY48pz"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "5tm8tSsXYg"
-          }
-        ],
-        "method": "POST",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/secciones",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":idTrayecto",
-            "value": "1",
-            "id": "dQenU2YSy6"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "Zjx0ADxb8r"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_ijA2ANNt7d",
-        "createdAt": "2025-10-07T02:46:31.866429600",
-        "updatedAt": "2025-10-21T02:38:25.155047700",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_hdvwFkrGH9",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": ""
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "mim9yYkfCg"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "MyvtuKW7Yh"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "4gqTx7KP9S"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.001,
-        "url": "${[ BACKEND_URL_LOCAL ]}/profesores/:id/imagen",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":id",
-            "value": "33335569",
-            "id": "QzACHQA0I4"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "8DPju8trrF"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_nimzkemYiX",
-        "createdAt": "2025-10-03T17:12:29.796249300",
-        "updatedAt": "2025-10-17T20:06:31.543444500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_WMip5okDNT",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": false,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "K9heu6EZ36"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "kjtuFCfXeT"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 500.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/notifications",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_RKEWjs3JiM",
-        "createdAt": "2025-09-29T17:36:41.982436900",
-        "updatedAt": "2025-09-29T17:36:52.785290900",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_uPVpqCqxLq",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"id_profesor\": 31264460,\n  \"nombres\": \"Gabriel Dayer\",\n  \"apellidos\": \"Leonett Armas\",\n  \"municipio\": \"Guaicaipuro\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "54TgN99ZI0"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "3jpkY6kJHS"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "uHjfS0nsUW"
-          }
-        ],
-        "method": "PUT",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}profesores/actualizar",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_cMhqVTHrWu",
-        "createdAt": "2025-09-29T16:38:25.178416900",
-        "updatedAt": "2025-09-29T17:38:11.261865100",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_ZSLnJdMjtc",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"id_profesor\": 31264460,\n  \"tipo_accion\": \"DESTITUCION\",\n  \"razon\": \"Incumplimiento grave de las normas institucionales y múltiples quejas verificadas\",\n  \"observaciones\": \"Se realizó investigación interna que confirmó las irregularidades\",\n  \"fecha_efectiva\": \"2024-09-29\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "54TgN99ZI0"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "3jpkY6kJHS"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "uHjfS0nsUW"
-          }
-        ],
-        "method": "DELETE",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}Profesores/Delete",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_k4r8aJcgDm",
-        "createdAt": "2025-09-25T01:26:26.464985800",
-        "updatedAt": "2025-10-21T02:04:40.205829400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_MJD9wUoHNg",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"dia_semana\": \"Viernes\",\n  \"hora_inicio\": \"08:00:00\",\n  \"hora_fin\": \"10:00:00\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "IRwFKYfzs9"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "SebhQUGHRg"
-          }
-        ],
-        "method": "POST",
-        "name": "",
-        "sortPriority": 4000.0,
-        "url": "http://localhost:3000/profesores/:id/disponibilidad",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":id",
-            "value": "1",
-            "id": "bP3htu9qmB"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "XedMe7NBr7"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_4CFfSTh68m",
-        "createdAt": "2025-09-25T00:43:25.262956700",
-        "updatedAt": "2025-10-20T20:32:51.166735800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_EMFmtEBTAZ",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"codigo\": \"AULA-101\",      \n  \"tipo\": \"Convencional\",   \n  \"id_sede\": 1,              \n  \"capacidad\": 30,     \n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "jyXkuJ2uIk"
-          }
-        ],
-        "method": "PUT",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/aulas",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_mAdvq7D9GK",
-        "createdAt": "2025-08-29T23:21:32.247914400",
-        "updatedAt": "2025-10-21T03:15:33.784146400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_Fr5xvM5QMX",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"idSeccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\"\n}"
-        },
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "XVvN927XFw"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/horarios/seccion/:id_seccion",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":id_seccion",
-            "value": "3",
-            "id": "EnrH4dH6mq"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "ZqikWryMYE"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_hk9eF5WzJD",
-        "createdAt": "2025-08-29T11:12:25.623299700",
-        "updatedAt": "2025-10-17T18:05:00.272564900",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_hdvwFkrGH9",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": ""
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "mim9yYkfCg"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "autorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTYxNTMzOTgsImV4cCI6MTc1Njc1ODE5OH0.7JVI8454guKEHLoJI_u8Br8pnobjFxFC7thHvtm5R7c;",
-            "id": "MyvtuKW7Yh"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "Vfr2XvjvV7"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 3000.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/Profesores/to/Horarios",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_MfwQzLkNoV",
-        "createdAt": "2025-08-26T02:50:26.228615900",
-        "updatedAt": "2025-10-21T03:15:46.235271800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_Fr5xvM5QMX",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"idSeccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\"\n}"
-        },
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "n3vKBJbK5V"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 1500.001,
-        "url": "${[ BACKEND_URL_LOCAL ]}/exportar/seccion/:id_seccion",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":id_seccion",
-            "value": "3",
-            "id": "zNP2abFTh2"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "eKIXQcrV79"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_pH3MwrumXR",
-        "createdAt": "2025-08-16T16:01:51.612274600",
-        "updatedAt": "2025-10-21T03:17:28.610296800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_UkRPeGAuKB",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"idTrayecto\": 2,\n  \"nombreUnidadCurricular\": \"Programación Orientada a Objetos\",\n  \"descripcionUnidadCurricular\": \"Principios de POO con implementación en Java\",\n  \"cargaHorasAcademicas\": 75,\n  \"codigoUnidadCurricular\": \"POO-J1\"\n}"
-        },
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "rw4p0ctvha"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/unidades-curriculares",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":idTrayecto",
-            "value": "1",
-            "id": "Gc0wqEJfFz"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "b2XX0Ninr0"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_JrNbFd5Dfj",
-        "createdAt": "2025-08-12T23:06:59.537108100",
-        "updatedAt": "2025-10-18T17:15:33.839756",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_yrh68xUatm",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "KB4KrvknKV"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "4WT53J0Q4j"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "http://localhost:3000/Trayectos",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": "PNF",
-            "value": "INF-01",
-            "id": "nQwJFEuB0s"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "hgXkCuGgMx"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_CMDYHJahUJ",
-        "createdAt": "2025-08-06T22:04:46.582603800",
-        "updatedAt": "2025-10-20T22:23:55.981961400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_MJD9wUoHNg",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": "{\n  \"area_conocimiento\" : \"Matemáticas\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "mim9yYkfCg"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "MyvtuKW7Yh"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "fAn5ryGt0j"
-          }
-        ],
-        "method": "POST",
-        "name": "",
-        "sortPriority": 2000.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/catalogos/areas-conocimiento",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_DqxgHPA9wT",
-        "createdAt": "2025-08-06T22:04:45.516969700",
-        "updatedAt": "2025-10-20T22:08:57.684978100",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_MJD9wUoHNg",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": "{\n    \"tipo\": \"Ingeniería\",\n    \"nombre\": \"en Informática\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "mim9yYkfCg"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "MyvtuKW7Yh"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "sDTZitxctU"
-          }
-        ],
-        "method": "POST",
-        "name": "",
-        "sortPriority": 3500.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/catalogos/pregrados",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_Je2fGvUePw",
-        "createdAt": "2025-08-06T22:04:44.432619600",
-        "updatedAt": "2025-10-20T22:08:26.963559100",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_MJD9wUoHNg",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": "{\n    \"tipo\": \"Especialización\",\n    \"nombre\": \"en IA\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "mim9yYkfCg"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "MyvtuKW7Yh"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "aFH33iue7Q"
-          }
-        ],
-        "method": "POST",
-        "name": "",
-        "sortPriority": 3000.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/catalogos/posgrados",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_Ux2bFArkHB",
-        "createdAt": "2025-08-06T20:32:13.245238700",
-        "updatedAt": "2025-10-17T15:56:32.841273900",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_hdvwFkrGH9",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": ""
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "mim9yYkfCg"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "MyvtuKW7Yh"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "GXmEQ8gTV9"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/catalogos/posgrados",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_ZkjybpmvYz",
-        "createdAt": "2025-08-06T20:31:53.885462900",
-        "updatedAt": "2025-10-20T22:09:24.082359500",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_hdvwFkrGH9",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": ""
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "MU94C94fa3"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 1000.0,
-        "url": "http://localhost:3000/catalogos/areas-conocimiento",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_9XnJhSSvRN",
-        "createdAt": "2025-08-01T22:49:40.304824100",
-        "updatedAt": "2025-10-20T22:09:52.402370800",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_hdvwFkrGH9",
-        "authentication": {},
-        "authenticationType": "bearer",
-        "body": {
-          "text": ""
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "0EtzH9RIxr"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 2000.0,
-        "url": "http://localhost:3000/catalogos/pregrados",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_2ZbyrkfCn4",
-        "createdAt": "2025-06-11T21:00:05.278394900",
-        "updatedAt": "2025-10-18T22:09:01.902308600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_3tg5fQ2vCZ",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "N0IJNnmEvZ"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "KJjxy2SESf"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/pnf",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_DUwj8LDUDt",
-        "createdAt": "2025-06-04T00:07:59.840285600",
-        "updatedAt": "2025-10-21T02:54:48.003171",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_a2a6qZFzhz",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"idSeccion\": 3,\n  \"idProfesor\": 7,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:00:00\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "vuYDKNYB2u"
-          },
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "AZ4UeHhD3S"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "Tr6qESF3Bc"
-          }
-        ],
-        "method": "POST",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/horarios",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_WYCiVLkH5Q",
-        "createdAt": "2025-06-03T23:32:55.582150400",
-        "updatedAt": "2025-10-20T21:55:04.587672100",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_jmjkotYKip",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"nombreUnidadCurricular\": \"Matemáticas I\",\n  \"descripcionUnidadCurricular\": \"Fundamentos de matemáticas para ingeniería\",\n  \"cargaHorasAcademicas\": 4,\n  \"codigoUnidadCurricular\": \"MAT-101\"\n}"
-        },
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "6jaIgewCv4"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/trayectos/:idTrayecto/unidades-curriculares",
-        "urlParameters": [
-          {
-            "enabled": true,
-            "name": ":idTrayecto",
-            "value": "1",
-            "id": "nZs8JPnfZj"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "GPjReQVnIZ"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_tygdJQL73x",
-        "createdAt": "2025-05-28T21:56:42.653119200",
-        "updatedAt": "2025-10-20T21:17:43.805673100",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_KeWsQ8Pnr2",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"nombrePNF\": \"Ingeniería de Software\",\n  \"descripcionPNF\": \"Programa académico enfocado en el desarrollo de sistemas de software de calidad, abarcando desde el análisis de requerimientos hasta el despliegue y mantenimiento de aplicaciones.\",\n  \"codigoPNF\": \"ISW-012\",\n  \"sedePNF\": 5,\n  \"duracionTrayectosPNF\": 4\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "WB8uhZwTfc"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "AhE88QW6hq"
-          }
-        ],
-        "method": "POST",
-        "name": "localhost:3000/PNF/create",
-        "sortPriority": 0.0,
-        "url": "http://localhost:3000/pnf",
-        "urlParameters": [
-          {
-            "enabled": false,
-            "name": "autorization",
-            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NTA3ODcxNDcsImV4cCI6MTc1MTM5MTk0N30.R4EgRhYKudud-yMKpxmeZXOfnjvhRtp7z0diPp6ksX4;",
-            "id": "SDmfi7Syws"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "XJWzmGMDkH"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_f8MhtWvz6f",
-        "createdAt": "2025-05-26T22:51:15.055310400",
-        "updatedAt": "2025-10-17T15:56:11.216619400",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_MJD9wUoHNg",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {
-          "text": "{\n  \"busqueda\": \"Gabriel\"\n}"
-        },
-        "bodyType": "application/json",
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Content-Type",
-            "value": "application/json",
-            "id": "gTcIftMGJJ"
-          }
-        ],
-        "method": "POST",
-        "name": "localhost:3000/Profesor/search",
-        "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/Profesor/search",
-        "urlParameters": []
-      },
-      {
-        "model": "http_request",
-        "id": "rq_v9avGWUV8S",
-        "createdAt": "2025-05-26T21:55:40.916746700",
-        "updatedAt": "2025-10-17T17:42:04.394408600",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_hdvwFkrGH9",
-        "authentication": {},
-        "authenticationType": null,
-        "body": {},
-        "bodyType": null,
-        "description": "",
-        "headers": [
-          {
-            "enabled": true,
-            "name": "Cookie",
-            "value": "${[ Auorizathion_Cookie ]}",
-            "id": "pxreJzkuma"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "hiUPXAq3Ky"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "hpENmvyGb6"
-          }
-        ],
-        "method": "GET",
-        "name": "",
-        "sortPriority": 4000.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/profesores",
-        "urlParameters": [
-          {
-            "enabled": false,
-            "name": "dedicacion",
-            "value": "1",
-            "id": "HAFvcxGYG8"
-          },
-          {
-            "enabled": false,
-            "name": "categoria",
-            "value": "Instructor",
-            "id": "iZdKxY8zQR"
-          },
-          {
-            "enabled": false,
-            "name": "ubicacion",
-            "value": "2",
-            "id": "AM7pUdAQ4k"
-          },
-          {
-            "enabled": false,
-            "name": "genero",
-            "value": "masculino",
-            "id": "sjIWa68S4u"
-          },
-          {
-            "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "4JqBJ2nrvW"
-          }
-        ]
-      },
-      {
-        "model": "http_request",
-        "id": "rq_DuKG85ZgFy",
-        "createdAt": "2025-05-25T23:02:19.386014400",
-        "updatedAt": "2025-10-21T02:37:49.594292200",
-        "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_MJD9wUoHNg",
-        "authentication": {},
-        "authenticationType": "none",
         "body": {
           "form": [
             {
               "enabled": true,
-              "file": "C:\\Users\\Admin\\Pictures\\imagen josue perfil.jpg",
-              "id": "rMM9NVV0NG",
-              "name": "imagen"
+              "id": "ErsFgth3CR",
+              "name": "fecha_ingreso",
+              "value": "${[ dateAdd(dateTime=b64'MTAvMS8yMDI2', years=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PScxNycsIGRlY2ltYWxzPScwJykgXX0', months=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PScxMicsIGRlY2ltYWxzPScwJykgXX0', days=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PSczMScsIGRlY2ltYWxzPScwJykgXX0', hours='0', minutes='0', seconds='0', format=b64'REQtTU0tWVlZWQ') ]}"
             },
             {
               "enabled": true,
-              "id": "p9ncFstpGB",
+              "id": "BpTtR0ENjF",
+              "name": "dedicacion",
+              "value": "Exclusivo"
+            },
+            {
+              "enabled": true,
+              "id": "zhQqzud4hi",
+              "name": "categoria",
+              "value": "Asistente"
+            },
+            {
+              "enabled": true,
+              "id": "vVwyesQIKQ",
               "name": "cedula",
-              "value": "33335569"
+              "value": "${[ faker.number.int(options=b64'eyJtaW4iOjEwMDAwMDAsIm1heCI6IDUwMDAwMDAwfQ') ]}"
             },
             {
               "enabled": true,
-              "id": "xYjhTd04PM",
-              "name": "nombres",
-              "value": "Josue Enyerbe"
-            },
-            {
-              "enabled": true,
-              "id": "rDv6bAG66x",
-              "name": "apellidos",
-              "value": "Solorzano Leonett"
-            },
-            {
-              "enabled": true,
-              "id": "3SX2CqAYf7",
+              "id": "QhT8FF6Ene",
               "name": "municipio",
               "value": "Guaicaipuro"
             },
             {
               "enabled": true,
-              "id": "0MIc7NZfpj",
+              "id": "aTyRAJa8zY",
+              "name": "nombres",
+              "value": "${[ faker.person.firstName() ]}"
+            },
+            {
+              "enabled": true,
+              "id": "Un9TQTtWd0",
+              "name": "apellidos",
+              "value": "${[ faker.person.lastName() ]}"
+            },
+            {
+              "enabled": true,
+              "id": "UWR8mDycmf",
               "name": "email",
-              "value": "delegadogabrielleonett@gmail.com"
+              "value": "${[ faker.internet.email() ]}"
             },
             {
               "enabled": true,
-              "id": "8vYAIDFcf5",
+              "id": "NuEFQZsNaM",
+              "name": "direccion",
+              "value": "${[ faker.location.direction() ]}"
+            },
+            {
+              "enabled": true,
+              "id": "eBGeyKkW4T",
               "name": "telefono_movil",
-              "value": "04142245310"
+              "value": "04120000000"
             },
             {
               "enabled": true,
-              "id": "JAUd2CfBmF",
+              "id": "pfiCSiWUqh",
               "name": "fecha_nacimiento",
-              "value": "02-10-2007"
+              "value": "${[ dateAdd(dateTime=b64'MTAvMS8yMDI2', format=b64'REQtTU0tWVlZWQ', years=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxOCcsIG1heD0nNzAnLCBkZWNpbWFscz0nMCcpIF19', months=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PScxMicsIGRlY2ltYWxzPScwJykgXX0', days=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PSczMScsIGRlY2ltYWxzPScwJykgXX0', hours='0', minutes='0', seconds='0') ]}"
             },
             {
               "enabled": true,
-              "id": "t79YbfrBde",
+              "id": "fPSznnq5mP",
               "name": "genero",
               "value": "masculino"
             },
             {
               "enabled": true,
-              "id": "hiCRUhbCCe",
-              "name": "fecha_ingreso",
-              "value": "20-10-2025"
+              "id": "I5JtAe8XYq",
+              "name": "imagen",
+              "value": "${[ faker.image.personPortrait() ]}"
             },
             {
               "enabled": true,
-              "id": "K3qN07wUWA",
-              "name": "dedicacion",
-              "value": "Tiempo Completo"
+              "id": "ed6fz6Vwva",
+              "name": "roles",
+              "value": "[\"Director General de Gestión Permanente y Docente\"]"
             },
             {
               "enabled": true,
-              "id": "iQ3qrQyWqq",
-              "name": "categoria",
-              "value": "Asistente"
-            },
-            {
-              "enabled": false,
-              "id": "c57KC30uz0",
-              "name": "areas_de_conocimiento",
-              "value": "\"[\"Ingenieria del software\"]\""
-            },
-            {
-              "enabled": true,
-              "id": "7QD0vQ0i3A",
-              "name": "pre_grado",
-              "value": "{      \"id_pre_grado\": 1,      \"nombre_pre_grado\": \"en Informática\",      \"tipo_pre_grado\": \"Ingeniería\"    }"
-            },
-            {
-              "enabled": true,
-              "id": "xgDTnGs9bt",
-              "name": "direccion",
-              "value": "Av.Bermudez"
-            },
-            {
-              "enabled": true,
-              "id": "iMIGbVGD75",
+              "id": "8tAB4VGDB5",
               "name": "",
               "value": ""
             }
@@ -2397,34 +275,70 @@
         "headers": [
           {
             "enabled": true,
-            "name": "",
-            "value": "",
-            "id": "WmtkKYgiFS"
-          },
-          {
-            "enabled": true,
             "name": "Content-Type",
             "value": "multipart/form-data",
-            "id": "7JMhIN0iSv"
+            "id": "wXQnJkykiK"
           }
         ],
         "method": "POST",
-        "name": "localhost:3000/Profesor/register",
+        "name": "Crear Admin",
         "sortPriority": 1000.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/profesores",
+        "url": "${[ BACKEND_URL ]}/admins",
         "urlParameters": []
       },
       {
         "model": "http_request",
-        "id": "rq_8agvrZr3Wg",
-        "createdAt": "2025-05-02T21:33:28.273386",
-        "updatedAt": "2025-10-17T21:00:29.049458600",
+        "id": "rq_48MAeCwxSn",
+        "createdAt": "2025-12-15T21:38:40.807161700",
+        "updatedAt": "2025-12-15T21:39:13.382530300",
         "workspaceId": "wk_2GOhvcRhW5",
-        "folderId": "fl_SnN6iBGtv4",
+        "folderId": "fl_HKVUL2VwP7",
         "authentication": {},
-        "authenticationType": "bearer",
+        "authenticationType": null,
         "body": {
-          "text": "{\n  \"email\": \"superadmin@uptamca.ve\",\n  \"password\": \"Hoola12.\"\n}"
+          "text": "{\n    \"currentPassword\": \"ContraseñaActual123\",\n    \"newPassword\": \"NuevaContraseña456\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Obtener perfil del usuario",
+        "sortPriority": 6333.334,
+        "url": "${[ BACKEND_URL ]}/profile",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_ZRFSrvkDzQ",
+        "createdAt": "2025-12-15T21:38:11.434732",
+        "updatedAt": "2025-12-15T21:38:20.722807400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"refresh_token\": \"TU_REFRESH_TOKEN_AQUI\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Cerrar sesión (GET - legacy)",
+        "sortPriority": 6000.001,
+        "url": "${[ BACKEND_URL ]}/auth/logout",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_h2hvxyB99n",
+        "createdAt": "2025-12-15T21:36:12.751093200",
+        "updatedAt": "2025-12-19T23:20:33.466048200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": "none",
+        "body": {
+          "text": "{\n    \"email\": \"usuario@unefa.edu\"\n  }"
         },
         "bodyType": "application/json",
         "description": "",
@@ -2433,13 +347,2633 @@
             "enabled": true,
             "name": "Content-Type",
             "value": "application/json",
-            "id": "mim9yYkfCg"
+            "id": "cYigGFq5aN"
           }
         ],
         "method": "POST",
-        "name": "",
+        "name": "Recuperar Contraseña",
+        "sortPriority": 333.3333333333333,
+        "url": "${[ BACKEND_URL ]}/auth/recuperar-contrasena",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_t6nKemN4up",
+        "createdAt": "2025-12-15T21:33:53.174650200",
+        "updatedAt": "2025-12-23T19:28:52.126672800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"currentPassword\": \"ContraseñaActual123\",\n    \"newPassword\": \"NuevaContraseña456\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "PUT",
+        "name": "Activar usuario",
+        "sortPriority": 9000.0,
+        "url": "${[ BACKEND_URL ]}/user/999999999/activar",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_bJyswxfJ4k",
+        "createdAt": "2025-12-15T21:33:34.256493",
+        "updatedAt": "2025-12-23T19:28:36.745885800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"currentPassword\": \"ContraseñaActual123\",\n    \"newPassword\": \"NuevaContraseña456\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "",
+            "value": "",
+            "id": "n4KvwRhdrQ"
+          }
+        ],
+        "method": "DELETE",
+        "name": "Desactivar usuario",
+        "sortPriority": 8000.0,
+        "url": "${[ BACKEND_URL ]}/user/999999999/desactivar",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_ecPvkbkMYC",
+        "createdAt": "2025-12-15T21:33:01.473109300",
+        "updatedAt": "2025-12-20T23:18:02.780877700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"currentPassword\": \"Hoola12.\",\n    \"newPassword\": \"1234ABCD\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "nhasbnpxyf"
+          }
+        ],
+        "method": "PUT",
+        "name": "Cambiar contraseña",
+        "sortPriority": 7000.0,
+        "url": "${[ BACKEND_URL ]}/auth/cambiar-contrasena",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_V3Eg53fZUB",
+        "createdAt": "2025-12-15T21:32:53.167487100",
+        "updatedAt": "2025-12-23T18:45:54.279510500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"refresh_token\": \"TU_REFRESH_TOKEN_AQUI\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "POST",
+        "name": "Cerrar sesión (POST)",
+        "sortPriority": 6000.0,
+        "url": "${[ BACKEND_URL ]}/auth/logout",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_wmxviJ2Vi5",
+        "createdAt": "2025-12-15T21:32:24.007149",
+        "updatedAt": "2025-12-23T18:45:40.694660100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"refresh_token\": \"TU_REFRESH_TOKEN_AQUI\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "POST",
+        "name": "Verificar estado de autenticación",
+        "sortPriority": 5000.0,
+        "url": "${[ BACKEND_URL ]}/auth/status",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_NjuYy4Gj38",
+        "createdAt": "2025-12-15T21:31:42.950660500",
+        "updatedAt": "2025-12-20T23:39:13.923337",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"refresh_token\": \"TU_REFRESH_TOKEN_AQUI\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "# Esta ruta es para Refrescar la seccion o el token refresh",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "asynxmxJ5B"
+          }
+        ],
+        "method": "POST",
+        "name": "Refrescar token de acceso",
+        "sortPriority": 4000.0,
+        "url": "${[ BACKEND_URL ]}/auth/refresh",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_FNqijKqVvs",
+        "createdAt": "2025-12-15T21:31:21.670232100",
+        "updatedAt": "2025-12-15T21:37:02.334075500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"token\": \"token_recibido_por_email\",\n    \"email\": \"usuario@unefa.edu\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Verificar sesión del usuario",
+        "sortPriority": 3000.0,
+        "url": "${[ BACKEND_URL ]}/auth/verify",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_kvxMgwKyji",
+        "createdAt": "2025-12-15T21:30:26.640072200",
+        "updatedAt": "2025-12-15T21:36:50.650790400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"token\": \"token_recibido_por_email\",\n    \"email\": \"usuario@unefa.edu\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "cYigGFq5aN"
+          }
+        ],
+        "method": "POST",
+        "name": "Verificar token de recuperación",
+        "sortPriority": 1000.0,
+        "url": "${[ BACKEND_URL ]}/auth/verificar-token",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_i9pDPyGgxV",
+        "createdAt": "2025-12-15T21:29:52.910376100",
+        "updatedAt": "2025-12-20T23:18:12.172709700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_HKVUL2VwP7",
+        "authentication": {},
+        "authenticationType": "none",
+        "body": {
+          "text": "{\n  \"email\": \"superadmin@uptamca.ve\",\n  \"password\": \"1234ABCD\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "cYigGFq5aN"
+          }
+        ],
+        "method": "POST",
+        "name": "Login",
         "sortPriority": 0.0,
-        "url": "${[ BACKEND_URL_LOCAL ]}/auth/login",
+        "url": "${[ BACKEND_URL ]}/auth/login",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_TC7ZKPUfcW",
+        "createdAt": "2025-12-15T21:11:37.959144400",
+        "updatedAt": "2025-12-15T21:13:43.928314300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Métricas API",
+        "sortPriority": 4000.018,
+        "url": "${[ BACKEND_URL ]}/api/system/metricas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_b993FoNfaw",
+        "createdAt": "2025-12-15T21:11:25.839482100",
+        "updatedAt": "2025-12-15T21:13:39.154716400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Estado sistema API",
+        "sortPriority": 4000.017,
+        "url": "${[ BACKEND_URL ]}/api/system/status",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_UK5YCmKAju",
+        "createdAt": "2025-12-15T21:11:14.542670700",
+        "updatedAt": "2025-12-15T21:13:33.857038800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Estadísticas API",
+        "sortPriority": 4000.016,
+        "url": "${[ BACKEND_URL ]}/api/system/estadisticas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_42v9aD8kJg",
+        "createdAt": "2025-12-15T21:11:05.680433900",
+        "updatedAt": "2025-12-15T21:13:26.364097200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar backups API",
+        "sortPriority": 4000.015,
+        "url": "${[ BACKEND_URL ]}/api/system/backups",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_CeDGi3ipHU",
+        "createdAt": "2025-12-15T21:10:56.806795900",
+        "updatedAt": "2025-12-15T21:13:19.004857500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Auditoría sistema",
+        "sortPriority": 4000.014,
+        "url": "${[ BACKEND_URL ]}/auditory/system",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_CGekGGG3pm",
+        "createdAt": "2025-12-15T21:10:48.309527600",
+        "updatedAt": "2025-12-15T21:13:11.454343600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Logs sistema",
+        "sortPriority": 4000.013,
+        "url": "${[ BACKEND_URL ]}/system/logs",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_QWC6i5qLwN",
+        "createdAt": "2025-12-15T21:10:37.168196100",
+        "updatedAt": "2025-12-15T21:13:06.957655900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Información sistema",
+        "sortPriority": 4000.012,
+        "url": "${[ BACKEND_URL ]}/system/info",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_pyTHvQkoma",
+        "createdAt": "2025-12-15T21:10:28.191176300",
+        "updatedAt": "2025-12-15T21:13:01.894634300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Estado sistema",
+        "sortPriority": 4000.011,
+        "url": "${[ BACKEND_URL ]}/system/estado",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_kjfCg3SLHn",
+        "createdAt": "2025-12-15T21:10:16.334570",
+        "updatedAt": "2025-12-15T21:12:56.716811600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Mapa calor horarios",
+        "sortPriority": 4000.01,
+        "url": "${[ BACKEND_URL ]}/system/mapa-calor/horarios",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_uWsGw43jCQ",
+        "createdAt": "2025-12-15T21:10:07.591434900",
+        "updatedAt": "2025-12-15T21:12:52.243180500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Métricas académicas",
+        "sortPriority": 4000.009,
+        "url": "${[ BACKEND_URL ]}/system/metricas/academicas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_uVnme7KhPT",
+        "createdAt": "2025-12-15T21:09:58.309319100",
+        "updatedAt": "2025-12-15T21:12:46.693968100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Reportes estadísticas",
+        "sortPriority": 4000.008,
+        "url": "${[ BACKEND_URL ]}/system/reportes/estadisticas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_MijtK6TRP6",
+        "createdAt": "2025-12-15T21:09:37.144046300",
+        "updatedAt": "2025-12-15T21:12:39.442198300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Métricas sistema",
+        "sortPriority": 4000.007,
+        "url": "${[ BACKEND_URL ]}/system/metricas/sistema",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_cVR5sBz56z",
+        "createdAt": "2025-12-15T21:09:23.470125300",
+        "updatedAt": "2025-12-15T21:12:32.879273100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Limpiar backups antiguos",
+        "sortPriority": 4000.006,
+        "url": "${[ BACKEND_URL ]}/system/backups/cleanup?dias=30",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Gy7JzTsZmW",
+        "createdAt": "2025-12-15T21:08:58.159107200",
+        "updatedAt": "2025-12-15T21:12:26.858740600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Eliminar backup",
+        "sortPriority": 4000.005,
+        "url": "${[ BACKEND_URL ]}/system/backups/sistema_universitario_backup_2024-01-15T10-30-00Z.sql",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_bi8xdKXdXB",
+        "createdAt": "2025-12-15T21:08:43.873001300",
+        "updatedAt": "2025-12-15T21:12:22.423232700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Descargar backup",
+        "sortPriority": 4000.004,
+        "url": "${[ BACKEND_URL ]}/system/backups/download/sistema_universitario_backup_2024-01-15T10-30-00Z.sql",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_gdLd8SHnzo",
+        "createdAt": "2025-12-15T21:08:15.502952",
+        "updatedAt": "2025-12-15T21:12:17.161257700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"backupFileName\": \"sistema_universitario_backup_2024-01-15T10-30-00Z.sql\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "CEjukeV7vJ"
+          }
+        ],
+        "method": "POST",
+        "name": "Restaurar backup",
+        "sortPriority": 4000.003,
+        "url": "${[ BACKEND_URL ]}/system/restore",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Dg7tYLTBTM",
+        "createdAt": "2025-12-15T21:08:01.574906200",
+        "updatedAt": "2025-12-15T21:12:12.115240400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar backups",
+        "sortPriority": 4000.002,
+        "url": "${[ BACKEND_URL ]}/system/backups",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_QbnqZZiczY",
+        "createdAt": "2025-12-15T21:06:36.400123600",
+        "updatedAt": "2025-12-15T21:12:04.510707400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "POST",
+        "name": "Backup manual",
+        "sortPriority": 4000.001,
+        "url": "${[ BACKEND_URL ]}/system/backup/manual",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_ybCh2gq42D",
+        "createdAt": "2025-12-15T21:06:18.558284900",
+        "updatedAt": "2026-01-10T19:28:43.066592800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_DDhbMkx9xg",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "POST",
+        "name": "Crear backup",
+        "sortPriority": 4000.0,
+        "url": "${[ BACKEND_URL ]}/system/backup",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_JSys42AZ3S",
+        "createdAt": "2025-12-15T21:00:46.162208800",
+        "updatedAt": "2025-12-15T21:01:42.821701400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_AFvbpnfQaH",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombreSede\": \"Núcleo Tecnológico Actualizado\",\n    \"ubicacionSede\": \"Los Teques, Municipio Guaicaipuro, Edo. Miranda\",\n    \"googleSede\": \"https://maps.app.goo.gl/nuevoenlace123\",\n    \"telefonoSede\": \"0212-7654321\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "4NknbAPeYA"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar sede",
+        "sortPriority": 3000.0,
+        "url": "${[ BACKEND_URL ]}/sedes/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_urhn5EP9E9",
+        "createdAt": "2025-12-15T21:00:39.415561",
+        "updatedAt": "2025-12-23T23:03:43.526042100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_AFvbpnfQaH",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombreSede\": \"Núcleo de Tecnología y Ciencias Administrativas\",\n    \"ubicacionSede\": \"Los Teques, Edo. Miranda\",\n    \"googleSede\": \"https://maps.app.goo.gl/EHHeHjA7uXgNA32s9\",\n    \"telefonoSede\": \"0212-1234567\",\n    \"emailSede\": \"sedetecnologia@unefa.edu\",\n    \"directorSede\": \"Dr. Carlos González\",\n    \"capacidadEstudiantil\": 5000,\n    \"anioFundacion\": 2005,\n    \"estado\": \"activo\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Eliminar sede",
+        "sortPriority": 4000.0,
+        "url": "${[ BACKEND_URL ]}/sedes/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_UwqhAemhU4",
+        "createdAt": "2025-12-15T21:00:08.632875900",
+        "updatedAt": "2025-12-15T21:01:34.458417700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_AFvbpnfQaH",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombreSede\": \"Núcleo de Tecnología y Ciencias Administrativas\",\n    \"ubicacionSede\": \"Los Teques, Edo. Miranda\",\n    \"googleSede\": \"https://maps.app.goo.gl/EHHeHjA7uXgNA32s9\",\n    \"telefonoSede\": \"0212-1234567\",\n    \"emailSede\": \"sedetecnologia@unefa.edu\",\n    \"directorSede\": \"Dr. Carlos González\",\n    \"capacidadEstudiantil\": 5000,\n    \"anioFundacion\": 2005,\n    \"estado\": \"activo\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "4NknbAPeYA"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear sede",
+        "sortPriority": 2000.0,
+        "url": "${[ BACKEND_URL ]}/sedes",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_dE2icKtpyn",
+        "createdAt": "2025-12-15T20:59:57.710724600",
+        "updatedAt": "2025-12-15T21:01:29.878564600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_AFvbpnfQaH",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Sede por ID",
+        "sortPriority": 1000.0,
+        "url": "${[ BACKEND_URL ]}/sedes/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_dt6jD3qTns",
+        "createdAt": "2025-12-15T20:59:21.606684300",
+        "updatedAt": "2025-12-15T21:01:25.090978500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_AFvbpnfQaH",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Todas las sedes",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL ]}/sedes",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_s8RULWsPfd",
+        "createdAt": "2025-12-15T20:51:36.359160900",
+        "updatedAt": "2025-12-15T20:55:41.297304100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombre_area\": \"Ciencias de la Computación\",\n    \"descripcion_area\": \"Área dedicada al estudio de algoritmos, estructuras de datos y teoría de la computación\",\n    \"codigo_area\": \"CC001\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "NPrYeIYxMx"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear Areas conocimiento",
+        "sortPriority": 17000.001,
+        "url": "${[ BACKEND_URL ]}/catalogos/areas-conocimiento",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_V8oprjFu8z",
+        "createdAt": "2025-12-15T20:51:22.998209",
+        "updatedAt": "2025-12-15T20:55:30.123973300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombre_pregrado\": \"Ingeniería Informática\",\n    \"descripcion_pregrado\": \"Formación en desarrollo de software y sistemas informáticos\",\n    \"institucion\": \"Universidad Central de Venezuela\",\n    \"anio_graduacion\": 2010,\n    \"duracion_anios\": 5,\n    \"tipo_pregrado\": \"Licenciatura\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar Areas conocimiento",
+        "sortPriority": 17000.0,
+        "url": "${[ BACKEND_URL ]}/catalogos/areas-conocimiento",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Grcr6K3KiG",
+        "createdAt": "2025-12-15T20:50:57.975537",
+        "updatedAt": "2025-12-15T20:55:18.508797100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_posgrado\": \"Maestría en Inteligencia Artificial\",\n  \"descripcion_posgrado\": \"Estudios avanzados en IA y aprendizaje automático\",\n  \"institucion\": \"Universidad Simón Bolívar\",\n  \"anio_graduacion\": 2015,\n  \"duracion_anios\": 2,\n  \"tipo_posgrado\": \"Maestría\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "uaI0eNJNxy"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear Pos-Grados",
+        "sortPriority": 16000.0,
+        "url": "${[ BACKEND_URL ]}/catalogos/posgrados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_SdDbP7BTTG",
+        "createdAt": "2025-12-15T20:50:50.750635600",
+        "updatedAt": "2025-12-15T20:55:07.692474900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombre_pregrado\": \"Ingeniería Informática\",\n    \"descripcion_pregrado\": \"Formación en desarrollo de software y sistemas informáticos\",\n    \"institucion\": \"Universidad Central de Venezuela\",\n    \"anio_graduacion\": 2010,\n    \"duracion_anios\": 5,\n    \"tipo_pregrado\": \"Licenciatura\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar Pos-Grados",
+        "sortPriority": 15000.0,
+        "url": "${[ BACKEND_URL ]}/catalogos/posgrados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_yXiCS2JMV8",
+        "createdAt": "2025-12-15T20:50:03.328933700",
+        "updatedAt": "2025-12-15T20:54:48.708389100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombre_pregrado\": \"Ingeniería Informática\",\n    \"descripcion_pregrado\": \"Formación en desarrollo de software y sistemas informáticos\",\n    \"institucion\": \"Universidad Central de Venezuela\",\n    \"anio_graduacion\": 2010,\n    \"duracion_anios\": 5,\n    \"tipo_pregrado\": \"Licenciatura\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar Pre-Grados",
+        "sortPriority": 13000.0,
+        "url": "${[ BACKEND_URL ]}/catalogos/pregrados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_H2SRtUyECR",
+        "createdAt": "2025-12-15T20:49:37.888419800",
+        "updatedAt": "2025-12-15T20:54:43.303407400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombre_pregrado\": \"Ingeniería Informática\",\n    \"descripcion_pregrado\": \"Formación en desarrollo de software y sistemas informáticos\",\n    \"institucion\": \"Universidad Central de Venezuela\",\n    \"anio_graduacion\": 2010,\n    \"duracion_anios\": 5,\n    \"tipo_pregrado\": \"Licenciatura\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "Rd7NHfBsFz"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear Pre-Grados",
+        "sortPriority": 14000.0,
+        "url": "${[ BACKEND_URL ]}/catalogos/pregrados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_xcacdTip6y",
+        "createdAt": "2025-12-15T20:49:12.207565600",
+        "updatedAt": "2025-12-15T20:54:20.279171400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"id_disponibilidad\": 5,\n    \"dia_semana\": \"Martes\",\n    \"hora_inicio\": \"14:00:00\",\n    \"hora_fin\": \"18:00:00\",\n    \"disponible\": false,\n    \"observaciones\": \"Horario modificado por reunión\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Eliminar disponibilidad",
+        "sortPriority": 12000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/1/disponibilidad/5",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_n3vGyvs8g6",
+        "createdAt": "2025-12-15T20:48:48.720897600",
+        "updatedAt": "2025-12-15T20:53:09.049867300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"id_disponibilidad\": 5,\n    \"dia_semana\": \"Martes\",\n    \"hora_inicio\": \"14:00:00\",\n    \"hora_fin\": \"18:00:00\",\n    \"disponible\": false,\n    \"observaciones\": \"Horario modificado por reunión\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "G6rBzTbr70"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar disponibilidad",
+        "sortPriority": 11000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/1/disponibilidad",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_PEAjsqxFnx",
+        "createdAt": "2025-12-15T20:48:16.896486900",
+        "updatedAt": "2025-12-15T20:52:58.715062600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"dia_semana\": \"Lunes\",\n    \"hora_inicio\": \"08:00:00\",\n    \"hora_fin\": \"12:00:00\",\n    \"disponible\": true,\n    \"observaciones\": \"Horario de clases\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "G6rBzTbr70"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear disponibilidad",
+        "sortPriority": 10000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/1/disponibilidad",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_EB4ajgjAq6",
+        "createdAt": "2025-12-15T20:48:11.625222700",
+        "updatedAt": "2025-12-15T20:52:54.082392700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_profesor\": 1,\n  \"motivo_reingreso\": \"Resolución de conflicto laboral\",\n  \"observaciones\": \"Profesor reincorporado tras acuerdo conciliatorio\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Ver disponibilidad",
+        "sortPriority": 9000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/1/disponibilidad",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_z8mEDeuhao",
+        "createdAt": "2025-12-15T20:47:55.841489600",
+        "updatedAt": "2025-12-15T20:52:48.114199500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_profesor\": 1,\n  \"motivo_reingreso\": \"Resolución de conflicto laboral\",\n  \"observaciones\": \"Profesor reincorporado tras acuerdo conciliatorio\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Obtener imagen",
+        "sortPriority": 8000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/1/imagen",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_iaPAkvrkbi",
+        "createdAt": "2025-12-15T20:47:36.679829300",
+        "updatedAt": "2025-12-15T20:52:41.859891700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_profesor\": 1,\n  \"motivo_reingreso\": \"Resolución de conflicto laboral\",\n  \"observaciones\": \"Profesor reincorporado tras acuerdo conciliatorio\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Buscar profesores",
+        "sortPriority": 7000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/search?busqueda=juan",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_QReJuAPXKU",
+        "createdAt": "2025-12-15T20:47:05.657700100",
+        "updatedAt": "2025-12-15T20:52:33.049969800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_profesor\": 1,\n  \"motivo_reingreso\": \"Resolución de conflicto laboral\",\n  \"observaciones\": \"Profesor reincorporado tras acuerdo conciliatorio\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "cu9piHeCUw"
+          }
+        ],
+        "method": "POST",
+        "name": "Reingresar profesor",
+        "sortPriority": 6000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/reingresar",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_8S6pGbXvyr",
+        "createdAt": "2025-12-15T20:46:39.486981800",
+        "updatedAt": "2025-12-15T20:52:27.989183600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombres\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gonzalez\",\n    \"email\": \"juan.c.perez@unefa.edu\",\n    \"telefono\": \"04149876543\",\n    \"dedicacion\": \"Medio Tiempo\",\n    \"categoria\": \"Asistente\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Profesores eliminados",
+        "sortPriority": 5000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/eliminados",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_eRktRbXJ8c",
+        "createdAt": "2025-12-15T20:46:29.016161300",
+        "updatedAt": "2025-12-15T20:52:21.686974800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombres\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gonzalez\",\n    \"email\": \"juan.c.perez@unefa.edu\",\n    \"telefono\": \"04149876543\",\n    \"dedicacion\": \"Medio Tiempo\",\n    \"categoria\": \"Asistente\"\n  }"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Destituir profesor",
+        "sortPriority": 4000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_LwjRhcwSB8",
+        "createdAt": "2025-12-15T20:46:04.272200300",
+        "updatedAt": "2025-12-15T20:52:16.356186300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"nombres\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gonzalez\",\n    \"email\": \"juan.c.perez@unefa.edu\",\n    \"telefono\": \"04149876543\",\n    \"dedicacion\": \"Medio Tiempo\",\n    \"categoria\": \"Asistente\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "zPikhdapC4"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar profesor",
+        "sortPriority": 3000.0,
+        "url": "${[ BACKEND_URL ]}/profesores/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_ZZZ24WYxdj",
+        "createdAt": "2025-12-15T20:44:59.887901100",
+        "updatedAt": "2026-01-10T18:36:57.983484600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "form": [
+            {
+              "enabled": true,
+              "id": "ErsFgth3CR",
+              "name": "fecha_ingreso",
+              "value": "${[ dateAdd(dateTime=b64'MTAvMS8yMDI2', years=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PScxNycsIGRlY2ltYWxzPScwJykgXX0', months=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PScxMicsIGRlY2ltYWxzPScwJykgXX0', days=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PSczMScsIGRlY2ltYWxzPScwJykgXX0', hours='0', minutes='0', seconds='0', format=b64'REQtTU0tWVlZWQ') ]}"
+            },
+            {
+              "enabled": true,
+              "id": "BpTtR0ENjF",
+              "name": "dedicacion",
+              "value": "Exclusivo"
+            },
+            {
+              "enabled": true,
+              "id": "zhQqzud4hi",
+              "name": "categoria",
+              "value": "Asistente"
+            },
+            {
+              "enabled": true,
+              "id": "vVwyesQIKQ",
+              "name": "cedula",
+              "value": "${[ faker.number.int(options=b64'eyJtaW4iOjEwMDAwMDAsIm1heCI6IDUwMDAwMDAwfQ') ]}"
+            },
+            {
+              "enabled": true,
+              "id": "QhT8FF6Ene",
+              "name": "municipio",
+              "value": "Guaicaipuro"
+            },
+            {
+              "enabled": true,
+              "id": "aTyRAJa8zY",
+              "name": "nombres",
+              "value": "${[ faker.person.firstName() ]}"
+            },
+            {
+              "enabled": true,
+              "id": "Un9TQTtWd0",
+              "name": "apellidos",
+              "value": "${[ faker.person.lastName() ]}"
+            },
+            {
+              "enabled": true,
+              "id": "UWR8mDycmf",
+              "name": "email",
+              "value": "${[ faker.internet.email() ]}"
+            },
+            {
+              "enabled": true,
+              "id": "NuEFQZsNaM",
+              "name": "direccion",
+              "value": "${[ faker.location.direction() ]}"
+            },
+            {
+              "enabled": true,
+              "id": "eBGeyKkW4T",
+              "name": "telefono_movil",
+              "value": "04120000000"
+            },
+            {
+              "enabled": true,
+              "id": "pfiCSiWUqh",
+              "name": "fecha_nacimiento",
+              "value": "${[ dateAdd(dateTime=b64'MTAvMS8yMDI2', format=b64'REQtTU0tWVlZWQ', years=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxOCcsIG1heD0nNzAnLCBkZWNpbWFscz0nMCcpIF19', months=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PScxMicsIGRlY2ltYWxzPScwJykgXX0', days=b64'LSR7WyByYW5kb20ucmFuZ2UobWluPScxJywgbWF4PSczMScsIGRlY2ltYWxzPScwJykgXX0', hours='0', minutes='0', seconds='0') ]}"
+            },
+            {
+              "enabled": true,
+              "id": "fPSznnq5mP",
+              "name": "genero",
+              "value": "masculino"
+            },
+            {
+              "enabled": true,
+              "id": "4H5s9Gp0PJ",
+              "name": "areas_de_conocimiento",
+              "value": "[  {    \"id_area_conocimiento\": 13,    \"nombre_area_conocimiento\": \"Programación\"  }]"
+            },
+            {
+              "enabled": true,
+              "id": "BjW76AA2Np",
+              "name": "pre_grado",
+              "value": "[  {    \"id_pre_grado\": 9,    \"nombre_pre_grado\": \"No especificada\",    \"tipo_pre_grado\": \"Licenciatura\"  }]"
+            },
+            {
+              "enabled": true,
+              "id": "I5JtAe8XYq",
+              "name": "imagen",
+              "value": "${[ faker.image.personPortrait() ]}"
+            },
+            {
+              "enabled": true,
+              "id": "kRN4mQ0Gbj",
+              "name": "",
+              "value": ""
+            }
+          ]
+        },
+        "bodyType": "multipart/form-data",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "multipart/form-data",
+            "id": "wXQnJkykiK"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear profesor",
+        "sortPriority": 2000.0,
+        "url": "${[ BACKEND_URL ]}/profesores",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_A9azAMDaQ2",
+        "createdAt": "2025-12-15T20:44:38.351461700",
+        "updatedAt": "2025-12-15T20:52:03.933435300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar API",
+        "sortPriority": 1000.0,
+        "url": "${[ BACKEND_URL ]}/api/profesores?dedicacion=Tiempo+Completo",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_LQPRdCMzQn",
+        "createdAt": "2025-12-15T20:44:19.375583",
+        "updatedAt": "2026-01-10T17:16:53.378495900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_bRV3PZgk5c",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar profesores",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL ]}/profesores?page=1&limit=10",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_tRYjjshiCh",
+        "createdAt": "2025-12-15T19:56:45.179082800",
+        "updatedAt": "2025-12-15T19:59:17.787881400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idProfesor\": 2,\n  \"idAula\": 3,\n  \"diaSemana\": \"Martes\",\n  \"horaInicio\": \"14:00:00\",\n  \"horaFin\": \"15:40:00\",\n  \"duracion\": 100,\n  \"observaciones\": \"Cambio de aula por mantenimiento\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Eliminar horario",
+        "sortPriority": 0.009000000000000001,
+        "url": "${[ BACKEND_URL ]}/horarios/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_NAgZwdJxNf",
+        "createdAt": "2025-12-15T19:56:22.113069700",
+        "updatedAt": "2025-12-15T19:59:13.607519",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idProfesor\": 2,\n  \"idAula\": 3,\n  \"diaSemana\": \"Martes\",\n  \"horaInicio\": \"14:00:00\",\n  \"horaFin\": \"15:40:00\",\n  \"duracion\": 100,\n  \"observaciones\": \"Cambio de aula por mantenimiento\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "NdPRWBpdWk"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar horario",
+        "sortPriority": 0.008,
+        "url": "${[ BACKEND_URL ]}/horarios/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_7UXMWd3EUJ",
+        "createdAt": "2025-12-15T19:56:00.260751800",
+        "updatedAt": "2025-12-15T19:59:07.065815",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_seccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\",\n  \"horaFin\": \"12:00:00\",\n  \"duracion\": 90,\n  \"tipo_clase\": \"teoria\",\n  \"observaciones\": \"Clase regular\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "NdPRWBpdWk"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear horario",
+        "sortPriority": 0.007,
+        "url": "${[ BACKEND_URL ]}/horarios",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_HFG2N5LUGu",
+        "createdAt": "2025-12-15T19:55:41.154614900",
+        "updatedAt": "2025-12-15T19:59:00.784066400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"dia_semana\": \"Lunes\",\n    \"hora_inicio\": \"08:00:00\",\n    \"hora_fin\": \"09:30:00\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "NdPRWBpdWk"
+          }
+        ],
+        "method": "POST",
+        "name": "Cambiar aula",
+        "sortPriority": 0.006,
+        "url": "${[ BACKEND_URL ]}/aula/cambiar/horario/3",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_vyrqSjbVUX",
+        "createdAt": "2025-12-15T19:55:26.520432200",
+        "updatedAt": "2025-12-15T19:58:53.753368300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"dia_semana\": \"Lunes\",\n    \"hora_inicio\": \"08:00:00\",\n    \"hora_fin\": \"09:30:00\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "NdPRWBpdWk"
+          }
+        ],
+        "method": "POST",
+        "name": "Cambiar profesor",
+        "sortPriority": 0.005,
+        "url": "${[ BACKEND_URL ]}/profesor/cambiar/horario/5",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_DDxZZrzS3L",
+        "createdAt": "2025-12-15T19:54:24.871627300",
+        "updatedAt": "2025-12-15T19:58:48.115301400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"dia_semana\": \"Lunes\",\n  \"hora_inicio\": \"08:00:00\",\n  \"hora_fin\": \"09:30:00\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "NdPRWBpdWk"
+          }
+        ],
+        "method": "POST",
+        "name": "Aulas para sección",
+        "sortPriority": 0.004,
+        "url": "${[ BACKEND_URL ]}/aulas/to/seccion/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_zigF72xBQw",
+        "createdAt": "2025-12-15T19:53:52.979255700",
+        "updatedAt": "2025-12-15T19:58:42.223850200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"dia_semana\": \"Lunes\",\n    \"hora_inicio\": \"08:00:00\",\n    \"hora_fin\": \"09:30:00\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "NdPRWBpdWk"
+          }
+        ],
+        "method": "POST",
+        "name": "Profesores para sección",
+        "sortPriority": 0.003,
+        "url": "${[ BACKEND_URL ]}/profesores/to/seccion/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_RFyNmCsUMh",
+        "createdAt": "2025-12-15T19:53:01.281972300",
+        "updatedAt": "2025-12-15T19:58:33.915605200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Exportar Word",
+        "sortPriority": 0.002,
+        "url": "${[ BACKEND_URL ]}/exportar/seccion/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_hP4bHkk5Gh",
+        "createdAt": "2025-12-15T19:52:59.170368600",
+        "updatedAt": "2025-12-15T19:57:43.099919500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por aula",
+        "sortPriority": 0.002,
+        "url": "${[ BACKEND_URL ]}/horarios/aula/3",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Vz4XZVALMF",
+        "createdAt": "2025-12-15T19:52:42.584111600",
+        "updatedAt": "2025-12-15T19:57:34.984750100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por profesor",
+        "sortPriority": 0.001,
+        "url": "${[ BACKEND_URL ]}/horarios/profesor/3",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_b4gQ6Vneu3",
+        "createdAt": "2025-12-15T19:52:15.449515200",
+        "updatedAt": "2025-12-15T19:57:26.882515900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_W9YKzXf2Se",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por sección",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL ]}/horarios/seccion/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_FHsvvELWCW",
+        "createdAt": "2025-12-15T19:22:49.314153900",
+        "updatedAt": "2025-12-15T20:04:41.126789100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idTurno\": 1\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Todas las secciones",
+        "sortPriority": 0.03190000000000002,
+        "url": "${[ BACKEND_URL ]}/secciones?trayecto=1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_q9zNACus7K",
+        "createdAt": "2025-12-15T19:22:25.921204500",
+        "updatedAt": "2025-12-15T20:04:32.729123900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"idTurno\": 1\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "SYmFxIZYnP"
+          }
+        ],
+        "method": "PUT",
+        "name": "Asignar turno",
+        "sortPriority": 0.03090000000000002,
+        "url": "${[ BACKEND_URL ]}/secciones/1/turno",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_wfCUKTUxt2",
+        "createdAt": "2025-12-15T19:22:17.475477500",
+        "updatedAt": "2026-01-10T19:26:45.604819",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"poblacionEstudiantil\": ${[ faker.number.int(options=b64'eyJtaW4iOiA0MCwibWF4IjogNDAwfQ') ]}\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "gvQHfyfYId"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear secciones para un trayecto",
+        "sortPriority": 0.02990000000000002,
+        "url": "${[ BACKEND_URL ]}/trayectos/${[ faker.number.int(options=b64'eyJtaW4iOiA2NSwibWF4IjogMTAwfQ') ]}/secciones",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_z36KhuAaR9",
+        "createdAt": "2025-12-15T19:22:08.761874200",
+        "updatedAt": "2025-12-15T20:05:51.217830100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_linea\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion_linea\": \"Investigación en aplicaciones prácticas de IA\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Obtener secciones por PNF y valor de trayecto",
+        "sortPriority": 0.02890000000000002,
+        "url": "${[ BACKEND_URL ]}/unidades-curriculares/INF/2",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_B2LqjgUQZb",
+        "createdAt": "2025-12-15T19:21:54.009427400",
+        "updatedAt": "2025-12-15T20:04:09.587662900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_linea\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion_linea\": \"Investigación en aplicaciones prácticas de IA\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por PNF y trayecto",
+        "sortPriority": 0.02790000000000002,
+        "url": "${[ BACKEND_URL ]}/secciones/INF/2",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_dsKs6XGgpU",
+        "createdAt": "2025-12-15T19:21:36.817035600",
+        "updatedAt": "2025-12-15T20:04:00.037011900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_linea\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion_linea\": \"Investigación en aplicaciones prácticas de IA\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por trayecto",
+        "sortPriority": 0.026900000000000018,
+        "url": "${[ BACKEND_URL ]}/trayectos/1/secciones",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_k2rtEAjCVg",
+        "createdAt": "2025-12-15T19:21:28.208089",
+        "updatedAt": "2025-12-15T20:06:05.712865400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_linea\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion_linea\": \"Investigación en aplicaciones prácticas de IA\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Obtener líneas de investigación por trayecto",
+        "sortPriority": 0.025900000000000013,
+        "url": "${[ BACKEND_URL ]}/catalogo/trayectos/1/lineas-investigacion",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_93pQKxmAC2",
+        "createdAt": "2025-12-15T19:21:16.321160600",
+        "updatedAt": "2025-12-15T20:03:44.774665900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_linea\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion_linea\": \"Investigación en aplicaciones prácticas de IA\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por trayecto",
+        "sortPriority": 0.024900000000000012,
+        "url": "${[ BACKEND_URL ]}/catalogo/trayectos/1/lineas-investigacion",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_V2ZYYgGcqT",
+        "createdAt": "2025-12-15T19:21:00.465529300",
+        "updatedAt": "2025-12-15T20:03:38.420751100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_linea\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion_linea\": \"Investigación en aplicaciones prácticas de IA\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Todas las líneas",
+        "sortPriority": 0.02390000000000001,
+        "url": "${[ BACKEND_URL ]}/catalogo/lineas-investigacion",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_thqtNaDG62",
+        "createdAt": "2025-12-15T19:20:21.553422500",
+        "updatedAt": "2026-01-10T19:28:02.853477800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_trayecto\": ${[ faker.number.int(options=b64'eyJtaW4iOiA2NSwibWF4IjogMTAwfQ') ]},\n  \"nombre_linea_investigacion\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion\": \"Investigación en aplicaciones prácticas de IA\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "B35ER88ExJ"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear línea",
+        "sortPriority": 0.02290000000000001,
+        "url": "${[ BACKEND_URL ]}/catalogo/1/linea-investigacion",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_LEWZttFfR8",
+        "createdAt": "2025-12-15T19:19:57.652092700",
+        "updatedAt": "2025-12-15T20:02:29.048847500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"codigo_unidad\": \"UC_2024_001\",\n  \"nombre_unidad_curricular\": \"Programación Avanzada Actualizada\",\n  \"descripcion_unidad_curricular\": \"Descripción actualizada de la unidad curricular...\",\n  \"horas_clase\": 80\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Eliminar unidad",
+        "sortPriority": 0.02190000000000001,
+        "url": "${[ BACKEND_URL ]}/unidades-curriculares/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_K2xwCFwi4s",
+        "createdAt": "2025-12-15T19:19:38.537344200",
+        "updatedAt": "2025-12-15T20:03:11.948101400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"codigo_unidad\": \"UC_2024_001\",\n  \"nombre_unidad_curricular\": \"Programación Avanzada Actualizada\",\n  \"descripcion_unidad_curricular\": \"Descripción actualizada de la unidad curricular...\",\n  \"horas_clase\": 80\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "MF9cwmqpNb"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar unidad",
+        "sortPriority": 0.02090000000000001,
+        "url": "${[ BACKEND_URL ]}/unidades-curriculares/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_8ReP8coQap",
+        "createdAt": "2025-12-15T19:19:02.066802500",
+        "updatedAt": "2026-01-10T19:19:05.121987200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_trayecto\": ${[ faker.number.int({ \"min\": 1, \"max\": 100 }) ]},\n  \"nombre_unidad_curricular\": ,\n  \"codigo_unidad_curricular\": \"${[ faker.string.alphanumeric({ \"length\": 5, \"casing\": \"upper\" }) ]}\",\n  \"tipo_unidad\": ,\n  \"descripcion_unidad_curricular\": \"${[ faker.lorem.sentence(12).padEnd(40, '.') ]}\",\n  \"carga_horas_academicas\": ${[ faker.number.int({ \"min\": 1, \"max\": 6 }) ]},\n  \"creditos\": ${[ faker.number.int({ \"min\": 0, \"max\": 10 }) ]},\n  \"semanas\": ${[ faker.number.int({ \"min\": 1, \"max\": 36 }) ]},\n  \"areas_conocimiento\": [\n    {\n      \"id_area_conocimiento\": ${[ faker.number.int({ \"min\": 1, \"max\": 50 }) ]},\n      \"nombre_area_conocimiento\":\n    }\n  ],\n  \"lineas_investigacion\": [\n    {\n      \"id_linea_investigacion\": ${[ faker.number.int({ \"min\": 1, \"max\": 50 }) ]},\n      \"nombre_linea_investigacion\": \"Desarrollo de Software Soberano\"\n    }\n  ],\n  \"hte\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hse\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hta\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hsa\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hti\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hsi\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]}\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "MF9cwmqpNb"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear unidad",
+        "sortPriority": 0.019900000000000008,
+        "url": "${[ BACKEND_URL ]}/trayectos/1/unidades-curriculares",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_dLhuyFeYYx",
+        "createdAt": "2025-12-15T19:18:21.258335600",
+        "updatedAt": "2025-12-15T20:01:59.744108800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": ""
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por trayecto",
+        "sortPriority": 0.018900000000000007,
+        "url": "${[ BACKEND_URL ]}/trayectos/1/unidades-curriculares",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_4mgPscwcnn",
+        "createdAt": "2025-12-15T19:17:52.954406",
+        "updatedAt": "2025-12-15T20:01:53.836766100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"descripcionTrayecto\": \"Nueva descripción actualizada del trayecto con enfoque en desarrollo web moderno, incluyendo React, Node.js y bases de datos NoSQL...\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "5G2RmWY4tR"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar descripción",
+        "sortPriority": 0.017900000000000006,
+        "url": "${[ BACKEND_URL ]}/trayectos/1/descripcion",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_wzDCZ6GSg5",
+        "createdAt": "2025-12-15T19:17:39.665738800",
+        "updatedAt": "2025-12-15T20:01:46.464601400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombrePNF\": \"Ingeniería de Software Actualizado\",\n  \"descripcionPNF\": \"Descripción actualizada del programa\",\n  \"duracionTrayectosPNF\": 5,\n  \"codigoPNF\": \"INF-2024\",\n  \"activo\": false\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por PNF",
+        "sortPriority": 0.016900000000000005,
+        "url": "${[ BACKEND_URL ]}/pnf/INF/trayectos",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_hWqswbpEz8",
+        "createdAt": "2025-12-15T19:16:14.865074200",
+        "updatedAt": "2025-12-15T20:00:28.721811600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombrePNF\": \"Ingeniería de Software Actualizado\",\n  \"descripcionPNF\": \"Descripción actualizada del programa\",\n  \"duracionTrayectosPNF\": 5,\n  \"codigoPNF\": \"INF-2024\",\n  \"activo\": false\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Desactivar PNF",
+        "sortPriority": 0.015900000000000004,
+        "url": "${[ BACKEND_URL ]}/pnfs/7",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_vnFrw2EmvN",
+        "createdAt": "2025-12-15T19:15:31.902503400",
+        "updatedAt": "2025-12-15T20:00:08.581246100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombrePNF\": \"Ingeniería de Software Actualizado\",\n  \"descripcionPNF\": \"Descripción actualizada del programa\",\n  \"duracionTrayectosPNF\": 5,\n  \"codigoPNF\": \"INF-2024\",\n  \"activo\": false\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "dN37B3hxxB"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar PNF",
+        "sortPriority": 0.014900000000000004,
+        "url": "${[ BACKEND_URL ]}/pnf/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_mRgZudB3R8",
+        "createdAt": "2025-12-15T19:15:12.259663",
+        "updatedAt": "2026-01-10T19:14:08.510370800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_pnf\": \"${[ faker.lorem.word() ]}\",\n  \"descripcion_pnf\": \"${[ faker.lorem.sentence() ]}\",\n  \"duracion_trayectos_pnf\": ${[ faker.number.int(options=b64'eyJtaW4iOjEsICJtYXgiOiA0fQ') ]},\n  \"codigo_pnf\": \"PNF-${[ faker.string.alpha(options=b64'eyAibGVuZ3RoIjogMywgImNhc2luZyI6ICJ1cHBlciIgfQ') ]}\",\n  \"sede_pnf\": 5\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "heJgc0hJdb"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear PNF",
+        "sortPriority": 0.013900000000000004,
+        "url": "${[ BACKEND_URL ]}/pnf",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_fqLsXhF3UJ",
+        "createdAt": "2025-12-15T19:13:50.266765200",
+        "updatedAt": "2025-12-15T19:59:56.072299200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_Hj75saeNkS",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar PNFs",
+        "sortPriority": 0.012900000000000003,
+        "url": "${[ BACKEND_URL ]}/pnf",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_REMehCzUKu",
+        "createdAt": "2025-12-15T19:11:26.509527700",
+        "updatedAt": "2025-12-15T19:13:09.826752",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"tipo_reingreso\": \"REINGRESO\",\n  \"motivo_reingreso\": \"Revisión favorable del caso\",\n  \"observaciones\": \"Coordinador reincorporado tras evaluación positiva\",\n  \"fecha_efectiva\": \"2024-02-01\",\n  \"id_pnf\": 5,\n  \"registro_anterior_id\": 123\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Historial destituciones",
+        "sortPriority": 0.012900000000000003,
+        "url": "${[ BACKEND_URL ]}/coordinadores/1/historial-destituciones",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_on6Ytj6D7J",
+        "createdAt": "2025-12-15T19:11:05.202583400",
+        "updatedAt": "2025-12-15T19:13:02.121441700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"tipo_reingreso\": \"REINGRESO\",\n  \"motivo_reingreso\": \"Revisión favorable del caso\",\n  \"observaciones\": \"Coordinador reincorporado tras evaluación positiva\",\n  \"fecha_efectiva\": \"2024-02-01\",\n  \"id_pnf\": 5,\n  \"registro_anterior_id\": 123\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "WWgmXV4Egt"
+          }
+        ],
+        "method": "POST",
+        "name": "Restituir",
+        "sortPriority": 0.011900000000000004,
+        "url": "${[ BACKEND_URL ]}/coordinadores/1/restituir",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_tguwWLLnCH",
+        "createdAt": "2025-12-15T19:10:42.882473500",
+        "updatedAt": "2025-12-15T19:12:56.305410900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"tipo_accion\": \"DESTITUCION\",\n    \"razon\": \"Falta grave a las normas institucionales\",\n    \"observaciones\": \"Incumplimiento reiterado de funciones\",\n    \"fecha_efectiva\": \"2024-01-15\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "WWgmXV4Egt"
+          }
+        ],
+        "method": "DELETE",
+        "name": "Destituir",
+        "sortPriority": 0.010900000000000003,
+        "url": "${[ BACKEND_URL ]}/coordinadores/1/destituir",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_qmLb4RCsUD",
+        "createdAt": "2025-12-15T19:10:19.371779400",
+        "updatedAt": "2025-12-15T19:12:49.698165700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"id_pnf_nuevo\": 2,\n  \"observaciones\": \"Reasignación por reestructuración académica\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "WWgmXV4Egt"
+          }
+        ],
+        "method": "PUT",
+        "name": "Reasignar PNF",
+        "sortPriority": 0.009900000000000004,
+        "url": "${[ BACKEND_URL ]}/coordinadores/31264460/reasignar-pnf",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_PfKeyoisnx",
+        "createdAt": "2025-12-15T19:09:26.835517",
+        "updatedAt": "2025-12-15T19:12:41.922915900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"departamento\": \"Nuevo Departamento\",\n  \"area_responsabilidad\": \"Nueva Área de Responsabilidad\",\n  \"fecha_fin\": \"2026-01-15\",\n  \"estatus\": \"activo\",\n  \"observaciones\": \"Actualización de responsabilidades\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "WWgmXV4Egt"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar coordinador",
+        "sortPriority": 0.008900000000000002,
+        "url": "${[ BACKEND_URL ]}/coordinadores/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_n3rPAGJgaR",
+        "createdAt": "2025-12-15T19:08:59.522928",
+        "updatedAt": "2025-12-15T19:12:34.546544200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n    \"cedula_profesor\": 31264460,\n    \"departamento\": \"Informática\",\n    \"area_responsabilidad\": \"Coordinación de Extensión\",\n    \"fecha_inicio\": \"2024-01-15\",\n    \"fecha_fin\": \"2025-01-15\",\n    \"observaciones\": \"Asignación por reestructuración departamental\"\n  }"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "WWgmXV4Egt"
+          }
+        ],
+        "method": "POST",
+        "name": "Asignar coordinador",
+        "sortPriority": 0.0079,
+        "url": "${[ BACKEND_URL ]}/coordinadores",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_gzAkpQwPM9",
+        "createdAt": "2025-12-15T19:08:46.234571700",
+        "updatedAt": "2025-12-15T19:12:27.442524100",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Coordinador por ID",
+        "sortPriority": 0.0069,
+        "url": "${[ BACKEND_URL ]}/coordinadores/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_nAAa2vRp5c",
+        "createdAt": "2025-12-15T19:08:32.323100800",
+        "updatedAt": "2025-12-15T19:12:18.906313300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar destituidos",
+        "sortPriority": 0.0059,
+        "url": "${[ BACKEND_URL ]}/coordinadores/destituidos?page=1&limit=10&sort=fecha_destitucion&order=DESC&id_pnf=1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_59m5KkjoFY",
+        "createdAt": "2025-12-15T19:07:55.945589700",
+        "updatedAt": "2025-12-15T19:12:13.542984200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_m55bto3Fxu",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Listar coordinadores",
+        "sortPriority": 0.0049,
+        "url": "${[ BACKEND_URL ]}/coordinadores?estatus=activo&departamento=Informática",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_LGadCyszx3",
+        "createdAt": "2025-12-15T19:03:25.259971800",
+        "updatedAt": "2025-12-15T19:05:16.602394700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "API aulas",
+        "sortPriority": 0.0049,
+        "url": "${[ BACKEND_URL ]}/api/aulas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_62kan4NfHb",
+        "createdAt": "2025-12-15T19:03:10.755158700",
+        "updatedAt": "2025-12-15T19:05:26.008841700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por PNF",
+        "sortPriority": 0.0039,
+        "url": "${[ BACKEND_URL ]}/aulas/pnf/INF",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_PTdoncociu",
+        "createdAt": "2025-12-15T19:02:51.611460900",
+        "updatedAt": "2025-12-15T19:05:30.970746500",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por Sede",
+        "sortPriority": 0.0029,
+        "url": "${[ BACKEND_URL ]}/aulas/sede/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Bm8HJz6nfP",
+        "createdAt": "2025-12-15T19:02:45.339508100",
+        "updatedAt": "2025-12-15T19:05:38.731627800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Por tipo",
+        "sortPriority": 0.0019,
+        "url": "${[ BACKEND_URL ]}/aulas/tipo/laboratorio",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_DQw9yKZVPP",
+        "createdAt": "2025-12-15T19:02:25.467358300",
+        "updatedAt": "2025-12-15T19:04:32.651784600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"capacidad\": 45,\n  \"equipamiento\": \"30 computadoras, proyector HD, aire acondicionado\",\n  \"descripcion\": \"Laboratorio actualizado con nuevo equipamiento\"\n}"
+        },
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Eliminar aula",
+        "sortPriority": 0.0049,
+        "url": "${[ BACKEND_URL ]}/aulas/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_QsL6WxcuDb",
+        "createdAt": "2025-12-15T18:58:54.779852500",
+        "updatedAt": "2025-12-15T19:04:25.889858900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"capacidad\": 45,\n  \"equipamiento\": \"30 computadoras, proyector HD, aire acondicionado\",\n  \"descripcion\": \"Laboratorio actualizado con nuevo equipamiento\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "hyjQdPbiXK"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar aula",
+        "sortPriority": 0.0039,
+        "url": "${[ BACKEND_URL ]}/aulas/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_Ak7mdUiCL7",
+        "createdAt": "2025-12-15T18:53:31.035978400",
+        "updatedAt": "2025-12-15T19:04:13.508447300",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {
+          "text": "{\n  \"nombre_aula\": \"LAB-101\",\n  \"tipo_aula\": \"laboratorio\",\n  \"capacidad\": 40,\n  \"ubicacion\": \"Edificio A, Primer Piso\",\n  \"descripcion\": \"Laboratorio de Informática\",\n  \"equipamiento\": \"30 computadoras, proyector, aire acondicionado\",\n  \"disponible\": true,\n  \"id_sede\": 1,\n  \"codigoPNF\": \"INF\"\n}"
+        },
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "hyjQdPbiXK"
+          }
+        ],
+        "method": "POST",
+        "name": "Crear aula",
+        "sortPriority": 0.0029,
+        "url": "${[ BACKEND_URL ]}/aulas",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_CipEAxDPYU",
+        "createdAt": "2025-12-15T18:53:15.219248800",
+        "updatedAt": "2025-12-15T19:04:44.594846900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Aula por ID",
+        "sortPriority": 0.0019,
+        "url": "${[ BACKEND_URL ]}/aulas/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_DPFkBh8TNm",
+        "createdAt": "2025-12-15T18:52:41.794868200",
+        "updatedAt": "2025-12-15T19:04:55.418413600",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_zpaTrR6sYi",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Todas las aulas",
+        "sortPriority": 0.0009,
+        "url": "${[ BACKEND_URL ]}/aulas?tipo=laboratorio&capacidadMin=30&disponible=true",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_NoXLbg2Kna",
+        "createdAt": "2025-12-15T18:51:37.147609600",
+        "updatedAt": "2026-01-10T19:29:00.276368",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "PUT",
+        "name": "Obtener logs",
+        "sortPriority": 7000.0,
+        "url": "${[ BACKEND_URL ]}/admin/logs?fecha=2024-01-01&usuario=juan&accion=login",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_FwarKmtYuf",
+        "createdAt": "2025-12-15T18:50:54.106466300",
+        "updatedAt": "2026-01-10T19:29:00.270147700",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "PUT",
+        "name": "Obtener Stats",
+        "sortPriority": 6000.0,
+        "url": "${[ BACKEND_URL ]}/admin/stats",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_PHaq8NPYQ8",
+        "createdAt": "2025-12-15T18:50:31.610984",
+        "updatedAt": "2026-01-10T19:29:00.262825400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Obtener Reportes admin",
+        "sortPriority": 5000.0,
+        "url": "${[ BACKEND_URL ]}/admin/reports",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_2XNKfRXqS6",
+        "createdAt": "2025-12-15T18:49:58.577946700",
+        "updatedAt": "2026-01-10T19:29:00.256387900",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Filtrar Admins",
+        "sortPriority": 4000.0,
+        "url": "${[ BACKEND_URL ]}/admins?rol=Coordinador&estado=activo",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_iTiN4hty95",
+        "createdAt": "2025-12-15T18:49:31.920727600",
+        "updatedAt": "2026-01-10T19:29:00.249780400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "GET",
+        "name": "Obtener Perfil",
+        "sortPriority": 3000.0,
+        "url": "${[ BACKEND_URL ]}/admin/profile",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_T6qxiVaQEn",
+        "createdAt": "2025-12-15T18:49:13.323181400",
+        "updatedAt": "2026-01-10T19:29:00.288996400",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": "multipart/form-data",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "multipart/form-data",
+            "id": "XTJtmwThtM"
+          }
+        ],
+        "method": "POST",
+        "name": "Cambiar Roles Admins",
+        "sortPriority": 9000.0,
+        "url": "${[ BACKEND_URL ]}/admins/1/rol",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_6kvAZ9JvqM",
+        "createdAt": "2025-12-15T18:47:42.015633300",
+        "updatedAt": "2026-01-10T19:29:00.295685800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "DELETE",
+        "name": "Eliminar Admin",
+        "sortPriority": 10000.0,
+        "url": "${[ BACKEND_URL ]}/admins/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_YRt9NFonnH",
+        "createdAt": "2025-12-15T18:47:39.907694300",
+        "updatedAt": "2026-01-10T19:29:00.282518800",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": "application/json",
+        "description": "",
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json",
+            "id": "TsHmHeei56"
+          }
+        ],
+        "method": "PUT",
+        "name": "Actualizar Admin",
+        "sortPriority": 8000.0,
+        "url": "${[ BACKEND_URL ]}/admins/1",
+        "urlParameters": []
+      },
+      {
+        "model": "http_request",
+        "id": "rq_UCnbYJ5UrK",
+        "createdAt": "2025-12-15T18:45:47.937924900",
+        "updatedAt": "2026-01-10T19:29:00.227674200",
+        "workspaceId": "wk_2GOhvcRhW5",
+        "folderId": "fl_aissvbEqLL",
+        "authentication": {},
+        "authenticationType": null,
+        "body": {},
+        "bodyType": null,
+        "description": "",
+        "headers": [],
+        "method": "PUT",
+        "name": "Actualizar Perfil",
+        "sortPriority": 0.0,
+        "url": "${[ BACKEND_URL ]}/admin/profile",
         "urlParameters": []
       }
     ],

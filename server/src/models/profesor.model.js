@@ -29,7 +29,9 @@ export default class ProfesorModel {
       const Areasconocimiento = datos.areas_de_conocimiento.map((area) => {
         return area.nombre_area_conocimiento;
       });
-      console.log(Areasconocimiento);
+
+      console.log(datos)
+      
       const {
         cedula,
         nombres,
